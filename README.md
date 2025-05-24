@@ -1,31 +1,32 @@
 # 🚀 REDAXO Multi-Instance Manager
 
-**Vereinfacht - Ein Skript für alles!**
+**Dein Werkzeug für mehrere REDAXO-Projekte gleichzeitig!**
 
-Ein super einfaches System, um mehrere REDAXO-Websites gleichzeitig auf Ihrem Computer zu entwickeln und zu testen. Perfekt für Entwickler, Agenturen und alle, die mit mehreren REDAXO-Projekten arbeiten.
+Du entwickelst mehrere REDAXO-Websites? Testest gerne verschiedene PHP-Versionen? Oder arbeitest an verschiedenen Kundenprojekten? Dann ist dieser Manager genau das Richtige für dich!
 
-> **✨ Neu: Alles in einem einzigen Befehl!** Das gesamte System wurde vereinfacht - nur noch ein Skript für alle Funktionen.
+Mit nur einem einzigen Befehl kannst du beliebig viele REDAXO-Instanzen erstellen, starten und verwalten. Jede läuft komplett isoliert in ihrem eigenen Docker-Container.
 
-## 🎯 Was macht dieses Tool?
+## 🎯 Was kann das Tool?
 
-Stellen Sie sich vor, Sie möchten:
+Stell dir vor, du möchtest:
 - 🌐 **5 verschiedene REDAXO-Websites** gleichzeitig entwickeln
-- 🔧 **Verschiedene REDAXO-Versionen** testen
-- 👥 **Kunden-Projekte isoliert** voneinander arbeiten lassen
-- 🔒 **HTTPS-Verschlüsselung** für lokale Entwicklung nutzen
+- 🔧 **Verschiedene PHP-Versionen** (7.4 bis 8.4) testen
+- 👥 **Kundenprojekte sauber getrennt** bearbeiten
+- 🔒 **HTTPS für lokale Entwicklung** nutzen
+- 📦 **Standard-REDAXO oder Modern Structure** verwenden
 
-**Genau das macht dieser REDAXO Multi-Instance Manager für Sie - mit nur einem einzigen Befehl!**
+**Genau das macht dieser Manager für dich - mit nur einem einzigen Befehl!**
 
-## ✨ Features im Überblick
+## ✨ Das bekommst du
 
-- 🏗️ **Ein Skript für alles** - Alle Funktionen in einem einzigen `./redaxo` Befehl
-- 🔧 **Einfache Verwaltung** - `./redaxo create mein-projekt` erstellt alles automatisch
-- 🔒 **HTTPS-Unterstützung** - Automatische SSL-Zertifikate mit mkcert
-- 🐳 **Docker-basiert** - Jede Instanz läuft isoliert
-- 📊 **Übersichtliche Verwaltung** - Alle Instanzen auf einen Blick
-- 🔧 **Konfiguration anzeigen** - Datenbankdaten für REDAXO-Setup
+- 🏗️ **Ein Skript für alles** - Alle Funktionen in einem `./redaxo` Befehl
+- 🔧 **Super einfach** - `./redaxo create mein-projekt` und fertig!
+- 🔒 **HTTPS inklusive** - Automatische SSL-Zertifikate
+- 🐳 **Docker-Power** - Jede Instanz läuft sauber isoliert
+- 📊 **Perfekte Übersicht** - Alle Projekte auf einen Blick
+- 🔧 **Datenbankdaten** - Immer griffbereit für's REDAXO-Setup
 
-## 📋 Voraussetzungen
+## 📋 Was brauchst du?
 
 ### 1. Docker installieren (einmalig)
 
@@ -35,7 +36,7 @@ Stellen Sie sich vor, Sie möchten:
 
 **Windows:**
 1. [Docker Desktop für Windows](https://www.docker.com/products/docker-desktop) herunterladen
-2. WSL2 aktivieren (wird angeboten)
+2. WSL2 aktivieren (wird automatisch angeboten)
 3. Installieren und starten
 
 **Linux (Ubuntu/Debian):**
@@ -46,7 +47,7 @@ sudo usermod -aG docker $USER
 # Neu anmelden erforderlich
 ```
 
-### 2. mkcert für SSL (optional aber empfohlen)
+### 2. SSL für HTTPS (optional aber empfohlen)
 
 **macOS (mit Homebrew):**
 ```bash
@@ -65,14 +66,14 @@ brew install mkcert
 choco install mkcert
 ```
 
-## 🚀 Schnellstart - In 2 Minuten zur ersten REDAXO-Instanz!
+## 🚀 Loslegen - In 2 Minuten zur ersten REDAXO-Instanz!
 
-### 1. Projekt herunterladen und vorbereiten
+### 1. Projekt herunterladen
 ```bash
-# Zu Ihrem Arbeitsverzeichnis
+# Zu deinem Arbeitsverzeichnis
 cd ~/Documents
 
-# Projekt klonen (URL anpassen)
+# Projekt klonen
 git clone <repository-url> redaxo-multi-instances
 cd redaxo-multi-instances
 
@@ -80,9 +81,9 @@ cd redaxo-multi-instances
 chmod +x redaxo
 ```
 
-### 2. SSL-Setup (einmalig, optional)
+### 2. SSL einrichten (optional)
 ```bash
-# SSL-Zertifikate für lokale Entwicklung einrichten
+# SSL-Zertifikate für lokale HTTPS-Entwicklung
 ./redaxo ssl-setup
 ```
 
@@ -92,50 +93,49 @@ chmod +x redaxo
 ./redaxo create mein-projekt
 ```
 
-### 4. Instanz starten
+### 4. Fertig!
 ```bash
-./redaxo start mein-projekt
+# Instanz läuft bereits - URLs anzeigen
+./redaxo urls mein-projekt
 ```
 
-**🎉 Fertig!** Ihre REDAXO-Instanz läuft unter `http://localhost:8080`
+**🎉 Geschafft!** Deine REDAXO-Instanz läuft unter `http://localhost:8080`
 
-## 📚 Alle Befehle im Überblick
+## 📚 Alle Befehle auf einen Blick
 
-Das neue `./redaxo` Skript kann alles:
+Das `./redaxo` Skript kann alles:
 
 ```bash
-# ✨ INSTANZ-VERWALTUNG
+# ✨ INSTANZEN VERWALTEN
 ./redaxo create <name>          # Neue Instanz erstellen
-./redaxo create <name> --php-version 8.3 --mariadb-version 10.6  # Mit spezifischen Versionen
+./redaxo create <name> --php-version 8.3 --mariadb-version 10.6  # Mit bestimmten Versionen
 ./redaxo start <name>           # Instanz starten
 ./redaxo stop <name>            # Instanz stoppen
 ./redaxo remove <name>          # Instanz löschen
-./redaxo list                   # Alle Instanzen auflisten
+./redaxo list                   # Alle Instanzen anzeigen
 
-# 🌐 INFORMATIONEN
-./redaxo urls <name>            # URLs der Instanz anzeigen
-./redaxo db <name>              # Datenbankdaten anzeigen
+# 🌐 INFORMATIONEN ABRUFEN
+./redaxo urls <name>            # URLs anzeigen
+./redaxo db <name>              # Datenbankdaten für REDAXO-Setup
 ./redaxo versions <name>        # PHP/MariaDB-Versionen anzeigen
 
-# 🔧 VERSIONSVERWALTUNG
-./redaxo update <name> --php-version 8.3           # PHP-Version aktualisieren
-./redaxo update <name> --mariadb-version 11.0      # MariaDB-Version aktualisieren
-./redaxo update <name> --php-version 8.1 --mariadb-version 10.6  # Beide Versionen
+# 🔧 VERSIONEN ÄNDERN
+./redaxo update <name> --php-version 8.3           # PHP-Version ändern
+./redaxo update <name> --mariadb-version 11.0      # MariaDB-Version ändern
+./redaxo update <name> --php-version 8.1 --mariadb-version 10.6  # Beide gleichzeitig
 
-# 🔒 SSL & SETUP
+# 🔒 SSL & HILFE
 ./redaxo ssl-setup              # SSL-Zertifikate einrichten
-
-# ❓ HILFE
 ./redaxo help                   # Alle Befehle anzeigen
-./redaxo                        # Auch Hilfe anzeigen
 ```
 
 ### 🐘 Verfügbare PHP-Versionen
-- **PHP 7.4** - Legacy-Projekte
+- **PHP 7.4** - Für Legacy-Projekte
 - **PHP 8.0** - Stabile Version
 - **PHP 8.1** - Weit verbreitet
 - **PHP 8.2** - Standard (empfohlen)
 - **PHP 8.3** - Neueste Version
+- **PHP 8.4** - Bleeding Edge
 
 ### 🗄️ Verfügbare MariaDB-Versionen
 - **10.4** - Ältere stabile Version
@@ -145,7 +145,7 @@ Das neue `./redaxo` Skript kann alles:
 - **11.0** - Neueste Version
 - **latest** - Immer die neueste (Standard)
 
-## 🌐 Zugriff auf Ihre REDAXO-Instanz
+## 🌐 Zugriff auf deine REDAXO-Instanz
 
 Nach dem Start einer Instanz:
 
@@ -153,7 +153,7 @@ Nach dem Start einer Instanz:
 ./redaxo urls mein-projekt
 ```
 
-Zeigt Ihnen alle verfügbaren URLs:
+Zeigt dir alle verfügbaren URLs:
 - **REDAXO**: `http://localhost:8080` (HTTP) und `https://localhost:8443` (HTTPS)
 - **phpMyAdmin**: `http://localhost:8181`
 - **MailHog**: `http://localhost:8182` (E-Mail-Testing)
@@ -161,7 +161,7 @@ Zeigt Ihnen alle verfügbaren URLs:
 ### REDAXO-Setup durchführen
 
 1. **Browser öffnen**: `http://localhost:8080`
-2. **REDAXO-Setup folgen**
+2. **REDAXO-Setup starten**
 3. **Datenbankdaten eingeben**:
 
 ```bash
@@ -171,23 +171,21 @@ Zeigt Ihnen alle verfügbaren URLs:
 
 **Ausgabe:**
 ```
-Datenbankonfiguration für REDAXO-Setup:
-═══════════════════════════════════════════════
+🗄️  Datenbank-Zugangsdaten für 'mein-projekt'
 
-Im REDAXO-Setup eingeben:
+Für REDAXO-Setup:
 ┌─────────────────────────────────────────────┐
-│ Database Server: mariadb                    │
-│ Database Name:   redaxo_mein_projekt        │
-│ Username:        redaxo_mein_projekt        │
-│ Password:        redaxo_mein_projekt_pass   │
-│ Host:            mariadb                    │
-│ Port:            3306                       │
+│ 🖥️  Server:     mariadb                     │
+│ 🗄️  Database:   redaxo_mein_projekt         │
+│ 👤 Username:   redaxo_mein_projekt         │
+│ 🔑 Password:   redaxo_mein_projekt_pass    │
+│ 🔌 Port:       3306                        │
 └─────────────────────────────────────────────┘
 
-⚠ Wichtig: Verwenden Sie 'mariadb' als Host, nicht 'localhost'!
+⚠ Wichtig: Verwende 'mariadb' als Server, nicht 'localhost'!
 ```
 
-4. **Diese Werte ins REDAXO-Setup kopieren**
+4. **Diese Werte ins REDAXO-Setup eingeben**
 5. **Setup abschließen** - Fertig!
 
 ## 📖 Häufig verwendete Befehle

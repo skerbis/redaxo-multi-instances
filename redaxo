@@ -18,6 +18,20 @@ SSL_DIR="$PROJECT_DIR/ssl"
 
 # === HELPER FUNCTIONS ===
 
+# Erkennt automatisch den DocumentRoot basierend auf der REDAXO-Struktur
+detect_document_root() {
+    local instance_dir=$1
+    local app_dir="$instance_dir/app"
+    
+    if [ -f "$app_dir/public/index.php" ]; then
+        echo "/var/www/html/public"
+    elif [ -f "$app_dir/index.php" ]; then
+        echo "/var/www/html"
+    else
+        echo "/var/www/html"
+    fi
+}
+
 show_help() {
     echo -e "${GREEN}🚀 REDAXO Multi-Instance Manager${NC}"
     echo ""
@@ -42,11 +56,13 @@ show_help() {
     echo "  ${YELLOW}--mariadb-version <version>${NC} - MariaDB-Version (Standard: latest)"
     echo "  ${YELLOW}--http-port <port>${NC}          - HTTP-Port (automatisch)"
     echo "  ${YELLOW}--https-port <port>${NC}         - HTTPS-Port (automatisch)"
+    echo "  ${YELLOW}--repo <owner/repo>${NC}         - GitHub-Repository (Standard: skerbis/REDAXO_MODERN_STRUCTURE)"
     echo ""
     echo -e "${BLUE}Beispiele:${NC}"
     echo "  ./redaxo create mein-projekt"
     echo "  ./redaxo create mein-projekt --php-version 8.1 --mariadb-version 10.6"
     echo "  ./redaxo create mein-projekt --php-version 8.3"
+    echo "  ./redaxo create standard-redaxo --repo redaxo/redaxo"
     echo "  ./redaxo start mein-projekt"
     echo "  ./redaxo urls mein-projekt"
     echo "  ./redaxo db mein-projekt"
@@ -182,6 +198,7 @@ create_instance() {
     local mariadb_version="latest"
     local custom_http_port=""
     local custom_https_port=""
+    local custom_repo=""
     
     # Parse Argumente
     while [[ $# -gt 0 ]]; do
@@ -210,6 +227,10 @@ create_instance() {
                 ;;
             --https-port)
                 custom_https_port="$2"
+                shift 2
+                ;;
+            --repo)
+                custom_repo="$2"
                 shift 2
                 ;;
             *)
@@ -251,7 +272,11 @@ create_instance() {
     
     # Download REDAXO
     echo -e "${YELLOW}📦 Lade REDAXO herunter...${NC}"
-    "$PROJECT_DIR/redaxo-downloader.sh" download latest --extract-to "$instance_dir/app" >/dev/null 2>&1
+    if [ -n "$custom_repo" ]; then
+        "$PROJECT_DIR/redaxo-downloader.sh" download latest --repo "$custom_repo" --extract-to "$instance_dir/app" >/dev/null 2>&1
+    else
+        "$PROJECT_DIR/redaxo-downloader.sh" download latest --extract-to "$instance_dir/app" >/dev/null 2>&1
+    fi
     
     if [ ! -d "$instance_dir/app" ]; then
         echo -e "${RED}❌ REDAXO-Download fehlgeschlagen${NC}"
@@ -261,6 +286,19 @@ create_instance() {
     
     # Kopiere Docker-Konfiguration
     cp -r "$PROJECT_DIR/docker" "$instance_dir/"
+    
+    # Erkenne DocumentRoot und passe Apache-Konfiguration an
+    local document_root=$(detect_document_root "$instance_dir")
+    echo -e "${YELLOW}🔧 Erkenne DocumentRoot: $document_root${NC}"
+    
+    # Passe Apache-Konfiguration an
+    if [ "$document_root" = "/var/www/html" ]; then
+        echo -e "${BLUE}📁 Standard-REDAXO erkannt - DocumentRoot: $document_root${NC}"
+        # Ersetze /var/www/html/public mit /var/www/html in der Apache-Konfiguration
+        sed -i '' 's|/var/www/html/public|/var/www/html|g' "$instance_dir/docker/apache/apache-vhost.conf"
+    else
+        echo -e "${BLUE}📁 Modern Structure erkannt - DocumentRoot: $document_root${NC}"
+    fi
     
     # SSL-Zertifikat generieren
     generate_ssl_cert "$name"
@@ -302,6 +340,9 @@ create_docker_compose_with_versions() {
     local php_version=${6:-"8.2"}
     local mariadb_version=${7:-"latest"}
     
+    # Erkenne DocumentRoot für diese Instanz
+    local document_root=$(detect_document_root "$INSTANCES_DIR/$name")
+    
     cat > "$INSTANCES_DIR/$name/docker-compose.yml" << EOF
 version: '3.8'
 
@@ -325,7 +366,7 @@ services:
     networks:
       - redaxo-network
     environment:
-      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+      - APACHE_DOCUMENT_ROOT=${document_root}
 
   mariadb:
     image: mariadb:${mariadb_version}

@@ -95,8 +95,25 @@ get_latest_release_info() {
         local name=$(echo "$api_response" | jq -r '.name')
         local published_at=$(echo "$api_response" | jq -r '.published_at')
         
-        # Suche nach ZIP-Asset mit dem korrekten Pattern
-        local download_url=$(echo "$api_response" | jq -r '.assets[] | select(.name | test("redaxo-setup.*\\.zip$")) | .browser_download_url' | head -1)
+        # Suche nach ZIP-Asset mit dem korrekten Pattern für das Repository
+        local pattern
+        case "$GITHUB_REPO" in
+            "skerbis/REDAXO_MODERN_STRUCTURE")
+                pattern="redaxo-setup.*\\.zip$"
+                ;;
+            "redaxo/redaxo")
+                pattern="redaxo_.*\\.zip$"
+                ;;
+            "redaxo/demo_base")
+                pattern="redaxo_.*\\.zip$"
+                ;;
+            *)
+                pattern=".*\\.zip$"
+                ;;
+        esac
+        echo -e "${BLUE}Repository: $GITHUB_REPO${NC}"
+        echo -e "${BLUE}Pattern wird gesucht: $pattern${NC}"
+        local download_url=$(echo "$api_response" | jq -r ".assets[] | select(.name | test(\"$pattern\")) | .browser_download_url" | head -1)
         
         echo "$tag_name"
         echo "$name"
@@ -108,8 +125,23 @@ get_latest_release_info() {
         local name=$(echo "$api_response" | grep -o '"name":"[^"]*"' | cut -d'"' -f4)
         local published_at=$(echo "$api_response" | grep -o '"published_at":"[^"]*"' | cut -d'"' -f4)
         
-        # Suche nach ZIP-Download-URL mit dem Pattern redaxo-setup
-        local download_url=$(echo "$api_response" | grep -o '"browser_download_url":"[^"]*redaxo-setup[^"]*\.zip"' | head -1 | cut -d'"' -f4)
+        # Suche nach ZIP-Download-URL mit dem Pattern für das Repository
+        local pattern_grep
+        case "$GITHUB_REPO" in
+            "skerbis/REDAXO_MODERN_STRUCTURE")
+                pattern_grep="redaxo-setup.*\\.zip"
+                ;;
+            "redaxo/redaxo")
+                pattern_grep="redaxo_.*\\.zip"
+                ;;
+            "redaxo/demo_base")
+                pattern_grep="redaxo_.*\\.zip"
+                ;;
+            *)
+                pattern_grep=".*\\.zip"
+                ;;
+        esac
+        local download_url=$(echo "$api_response" | grep -o "\"browser_download_url\":\"[^\"]*$pattern_grep\"" | head -1 | cut -d'"' -f4)
         
         echo "$tag_name"
         echo "$name"
@@ -181,12 +213,46 @@ download_redaxo() {
             tag_name=$(echo "$api_response" | jq -r '.tag_name')
             name=$(echo "$api_response" | jq -r '.name')
             published_at=$(echo "$api_response" | jq -r '.published_at')
-            download_url=$(echo "$api_response" | jq -r '.assets[] | select(.name | test("redaxo-setup.*\\.zip$")) | .browser_download_url' | head -1)
+            
+            # Verwende das korrekte Pattern basierend auf dem Repository
+            local pattern
+            case "$GITHUB_REPO" in
+                "skerbis/REDAXO_MODERN_STRUCTURE")
+                    pattern="redaxo-setup.*\\\\.zip$"
+                    ;;
+                "redaxo/redaxo")
+                    pattern="redaxo_.*\\\\.zip$"
+                    ;;
+                "redaxo/demo_base")
+                    pattern="redaxo_.*\\\\.zip$"
+                    ;;
+                *)
+                    pattern=".*\\\\.zip$"
+                    ;;
+            esac
+            download_url=$(echo "$api_response" | jq -r ".assets[] | select(.name | test(\"$pattern\")) | .browser_download_url" | head -1)
         else
             tag_name=$(echo "$api_response" | grep -o '"tag_name":"[^"]*"' | cut -d'"' -f4)
             name=$(echo "$api_response" | grep -o '"name":"[^"]*"' | cut -d'"' -f4)
             published_at=$(echo "$api_response" | grep -o '"published_at":"[^"]*"' | cut -d'"' -f4)
-            download_url=$(echo "$api_response" | grep -o '"browser_download_url":"[^"]*redaxo-setup[^"]*\.zip"' | head -1 | cut -d'"' -f4)
+            
+            # Verwende das korrekte Pattern basierend auf dem Repository für grep
+            local pattern_grep
+            case "$GITHUB_REPO" in
+                "skerbis/REDAXO_MODERN_STRUCTURE")
+                    pattern_grep="redaxo-setup.*\\.zip"
+                    ;;
+                "redaxo/redaxo")
+                    pattern_grep="redaxo_.*\\.zip"
+                    ;;
+                "redaxo/demo_base")
+                    pattern_grep="redaxo_.*\\.zip"
+                    ;;
+                *)
+                    pattern_grep=".*\\.zip"
+                    ;;
+            esac
+            download_url=$(echo "$api_response" | grep -o "\"browser_download_url\":\"[^\"]*$pattern_grep\"" | head -1 | cut -d'"' -f4)
         fi
         
         version="$tag_name"
