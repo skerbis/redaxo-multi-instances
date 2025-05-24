@@ -1,5 +1,6 @@
 # Für Apple Silicon (ARM64) und andere Architekturen optimiert
-FROM php:8.4-apache
+ARG PHP_VERSION=8.2
+FROM php:${PHP_VERSION}-apache
 
 # System-Abhängigkeiten installieren
 RUN apt-get update && apt-get install -y \
