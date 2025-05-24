@@ -2,6 +2,8 @@
 
 **Dein Werkzeug für mehrere REDAXO-Projekte gleichzeitig!**
 
+> Docker für Mamp-User 
+
 Du entwickelst mehrere REDAXO-Websites? Testest gerne verschiedene PHP-Versionen? Oder arbeitest an verschiedenen Kundenprojekten? Dann ist dieser Manager genau das Richtige für dich!
 
 Mit nur einem einzigen Befehl kannst du beliebig viele REDAXO-Instanzen erstellen, starten und verwalten. Jede läuft komplett isoliert in ihrem eigenen Docker-Container.
