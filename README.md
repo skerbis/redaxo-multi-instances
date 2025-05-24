@@ -1,64 +1,481 @@
-# REDAXO Multi-Instance Manager
+# 🚀 REDAXO Multi-Instance Manager
 
-Ein umfassendes System zur Verwaltung mehrerer REDAXO-Instanzen mit Docker, inklusive HTTPS-Unterstützung, automatischer SSL-Zertifikat-Generierung und Backup-Management.
+**Einfach mehrere REDAXO-Instanzen verwalten - auch für Anfänger!**
 
-## 🚀 Features
+Ein benutzerfreundliches System, um mehrere REDAXO-Websites gleichzeitig auf Ihrem Computer zu entwickeln und zu testen. Perfekt für Entwickler, Agenturen und alle, die mit mehreren REDAXO-Projekten arbeiten.
 
-- **Multi-Instance Management**: Erstellen und verwalten Sie beliebig viele REDAXO-Instanzen
-- **Aktuelle REDAXO-Versionen**: Automatischer Download der neuesten REDAXO Modern Structure von GitHub
-- **HTTPS-Unterstützung**: Automatische SSL-Zertifikat-Generierung für jede Instanz
-- **Port-Management**: Automatische Zuweisung verfügbarer Ports
-- **Backup & Restore**: Vollständige Sicherung und Wiederherstellung von Instanzen
-- **Docker-basiert**: Isolierte Umgebungen für jede Instanz
-- **Einfache CLI**: Intuitive Kommandozeilen-Schnittstelle
-- **Monitoring**: System-Status und Instanz-Überwachung
-- **GitHub-Integration**: Download aktueller Releases direkt von GitHub
+## 🎯 Was macht dieses Tool?
 
-## 📋 Systemvoraussetzungen
+Stellen Sie sich vor, Sie möchten:
+- 🌐 **5 verschiedene REDAXO-Websites** gleichzeitig entwickeln
+- 🔧 **Verschiedene REDAXO-Versionen** testen
+- 👥 **Kunden-Projekte isoliert** voneinander arbeiten lassen
+- 💾 **Sichere Backups** Ihrer Projekte erstellen
+- 🔒 **HTTPS-Verschlüsselung** für lokale Entwicklung nutzen
 
-- **Docker** (Version 20.0 oder höher)
-- **Docker Compose** (Version 2.0 oder höher)
-- **OpenSSL** (für SSL-Zertifikat-Generierung)
-- **Bash** (für Skript-Ausführung)
-- **macOS**, **Linux** oder **Windows** mit WSL2
+**Genau das macht dieser REDAXO Multi-Instance Manager für Sie!**
 
-## 🛠 Installation
+## ✨ Features im Überblick
 
-### 1. Repository klonen oder herunterladen
+| Feature | Beschreibung | Nutzen für Sie |
+|---------|-------------|----------------|
+| 🏗️ **Automatische Installation** | REDAXO wird automatisch von GitHub heruntergeladen | Keine manuelle Installation nötig |
+| 🔧 **Einfache Verwaltung** | Ein Befehl erstellt eine komplette REDAXO-Instanz | `./redaxo create mein-projekt` |
+| 🔒 **HTTPS-Unterstützung** | Automatische SSL-Zertifikate für jede Instanz | Sichere lokale Entwicklung |
+| 🐳 **Docker-basiert** | Jede Instanz läuft isoliert | Keine Konflikte zwischen Projekten |
+| 💾 **Backup-System** | Vollständige Sicherung mit einem Befehl | Ihre Arbeit ist immer geschützt |
+| 📊 **Übersichtliche Verwaltung** | Alle Instanzen auf einen Blick | Behalten Sie den Überblick |
+| 🔧 **Konfiguration anzeigen** | Datenbankdaten für REDAXO-Setup | Einfache Einrichtung neuer Projekte |
 
+## 📋 Was brauchen Sie?
+
+### Für Anfänger - Schritt für Schritt:
+
+#### 1. **Docker installieren** (einmalig)
+Docker ist wie ein "virtueller Computer" für jede REDAXO-Instanz.
+
+**macOS:**
+1. Gehen Sie zu [docker.com](https://www.docker.com/products/docker-desktop)
+2. Laden Sie "Docker Desktop für Mac" herunter
+3. Installieren Sie es wie eine normale App
+4. Starten Sie Docker Desktop
+
+**Windows:**
+1. Laden Sie "Docker Desktop für Windows" herunter
+2. Aktivieren Sie WSL2 (wird während Installation angeboten)
+3. Starten Sie Docker Desktop
+
+**Linux (Ubuntu/Debian):**
 ```bash
+# Docker installieren
+sudo apt update
+sudo apt install docker.io docker-compose
+sudo usermod -aG docker $USER
+# Neu anmelden erforderlich
+```
+
+#### 2. **Terminal/Kommandozeile öffnen**
+
+**macOS:** Drücken Sie `Cmd + Leertaste`, tippen Sie "Terminal" und drücken Enter
+**Windows:** Drücken Sie `Win + R`, tippen Sie "cmd" und drücken Enter
+**Linux:** Drücken Sie `Ctrl + Alt + T`
+
+#### 3. **Projekt herunterladen**
+```bash
+# Zu Ihrem gewünschten Arbeitsverzeichnis navigieren
+cd ~/Documents  # oder wo Sie arbeiten möchten
+
+# Projekt herunterladen (ersetzen Sie <repository-url> mit der echten URL)
 git clone <repository-url> redaxo-multi-instances
 cd redaxo-multi-instances
 ```
 
-### 2. Scripts ausführbar machen (macOS/Linux)
+## 🛠️ Installation - Ganz einfach!
 
-Bevor Sie die Scripts ausführen können, müssen Sie diese ausführbar machen:
-
+### Schritt 1: Scripts ausführbar machen (macOS/Linux)
 ```bash
 # Alle Scripts auf einmal ausführbar machen
 chmod +x redaxo scripts/*.sh
-
-# Oder einzeln:
-chmod +x redaxo
-chmod +x scripts/setup.sh
-chmod +x scripts/instance-manager.sh
-chmod +x scripts/redaxo-downloader.sh
-chmod +x scripts/backup-manager.sh
-chmod +x scripts/monitor.sh
 ```
 
-### 3. Setup ausführen
-
+### Schritt 2: Automatisches Setup
 ```bash
+# Das Setup macht alles für Sie
 ./scripts/setup.sh
 ```
 
-Das Setup-Skript:
-- Prüft alle Systemvoraussetzungen
-- Erstellt die notwendige Verzeichnisstruktur
-- Konfiguriert das System
-- Erstellt das Haupt-Interface
+**Das Setup:**
+- ✅ Prüft ob Docker läuft
+- ✅ Erstellt alle notwendigen Ordner
+- ✅ Konfiguriert das System
+- ✅ Zeigt Ihnen alle verfügbaren Befehle
+
+### Schritt 3: Ihre erste REDAXO-Instanz erstellen
+```bash
+# Eine neue REDAXO-Instanz namens "mein-projekt" erstellen
+./redaxo create mein-projekt
+```
+
+**Was passiert dabei:**
+1. 📥 Neueste REDAXO-Version wird automatisch heruntergeladen
+2. 🐳 Docker-Container werden erstellt (Apache, MariaDB, phpMyAdmin, MailHog)
+3. 🔒 SSL-Zertifikat wird generiert
+4. 🌐 Automatische Port-Zuweisung
+5. ⚙️ Konfigurationsdateien werden erstellt
+
+### Schritt 4: Instanz starten
+```bash
+./redaxo start mein-projekt
+```
+
+**Fertig!** 🎉 Ihre REDAXO-Instanz läuft jetzt!
+
+## 🌐 Wie greife ich auf meine REDAXO-Instanz zu?
+
+Nach dem Start zeigt Ihnen das System alle URLs:
+
+```bash
+# URLs einer Instanz anzeigen
+./redaxo urls mein-projekt
+```
+
+**Typische Ausgabe:**
+```
+URLs für Instanz 'mein-projekt':
+═══════════════════════════════════════════════
+
+REDAXO Anwendung:
+  HTTP:   http://localhost:8080
+  HTTPS:  https://localhost:8443
+  Domain: https://mein-projekt.local (wenn DNS konfiguriert)
+
+Development Tools:
+  phpMyAdmin: http://localhost:8181
+  MailHog:    http://localhost:8182
+
+✓ Instanz ist aktiv - URLs sind verfügbar
+```
+
+### REDAXO-Setup durchführen
+
+1. **Browser öffnen** und zu `http://localhost:8080` gehen
+2. **REDAXO-Setup startet automatisch**
+3. **Datenbankdaten eingeben** - hier hilft Ihnen das Tool:
+
+```bash
+# Datenbankdaten für das REDAXO-Setup anzeigen
+./redaxo db-config mein-projekt
+```
+
+**Ausgabe:**
+```
+Datenbankonfiguration für REDAXO-Setup:
+═══════════════════════════════════════════════
+
+Im REDAXO-Setup eingeben:
+┌─────────────────────────────────────────────┐
+│ Database Server: mariadb                    │
+│ Database Name:   redaxo_mein_projekt        │
+│ Username:        redaxo_mein_projekt        │
+│ Password:        redaxo_mein_projekt_pass   │
+│ Host:            mariadb                    │
+│ Port:            3306                       │
+└─────────────────────────────────────────────┘
+
+⚠ Wichtig: Verwenden Sie 'mariadb' als Host, nicht 'localhost'!
+```
+
+4. **Diese Werte ins REDAXO-Setup kopieren**
+5. **Setup abschließen** - Fertig!
+
+## 📖 Häufig verwendete Befehle
+
+### Grundlegende Verwaltung
+
+```bash
+# Neue Instanz erstellen
+./redaxo create projekt-name
+
+# Instanz starten
+./redaxo start projekt-name
+
+# Instanz stoppen
+./redaxo stop projekt-name
+
+# Alle Instanzen anzeigen
+./redaxo list
+
+# Status aller Instanzen
+./redaxo status
+```
+
+### Konfiguration anzeigen
+
+```bash
+# Vollständige Konfiguration einer Instanz
+./redaxo config mein-projekt
+
+# Nur Datenbankdaten (für REDAXO-Setup)
+./redaxo db-config mein-projekt
+
+# URLs einer Instanz
+./redaxo urls mein-projekt
+
+# Übersicht aller Instanzen
+./redaxo config-all summary
+```
+
+### Backup und Wiederherstellung
+
+```bash
+# Backup erstellen
+./redaxo backup mein-projekt
+
+# Backup wiederherstellen
+./redaxo restore neues-projekt backup-datei.tar.gz
+
+# Alle Backups anzeigen
+./redaxo backups
+
+# Alte Backups löschen (älter als 30 Tage)
+./redaxo cleanup
+```
+
+## 🎨 Praktische Beispiele
+
+### Beispiel 1: Kundenprojekte verwalten
+```bash
+# Drei Kundenprojekte erstellen
+./redaxo create kunde-mueller
+./redaxo create kunde-schmidt  
+./redaxo create kunde-weber
+
+# Alle starten
+./redaxo start kunde-mueller
+./redaxo start kunde-schmidt
+./redaxo start kunde-weber
+
+# Übersicht aller Projekte
+./redaxo config-all summary
+```
+
+### Beispiel 2: Verschiedene REDAXO-Versionen testen
+```bash
+# Test-Instanz für neue Features
+./redaxo create redaxo-test
+
+# Entwicklungs-Instanz
+./redaxo create meine-entwicklung
+
+# Live-Test mit SSL
+./redaxo create live-test --domain test.local
+```
+
+### Beispiel 3: Backup vor größeren Änderungen
+```bash
+# Vor großen Änderungen Backup erstellen
+./redaxo backup wichtiges-projekt
+
+# Nach den Änderungen bei Problemen wiederherstellen
+./redaxo restore wichtiges-projekt backup-wichtiges-projekt-2024-05-24-14-30.tar.gz
+```
+
+## 🔧 Erweiterte Funktionen
+
+### Mit spezifischen Ports
+```bash
+# Bestimmte Ports verwenden
+./redaxo create mein-projekt --http-port 9000 --https-port 9443
+```
+
+### SSL deaktivieren
+```bash
+# Ohne HTTPS (nur HTTP)
+./redaxo create einfaches-projekt --no-ssl
+```
+
+### Alternative REDAXO-Repositories
+```bash
+# Offizielles REDAXO statt Modern Structure
+./redaxo create standard-redaxo --repo redaxo/redaxo
+```
+
+### Logs und Debugging
+```bash
+# Logs einer Instanz anzeigen
+./redaxo logs mein-projekt
+
+# In Container einloggen (für Experten)
+./redaxo shell mein-projekt
+```
+
+## 📁 Wo wird alles gespeichert?
+
+Ihre Projekte werden strukturiert gespeichert:
+
+```
+redaxo-multi-instances/
+├── instances/              # Ihre REDAXO-Projekte
+│   ├── mein-projekt/      # Ein einzelnes Projekt
+│   │   ├── app/           # REDAXO-Dateien (Ihre Website)
+│   │   └── docker/        # Docker-Konfiguration
+│   └── kunde-mueller/     # Weiteres Projekt
+├── backups/               # Ihre Backups
+├── ssl/                   # SSL-Zertifikate
+└── logs/                  # System-Logs
+```
+
+**Ihre REDAXO-Dateien** finden Sie in: `instances/projekt-name/app/`
+**Ihre Backups** finden Sie in: `backups/`
+
+## 🚨 Problemlösung für Anfänger
+
+### "Permission denied" - Script kann nicht ausgeführt werden
+```bash
+# Lösung: Script ausführbar machen
+chmod +x redaxo
+./redaxo help
+```
+
+### "Port already in use" - Port ist bereits belegt
+```bash
+# Lösung: Anderen Port verwenden
+./redaxo create mein-projekt --http-port 9000
+```
+
+### "Docker not running" - Docker läuft nicht
+```bash
+# Lösung: Docker Desktop starten
+# macOS: Docker Desktop App öffnen
+# Windows: Docker Desktop aus Startmenü starten
+```
+
+### Instanz startet nicht
+```bash
+# Problem analysieren
+./redaxo logs mein-projekt
+
+# Status prüfen
+./redaxo status mein-projekt
+```
+
+### Browser zeigt "Nicht sicher" bei HTTPS
+**Das ist normal!** Sie verwenden selbst-signierte Zertifikate für die Entwicklung.
+- Klicken Sie auf "Erweitert" → "Trotzdem fortfahren"
+- Oder verwenden Sie HTTP statt HTTPS
+
+## 🔍 Übersicht aller Befehle
+
+| Befehl | Beschreibung | Beispiel |
+|--------|-------------|----------|
+| `create` | Neue Instanz erstellen | `./redaxo create mein-projekt` |
+| `start` | Instanz starten | `./redaxo start mein-projekt` |
+| `stop` | Instanz stoppen | `./redaxo stop mein-projekt` |
+| `restart` | Instanz neustarten | `./redaxo restart mein-projekt` |
+| `remove` | Instanz löschen | `./redaxo remove mein-projekt` |
+| `list` | Alle Instanzen auflisten | `./redaxo list` |
+| `status` | Status anzeigen | `./redaxo status` |
+| `config` | Konfiguration anzeigen | `./redaxo config mein-projekt` |
+| `config-all` | Alle Konfigurationen | `./redaxo config-all summary` |
+| `db-config` | Datenbankdaten anzeigen | `./redaxo db-config mein-projekt` |
+| `urls` | URLs anzeigen | `./redaxo urls mein-projekt` |
+| `backup` | Backup erstellen | `./redaxo backup mein-projekt` |
+| `restore` | Backup wiederherstellen | `./redaxo restore projekt backup.tar.gz` |
+| `backups` | Backups auflisten | `./redaxo backups` |
+| `cleanup` | Alte Backups löschen | `./redaxo cleanup` |
+| `logs` | Logs anzeigen | `./redaxo logs mein-projekt` |
+| `shell` | Container-Shell öffnen | `./redaxo shell mein-projekt` |
+| `ssl` | SSL-Zertifikat erneuern | `./redaxo ssl mein-projekt` |
+| `help` | Hilfe anzeigen | `./redaxo help` |
+
+## 💡 Tipps für Anfänger
+
+### 1. **Kleine Schritte**
+- Beginnen Sie mit einer Test-Instanz
+- Probieren Sie erst alle Grundfunktionen aus
+- Machen Sie Backups vor wichtigen Änderungen
+
+### 2. **Benennung von Instanzen**
+```bash
+# Gute Namen (ohne Leerzeichen, nur Kleinbuchstaben, Bindestriche)
+./redaxo create kunde-mueller
+./redaxo create test-projekt
+./redaxo create meine-website
+
+# Vermeiden Sie:
+./redaxo create "Kunde Müller"  # Leerzeichen problematisch
+./redaxo create KundeMüller     # Umlaute problematisch
+```
+
+### 3. **Regelmäßige Backups**
+```bash
+# Automatisches Backup-Script erstellen (für Fortgeschrittene)
+#!/bin/bash
+for instance in kunde-mueller kunde-schmidt meine-website; do
+    ./redaxo backup $instance
+done
+```
+
+### 4. **Ports im Überblick behalten**
+```bash
+# Alle aktiven Instanzen mit Ports anzeigen
+./redaxo config-all summary
+```
+
+### 5. **Browser-Lesezeichen**
+Erstellen Sie Lesezeichen für Ihre wichtigsten Instanzen:
+- `http://localhost:8080` - Hauptprojekt
+- `http://localhost:8181` - phpMyAdmin
+- `http://localhost:8082` - Testprojekt
+
+## 🎓 Für Fortgeschrittene
+
+### JSON-Export für Automatisierung
+```bash
+# Alle Konfigurationen als JSON exportieren
+./redaxo config-all json > meine-instanzen.json
+
+# Einzelne Instanz als JSON
+./redaxo config mein-projekt json
+```
+
+### Eigene Docker-Images
+Sie können die Docker-Konfiguration in `instances/projekt-name/docker/` anpassen.
+
+### Automatisierung mit Cron
+```bash
+# Tägliche Backups um 2 Uhr nachts
+0 2 * * * /pfad/zu/redaxo backup wichtiges-projekt
+
+# Wöchentliche Bereinigung
+0 3 * * 0 /pfad/zu/redaxo cleanup 30
+```
+
+## 🤝 Hilfe und Community
+
+### Bei Problemen
+1. **Logs prüfen**: `./redaxo logs instanz-name`
+2. **Status prüfen**: `./redaxo status`  
+3. **Docker prüfen**: Ist Docker Desktop gestartet?
+4. **GitHub Issues**: Erstellen Sie ein Issue mit Fehlerbeschreibung
+
+### REDAXO-Community
+- 🌐 [REDAXO.org](https://redaxo.org) - Offizielle Website
+- 💬 [REDAXO Slack](https://redaxo.org/slack/) - Community Chat
+- 📖 [REDAXO Dokumentation](https://redaxo.org/doku/) - Offizielle Docs
+
+## 📄 Lizenz
+
+Dieses Projekt steht unter der MIT-Lizenz - nutzen Sie es frei für Ihre Projekte!
+
+---
+
+## 🎉 Schnellstart-Zusammenfassung
+
+```bash
+# 1. Scripts ausführbar machen
+chmod +x redaxo scripts/*.sh
+
+# 2. Setup ausführen
+./scripts/setup.sh
+
+# 3. Erste Instanz erstellen
+./redaxo create mein-erstes-projekt
+
+# 4. Instanz starten
+./redaxo start mein-erstes-projekt
+
+# 5. Datenbankdaten für REDAXO-Setup abrufen
+./redaxo db-config mein-erstes-projekt
+
+# 6. Browser öffnen: http://localhost:8080
+# 7. REDAXO-Setup mit den Datenbankdaten durchführen
+# 8. Fertig! 🎉
+```
+
+**Viel Erfolg mit Ihren REDAXO-Projekten!** 🚀
+
+*Erstellt mit ❤️ für die REDAXO-Community - Von Entwicklern für Entwickler (und die, die es werden wollen)*
 
 ## 🍎 macOS Script-Ausführung
 
