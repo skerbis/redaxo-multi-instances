@@ -137,7 +137,7 @@ update_redaxo_instance() {
     
     # Backup vor Update erstellen
     echo -e "${BLUE}Erstelle automatisches Backup vor Update...${NC}"
-    "$PROJECT_DIR/scripts/backup-manager.sh" backup "$name" --compress
+    "$PROJECT_DIR/backup-manager.sh" backup "$name" --compress
     
     echo -e "${GREEN}✓ Backup erstellt. REDAXO-Update kann über das Backend durchgeführt werden${NC}"
 }

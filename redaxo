@@ -58,32 +58,32 @@ show_help() {
 case $1 in
     # Instance Management
     create|start|stop|restart|remove|list|status|logs|shell|ssl)
-        "$SCRIPT_DIR/scripts/instance-manager.sh" "$@"
+        "$SCRIPT_DIR/instance-manager.sh" "$@"
         ;;
     
     # REDAXO Download Management
     download)
         shift
-        "$SCRIPT_DIR/scripts/redaxo-downloader.sh" download "$@"
+        "$SCRIPT_DIR/redaxo-downloader.sh" download "$@"
         ;;
     
     releases)
         shift
-        "$SCRIPT_DIR/scripts/redaxo-downloader.sh" list-releases "$@"
+        "$SCRIPT_DIR/redaxo-downloader.sh" list-releases "$@"
         ;;
     
     # Backup Management
     backup|restore|backups)
         if [ "$1" = "backups" ]; then
-            "$SCRIPT_DIR/scripts/backup-manager.sh" list-backups
+            "$SCRIPT_DIR/backup-manager.sh" list-backups
         else
-            "$SCRIPT_DIR/scripts/backup-manager.sh" "$@"
+            "$SCRIPT_DIR/backup-manager.sh" "$@"
         fi
         ;;
     
     # Tools
     cleanup)
-        "$SCRIPT_DIR/scripts/backup-manager.sh" cleanup "$2"
+        "$SCRIPT_DIR/backup-manager.sh" cleanup "$2"
         ;;
     
     # System
@@ -93,7 +93,7 @@ case $1 in
         ;;
     
     update)
-        "$SCRIPT_DIR/scripts/update-manager.sh" "$@"
+        "$SCRIPT_DIR/update-manager.sh" "$@"
         ;;
     
     help|--help|-h|"")

@@ -75,13 +75,13 @@ cd redaxo-multi-instances
 ### Schritt 1: Scripts ausführbar machen (macOS/Linux)
 ```bash
 # Alle Scripts auf einmal ausführbar machen
-chmod +x redaxo scripts/*.sh
+chmod +x *.sh
 ```
 
 ### Schritt 2: Automatisches Setup
 ```bash
 # Das Setup macht alles für Sie
-./scripts/setup.sh
+./setup.sh
 ```
 
 **Das Setup:**
@@ -220,6 +220,21 @@ Im REDAXO-Setup eingeben:
 # Alte Backups löschen (älter als 30 Tage)
 ./redaxo cleanup
 ```
+
+### Updates und Wartung
+
+```bash
+# Instance-spezifische Updates (empfohlen)
+./instance-update.sh mein-projekt          # Update einer spezifischen Instanz
+./instance-update.sh mein-projekt php      # Nur PHP-Version aktualisieren
+./instance-update.sh mein-projekt mariadb  # Nur MariaDB-Version aktualisieren
+./instance-update.sh mein-projekt all      # Vollständiges Update
+
+# Alternative: Redirect-Tool für Benutzerfreundlichkeit
+./update.sh                                 # Zeigt verfügbare Instanzen und Anweisungen
+```
+
+**💡 Tipp:** Das `update.sh` Tool leitet Sie automatisch zum korrekten `instance-update.sh` Tool weiter und zeigt alle verfügbaren Instanzen an.
 
 ## 🎨 Praktische Beispiele
 
@@ -454,10 +469,10 @@ Dieses Projekt steht unter der MIT-Lizenz - nutzen Sie es frei für Ihre Projekt
 
 ```bash
 # 1. Scripts ausführbar machen
-chmod +x redaxo scripts/*.sh
+chmod +x *.sh
 
 # 2. Setup ausführen
-./scripts/setup.sh
+./setup.sh
 
 # 3. Erste Instanz erstellen
 ./redaxo create mein-erstes-projekt
@@ -502,10 +517,10 @@ Falls ein Script nicht ausführbar ist:
 bash redaxo help
 
 # Mit sh ausführen  
-sh scripts/setup.sh
+sh setup.sh
 
 # Mit explizitem Pfad
-bash ./scripts/instance-manager.sh status
+bash ./instance-manager.sh status
 ```
 
 #### 3. Berechtigung prüfen
@@ -529,7 +544,7 @@ ls -la scripts/
    ```
 3. **Scripts ausführbar machen und ausführen**:
    ```bash
-   chmod +x redaxo scripts/*.sh
+   chmod +x *.sh
    ./redaxo help
    ```
 
@@ -593,28 +608,28 @@ bash redaxo help
 
 ```bash
 ./redaxo create myinstance
-./scripts/setup.sh
+./setup.sh
 ```
 
 #### Über Shell-Interpreter
 
 ```bash
 bash redaxo create myinstance
-sh scripts/setup.sh
+sh setup.sh
 ```
 
 #### Mit vollständigem Pfad
 
 ```bash
 /bin/bash ./redaxo create myinstance
-/bin/sh ./scripts/setup.sh
+/bin/sh ./setup.sh
 ```
 
 #### Source-Ausführung (für Scripts mit Umgebungsvariablen)
 
 ```bash
-source scripts/setup.sh
-. scripts/setup.sh
+source setup.sh
+. setup.sh
 ```
 
 ### Automatisierung für macOS
@@ -767,10 +782,10 @@ Das System bietet ein einfaches Interface über das `redaxo`-Skript:
 
 ```bash
 # Einmaliger Status
-./scripts/monitor.sh status
+./monitor.sh status
 
 # Kontinuierliche Überwachung
-./scripts/monitor.sh watch
+./monitor.sh watch
 ```
 
 ## 🗂 Verzeichnisstruktur
@@ -972,10 +987,10 @@ Jede Instanz besteht aus folgenden Services:
 
 ```bash
 # Aktueller Status aller Instanzen
-./scripts/monitor.sh status
+./monitor.sh status
 
 # Kontinuierliche Überwachung
-./scripts/monitor.sh watch
+./monitor.sh watch
 ```
 
 ### Log-Dateien

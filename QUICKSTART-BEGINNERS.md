@@ -39,13 +39,13 @@ cd redaxo-multi-instances
 ### Schritt 2: Scripts aktivieren (15 Sekunden)
 ```bash
 # Nur für macOS/Linux - macht Scripts ausführbar
-chmod +x redaxo scripts/*.sh
+chmod +x redaxo *.sh
 ```
 
 ### Schritt 3: Automatische Installation (1 Minute)
 ```bash
 # Das macht alles automatisch für Sie
-./scripts/setup.sh
+./setup.sh
 ```
 
 ### Schritt 4: Ihre erste REDAXO-Instanz (2 Minuten)
@@ -174,7 +174,7 @@ chmod +x redaxo
 - [ ] Docker installiert und gestartet
 - [ ] Projekt heruntergeladen  
 - [ ] Scripts ausführbar gemacht (`chmod +x`)
-- [ ] Setup ausgeführt (`./scripts/setup.sh`)
+- [ ] Setup ausgeführt (`./setup.sh`)
 - [ ] Erste Instanz erstellt (`./redaxo create mein-projekt`)
 - [ ] Instanz gestartet (`./redaxo start mein-projekt`)
 - [ ] Browser geöffnet (`http://localhost:8080`)

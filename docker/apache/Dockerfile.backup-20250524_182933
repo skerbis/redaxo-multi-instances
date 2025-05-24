@@ -1,5 +1,5 @@
 # Für Apple Silicon (ARM64) und andere Architekturen optimiert
-FROM php:8.4-apache
+FROM --platform=linux/arm64/v8 php:8.2-apache
 
 # System-Abhängigkeiten installieren
 RUN apt-get update && apt-get install -y \

@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 
 # Projektverzeichnis
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+PROJECT_DIR="$SCRIPT_DIR"
 INSTANCES_DIR="$PROJECT_DIR/instances"
 SSL_DIR="$PROJECT_DIR/ssl"
 
@@ -293,9 +293,9 @@ create_instance() {
     # Kopiere REDAXO Modern Structure von GitHub (mit optionalem Repository)
     echo -e "${BLUE}Lade aktuelle REDAXO-Version von GitHub...${NC}"
     if [ -n "$repository" ]; then
-        "$SCRIPT_DIR/redaxo-downloader.sh" download latest --repo "$repository" --extract-to "$instance_dir/app"
+        "$PROJECT_DIR/redaxo-downloader.sh" download latest --repo "$repository" --extract-to "$instance_dir/app"
     else
-        "$SCRIPT_DIR/redaxo-downloader.sh" download latest --extract-to "$instance_dir/app"
+        "$PROJECT_DIR/redaxo-downloader.sh" download latest --extract-to "$instance_dir/app"
     fi
     
     if [ ! -d "$instance_dir/app" ] || [ -z "$(ls -A "$instance_dir/app" 2>/dev/null)" ]; then
@@ -348,7 +348,7 @@ RUN a2enmod ssl && a2enmod rewrite
     create_env_file "$name" "$http_port" "$https_port" "$domain"
     
     echo -e "${GREEN}Instanz '$name' erfolgreich erstellt${NC}"
-    echo -e "${BLUE}Starte die Instanz mit: ./scripts/instance-manager.sh start $name${NC}"
+    echo -e "${BLUE}Starte die Instanz mit: ./instance-manager.sh start $name${NC}"
 }
 
 # Erstellt docker-compose.yml für Instanz
