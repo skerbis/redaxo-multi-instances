@@ -36,3 +36,14 @@ redaxo:
   timezone: "Europe/Berlin"
   memory_limit: "256M"
   upload_max_filesize: "32M"
+  
+  # GitHub-Repository-Konfiguration
+  repository:
+    # Standard-Repository (kann überschrieben werden)
+    default: "skerbis/REDAXO_MODERN_STRUCTURE"
+    
+    # Alternative Repositories müssen exakt die gleiche Struktur haben!
+    # Sie müssen ZIP-Files mit Pattern "redaxo-setup-*.zip" bereitstellen
+    # Beispiele:
+    # - "ihr-username/mein-redaxo-setup"
+    # - "firma/custom-redaxo-template"

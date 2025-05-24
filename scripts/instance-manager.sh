@@ -48,7 +48,13 @@ show_help() {
     echo "  --http-port <port>     - HTTP-Port (Standard: automatisch vergeben)"
     echo "  --https-port <port>    - HTTPS-Port (Standard: automatisch vergeben)"
     echo "  --domain <domain>      - Domain für SSL-Zertifikat (Standard: <name>.local)"
+    echo "  --repo <repository>    - GitHub-Repository (Standard: skerbis/REDAXO_MODERN_STRUCTURE)"
     echo "  --no-ssl              - SSL deaktivieren"
+    echo ""
+    echo "Repository-Beispiele:"
+    echo "  --repo skerbis/REDAXO_MODERN_STRUCTURE  (Standard)"
+    echo "  --repo redaxo/redaxo                    (Offizielles REDAXO)"
+    echo "  --repo redaxo/demo_base                 (Demo-Installation)"
 }
 
 # Prüft ob eine Instanz existiert
@@ -196,6 +202,7 @@ create_instance() {
     local https_port=""
     local domain=""
     local enable_ssl=true
+    local repository=""
     
     if [ -z "$name" ]; then
         echo -e "${RED}Fehler: Instanzname erforderlich${NC}"
@@ -222,6 +229,10 @@ create_instance() {
                 ;;
             --domain)
                 domain="$2"
+                shift 2
+                ;;
+            --repo)
+                repository="$2"
                 shift 2
                 ;;
             --no-ssl)
@@ -256,13 +267,20 @@ create_instance() {
         echo "  HTTPS-Port: $https_port"
         echo "  Domain: $domain"
     fi
+    if [ -n "$repository" ]; then
+        echo "  Repository: $repository"
+    fi
     
     # Erstelle Instanz-Verzeichnis
     mkdir -p "$instance_dir"
     
-    # Kopiere REDAXO Modern Structure von GitHub
+    # Kopiere REDAXO Modern Structure von GitHub (mit optionalem Repository)
     echo -e "${BLUE}Lade aktuelle REDAXO-Version von GitHub...${NC}"
-    "$SCRIPT_DIR/redaxo-downloader.sh" download latest --extract-to "$instance_dir/app"
+    if [ -n "$repository" ]; then
+        "$SCRIPT_DIR/redaxo-downloader.sh" download latest --repo "$repository" --extract-to "$instance_dir/app"
+    else
+        "$SCRIPT_DIR/redaxo-downloader.sh" download latest --extract-to "$instance_dir/app"
+    fi
     
     if [ ! -d "$instance_dir/app" ] || [ -z "$(ls -A "$instance_dir/app" 2>/dev/null)" ]; then
         echo -e "${RED}Fehler: REDAXO-Download fehlgeschlagen${NC}"

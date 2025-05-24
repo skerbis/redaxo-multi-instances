@@ -11,7 +11,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # GitHub-Repository-Informationen
-GITHUB_REPO="skerbis/REDAXO_MODERN_STRUCTURE"
+# Standard-Repository (kann überschrieben werden)
+DEFAULT_GITHUB_REPO="skerbis/REDAXO_MODERN_STRUCTURE"
+GITHUB_REPO="${REDAXO_REPO:-$DEFAULT_GITHUB_REPO}"
 GITHUB_API_URL="https://api.github.com/repos/$GITHUB_REPO/releases/latest"
 GITHUB_RELEASES_URL="https://github.com/$GITHUB_REPO/releases"
 
@@ -39,6 +41,28 @@ show_help() {
     echo "Optionen:"
     echo "  --force                 - Download erzwingen (Cache ignorieren)"
     echo "  --extract-to <path>     - Extrahieren nach spezifischem Pfad"
+    echo "  --repo <owner/repo>     - Alternatives GitHub-Repository verwenden"
+    echo ""
+    echo "Repository-Beispiele:"
+    echo "  --repo redaxo/redaxo           - Original REDAXO"
+    echo "  --repo redaxo/demo_base        - REDAXO Demo"
+    echo "  --repo ihr-user/ihr-repo       - Ihr eigenes Repository"
+    echo ""
+    echo "Aktuell verwendetes Repository: $GITHUB_REPO"
+}
+
+# Funktion zum Setzen des Repositories
+set_repository() {
+    local repo="$1"
+    if [[ "$repo" =~ ^[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+$ ]]; then
+        GITHUB_REPO="$repo"
+        GITHUB_API_URL="https://api.github.com/repos/$GITHUB_REPO/releases/latest"
+        GITHUB_RELEASES_URL="https://github.com/$GITHUB_REPO/releases"
+        echo -e "${BLUE}Repository geändert zu: $GITHUB_REPO${NC}"
+    else
+        echo -e "${RED}Fehler: Ungültiges Repository-Format. Verwenden Sie: owner/repository${NC}"
+        exit 1
+    fi
 }
 
 # Prüft GitHub-API-Verfügbarkeit
@@ -92,6 +116,44 @@ get_latest_release_info() {
         echo "$published_at"
         echo "$download_url"
     fi
+}
+
+# Ermittelt das Asset-Pattern für das aktuelle Repository
+get_asset_pattern() {
+    case "$GITHUB_REPO" in
+        "skerbis/REDAXO_MODERN_STRUCTURE")
+            echo "redaxo-setup.*\\.zip$"
+            ;;
+        "redaxo/redaxo")
+            echo "redaxo_.*\\.zip$"
+            ;;
+        "redaxo/demo_base")
+            echo "redaxo_.*\\.zip$"
+            ;;
+        *)
+            # Standard-Pattern für unbekannte Repositories
+            echo ".*\\.zip$"
+            ;;
+    esac
+}
+
+# Ermittelt das Asset-Pattern für grep (ohne Regex-Escaping)
+get_asset_pattern_grep() {
+    case "$GITHUB_REPO" in
+        "skerbis/REDAXO_MODERN_STRUCTURE")
+            echo "redaxo-setup.*\.zip"
+            ;;
+        "redaxo/redaxo")
+            echo "redaxo_.*\.zip"
+            ;;
+        "redaxo/demo_base")
+            echo "redaxo_.*\.zip"
+            ;;
+        *)
+            # Standard-Pattern für unbekannte Repositories
+            echo ".*\.zip"
+            ;;
+    esac
 }
 
 # Lädt spezifische Version herunter
@@ -323,6 +385,10 @@ case $1 in
                     extract_to="$2"
                     shift 2
                     ;;
+                --repo)
+                    set_repository "$2"
+                    shift 2
+                    ;;
                 *)
                     if [ -z "$version" ]; then
                         version="$1"
@@ -335,9 +401,35 @@ case $1 in
         download_redaxo "$version" "$force" "$extract_to"
         ;;
     list-releases)
+        shift
+        # Parse Repository-Option für list-releases
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                --repo)
+                    set_repository "$2"
+                    shift 2
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
         list_releases
         ;;
     check-latest)
+        shift
+        # Parse Repository-Option für check-latest
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                --repo)
+                    set_repository "$2"
+                    shift 2
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
         check_latest
         ;;
     clean)

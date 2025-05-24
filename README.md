@@ -31,7 +31,24 @@ git clone <repository-url> redaxo-multi-instances
 cd redaxo-multi-instances
 ```
 
-### 2. Setup ausführen
+### 2. Scripts ausführbar machen (macOS/Linux)
+
+Bevor Sie die Scripts ausführen können, müssen Sie diese ausführbar machen:
+
+```bash
+# Alle Scripts auf einmal ausführbar machen
+chmod +x redaxo scripts/*.sh
+
+# Oder einzeln:
+chmod +x redaxo
+chmod +x scripts/setup.sh
+chmod +x scripts/instance-manager.sh
+chmod +x scripts/redaxo-downloader.sh
+chmod +x scripts/backup-manager.sh
+chmod +x scripts/monitor.sh
+```
+
+### 3. Setup ausführen
 
 ```bash
 ./scripts/setup.sh
@@ -42,6 +59,167 @@ Das Setup-Skript:
 - Erstellt die notwendige Verzeichnisstruktur
 - Konfiguriert das System
 - Erstellt das Haupt-Interface
+
+## 🍎 macOS Script-Ausführung
+
+### Script-Berechtigungen verstehen
+
+Auf macOS müssen Scripts ausführbare Rechte haben. Das System verwendet verschiedene Ausführungsmethoden:
+
+#### 1. Mit Execute-Berechtigung (empfohlen)
+
+```bash
+# Script ausführbar machen
+chmod +x redaxo
+
+# Ausführen mit ./
+./redaxo help
+```
+
+#### 2. Über Shell-Interpreter
+
+Falls ein Script nicht ausführbar ist:
+
+```bash
+# Mit bash ausführen
+bash redaxo help
+
+# Mit sh ausführen  
+sh scripts/setup.sh
+
+# Mit explizitem Pfad
+bash ./scripts/instance-manager.sh status
+```
+
+#### 3. Berechtigung prüfen
+
+```bash
+# Dateiberechtigungen anzeigen
+ls -la redaxo
+ls -la scripts/
+
+# Ausgabe sollte x-Flag enthalten: -rwxr-xr-x
+```
+
+### macOS-spezifische Hinweise
+
+#### Terminal.app verwenden
+
+1. **Terminal öffnen**: `Cmd + Leertaste` → "Terminal" eingeben
+2. **Zum Projektverzeichnis navigieren**:
+   ```bash
+   cd /pfad/zu/redaxo-multi-instances
+   ```
+3. **Scripts ausführbar machen und ausführen**:
+   ```bash
+   chmod +x redaxo scripts/*.sh
+   ./redaxo help
+   ```
+
+#### Finder Integration
+
+Sie können Scripts auch über den Finder ausführbar machen:
+
+1. **Rechtsklick auf Script** → "Informationen"
+2. **Freigabe & Zugriffsrechte** erweitern
+3. **Berechtigung auf "Lesen & Schreiben" setzen**
+4. **Terminal öffnen und Script ausführen**
+
+#### Homebrew Terminal-Tools (optional)
+
+Für erweiterte Terminal-Funktionen:
+
+```bash
+# iTerm2 als Terminal-Alternative
+brew install --cask iterm2
+
+# Bash als Standard-Shell (falls gewünscht)
+brew install bash
+chsh -s /opt/homebrew/bin/bash
+```
+
+### Häufige macOS-Probleme lösen
+
+#### "Permission denied" Fehler
+
+```bash
+# Fehler: ./redaxo: Permission denied
+# Lösung: Script ausführbar machen
+chmod +x redaxo
+./redaxo help
+```
+
+#### Gatekeeper-Warnung
+
+Wenn macOS eine Sicherheitswarnung zeigt:
+
+1. **Systemeinstellungen** → **Sicherheit & Datenschutz**
+2. **"Trotzdem erlauben"** klicken
+3. Oder Terminal mit administrativen Rechten verwenden
+
+#### Shebang-Probleme
+
+Falls Scripts nicht korrekt interpretiert werden:
+
+```bash
+# Script-Header prüfen
+head -n 1 redaxo
+# Sollte zeigen: #!/bin/bash
+
+# Falls anders, explizit mit bash ausführen
+bash redaxo help
+```
+
+### Verschiedene Ausführungsmethoden
+
+#### Direkte Ausführung (nach chmod +x)
+
+```bash
+./redaxo create myinstance
+./scripts/setup.sh
+```
+
+#### Über Shell-Interpreter
+
+```bash
+bash redaxo create myinstance
+sh scripts/setup.sh
+```
+
+#### Mit vollständigem Pfad
+
+```bash
+/bin/bash ./redaxo create myinstance
+/bin/sh ./scripts/setup.sh
+```
+
+#### Source-Ausführung (für Scripts mit Umgebungsvariablen)
+
+```bash
+source scripts/setup.sh
+. scripts/setup.sh
+```
+
+### Automatisierung für macOS
+
+#### .zshrc/.bash_profile Alias erstellen
+
+```bash
+# In ~/.zshrc oder ~/.bash_profile hinzufügen
+echo 'alias redaxo="/pfad/zu/redaxo-multi-instances/redaxo"' >> ~/.zshrc
+source ~/.zshrc
+
+# Dann von überall ausführbar:
+redaxo create myinstance
+```
+
+#### PATH-Variable erweitern
+
+```bash
+# Projektverzeichnis zum PATH hinzufügen
+export PATH="/pfad/zu/redaxo-multi-instances:$PATH"
+echo 'export PATH="/pfad/zu/redaxo-multi-instances:$PATH"' >> ~/.zshrc
+```
 
 ## 📖 Verwendung
 
@@ -245,9 +423,26 @@ Beim Erstellen einer neuen Instanz wird automatisch die neueste REDAXO-Version h
 
 ### GitHub-Repository
 
-Das System verwendet das offizielle REDAXO Modern Structure Repository:
-- **Repository**: `skerbis/REDAXO_MODERN_STRUCTURE`
+Das System verwendet standardmäßig das REDAXO Modern Structure Repository:
+- **Standard-Repository**: `skerbis/REDAXO_MODERN_STRUCTURE`
 - **Releases**: https://github.com/skerbis/REDAXO_MODERN_STRUCTURE/releases
+
+#### Alternative Repositories verwenden
+
+Sie können alternative GitHub-Repositories verwenden, die **exakt die gleiche Struktur** haben:
+
+```bash
+# Mit alternativem Repository erstellen
+./redaxo create meine-instanz --repo ihr-username/ihr-redaxo-setup
+
+# Repository für Download ändern
+./redaxo download latest --repo ihr-username/ihr-redaxo-setup
+```
+
+**Wichtig**: Alternative Repositories müssen:
+- Die gleiche Verzeichnisstruktur wie `REDAXO_MODERN_STRUCTURE` haben
+- ZIP-Files mit dem Pattern `redaxo-setup-*.zip` in den Releases bereitstellen
+- Kompatible REDAXO-Installation enthalten
 
 ## 🔧 Konfiguration
 
