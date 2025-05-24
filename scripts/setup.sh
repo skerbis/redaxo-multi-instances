@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# REDAXO Multi-Instance Setup
+# REDAXO Multi-Instance Setup by skerbis
 # Initiale Einrichtung des Multi-Instanzen-Systems
 
 # Farben für Terminal-Output
@@ -58,13 +58,11 @@ echo -e "${GREEN}✓ Verzeichnisstruktur erstellt${NC}"
 echo ""
 
 # Verschiebe app-Ordner als Template
+# App-Ordner wird nicht mehr benötigt (GitHub-Download verfügbar)
 if [ -d "$PROJECT_DIR/app" ]; then
-    echo -e "${YELLOW}Verschiebe app-Ordner als Template...${NC}"
-    mv "$PROJECT_DIR/app" "$PROJECT_DIR/app-template"
-    echo -e "${GREEN}✓ App-Template erstellt${NC}"
-else
-    echo -e "${YELLOW}Warnung: Kein app-Ordner gefunden. Erstelle leeres Template...${NC}"
-    mkdir -p "$PROJECT_DIR/app-template"
+    echo -e "${YELLOW}Entferne veralteten app-Ordner...${NC}"
+    rm -rf "$PROJECT_DIR/app"
+    echo -e "${GREEN}✓ App-Ordner entfernt (GitHub-Download wird verwendet)${NC}"
 fi
 echo ""
 
