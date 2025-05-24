@@ -444,27 +444,6 @@ redaxo-multi-instances/
 └── downloads/                # REDAXO-Versionen Cache
 ```
 
-## 🎯 Warum so einfach?
-
-**Vorher:** 15+ verschiedene Skripte - zu kompliziert!
-**Jetzt:** NUR EIN Befehl: `./redaxo`
-
-- ✅ **Einfacher zu lernen** - nur ein Befehl
-- ✅ **Weniger Fehlerquellen** - alles in einem Skript  
-- ✅ **Bessere Übersicht** - keine Script-Verwirrung
-- ✅ **Einheitliche Bedienung** - immer gleiche Syntax
-
-## 🚀 Migration vom alten System
-
-Falls Sie das alte System mit vielen Skripten verwenden:
-
-1. **Backup Ihrer Instanzen** (falls vorhanden)
-2. **Neue Version herunterladen**  
-3. **Alte `instances/` Ordner kopieren** (funktionieren weiterhin)
-4. **Neues `./redaxo` Skript verwenden**
-
-Alle bestehenden Instanzen funktionieren mit dem neuen System!
-
 ## 🤝 Hilfe & Community
 
 - 🌐 [REDAXO.org](https://redaxo.org) - Offizielle Website
