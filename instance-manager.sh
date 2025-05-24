@@ -39,6 +39,10 @@ show_help() {
     echo "  remove <name>       - Instanz löschen"
     echo "  list               - Alle Instanzen auflisten"
     echo "  status [name]      - Status anzeigen (alle oder spezifische Instanz)"
+    echo "  config <name>      - Vollständige Konfiguration einer Instanz anzeigen"
+    echo "  config-all         - Konfiguration aller Instanzen anzeigen"
+    echo "  db-config <name>   - Datenbankonfiguration einer Instanz anzeigen"
+    echo "  urls <name>        - URLs einer Instanz anzeigen"
     echo "  logs <name>        - Logs einer Instanz anzeigen"
     echo "  shell <name>       - Shell in der Instanz öffnen"
     echo "  ssl <name>         - SSL-Zertifikat für Instanz erneuern"
@@ -51,10 +55,22 @@ show_help() {
     echo "  --repo <repository>    - GitHub-Repository (Standard: skerbis/REDAXO_MODERN_STRUCTURE)"
     echo "  --no-ssl              - SSL deaktivieren"
     echo ""
+    echo "Optionen bei Konfigurationsbefehlen:"
+    echo "  config <name> [format] - Format: table (Standard), json"
+    echo "  config-all [format]    - Format: table (Standard), summary, json"
+    echo "  db-config <name> [format] - Format: setup (Standard), table, json, env"
+    echo ""
     echo "Repository-Beispiele:"
     echo "  --repo skerbis/REDAXO_MODERN_STRUCTURE  (Standard)"
     echo "  --repo redaxo/redaxo                    (Offizielles REDAXO)"
     echo "  --repo redaxo/demo_base                 (Demo-Installation)"
+    echo ""
+    echo "Beispiele:"
+    echo "  ./instance-manager.sh create meine-instanz"
+    echo "  ./instance-manager.sh db-config meine-instanz"
+    echo "  ./instance-manager.sh config meine-instanz"
+    echo "  ./instance-manager.sh config-all summary"
+    echo "  ./instance-manager.sh urls meine-instanz"
 }
 
 # Prüft ob eine Instanz existiert
@@ -610,14 +626,618 @@ show_instance_urls() {
     if [ -f "$instance_dir/.env" ]; then
         source "$instance_dir/.env"
         
-        echo "${prefix}URLs:"
-        echo "${prefix}  REDAXO:     http://localhost:$HTTP_PORT"
-        if [ -n "$HTTPS_PORT" ]; then
-            echo "${prefix}  REDAXO SSL: https://localhost:$HTTPS_PORT"
+        echo "${prefix}${BLUE}URLs:${NC}"
+        echo "${prefix}  REDAXO HTTP:   http://localhost:$HTTP_PORT"
+        if [ -n "$HTTPS_PORT" ] && [ "$HTTPS_PORT" != "N/A" ]; then
+            echo "${prefix}  REDAXO HTTPS:  https://localhost:$HTTPS_PORT"
         fi
-        echo "${prefix}  phpMyAdmin: http://localhost:$PHPMYADMIN_PORT"
-        echo "${prefix}  MailHog:    http://localhost:$MAILHOG_PORT"
+        echo "${prefix}  phpMyAdmin:    http://localhost:$PHPMYADMIN_PORT"
+        echo "${prefix}  MailHog:       http://localhost:$MAILHOG_PORT"
     fi
+}
+
+# Zeigt nur URLs einer Instanz (als separater Befehl)
+show_urls() {
+    local name=$1
+    
+    if [ -z "$name" ]; then
+        echo -e "${RED}Fehler: Instanzname erforderlich${NC}"
+        exit 1
+    fi
+    
+    if ! instance_exists "$name"; then
+        echo -e "${RED}Fehler: Instanz '$name' existiert nicht${NC}"
+        exit 1
+    fi
+    
+    local instance_dir="$INSTANCES_DIR/$name"
+    
+    if [ ! -f "$instance_dir/.env" ]; then
+        echo -e "${RED}Fehler: .env-Datei für Instanz '$name' nicht gefunden${NC}"
+        exit 1
+    fi
+    
+    source "$instance_dir/.env"
+    
+    echo -e "${GREEN}URLs für Instanz '$name':${NC}"
+    echo -e "${YELLOW}═══════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "${BLUE}REDAXO Anwendung:${NC}"
+    echo "  HTTP:   http://localhost:$HTTP_PORT"
+    if [ -n "$HTTPS_PORT" ] && [ "$HTTPS_PORT" != "N/A" ]; then
+        echo "  HTTPS:  https://localhost:$HTTPS_PORT"
+        echo "  Domain: https://$DOMAIN (wenn DNS konfiguriert)"
+    fi
+    echo ""
+    echo -e "${BLUE}Development Tools:${NC}"
+    echo "  phpMyAdmin: http://localhost:$PHPMYADMIN_PORT"
+    echo "  MailHog:    http://localhost:$MAILHOG_PORT"
+    echo ""
+    
+    # Status prüfen
+    if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
+        echo -e "${GREEN}✓ Instanz ist aktiv - URLs sind verfügbar${NC}"
+    else
+        echo -e "${RED}⚠ Instanz ist gestoppt - Starten Sie sie mit: ./instance-manager.sh start $name${NC}"
+    fi
+}
+
+# Zeigt Datenbankonfiguration einer Instanz (erweitert)
+show_db_config() {
+    local name=$1
+    local format=${2:-"table"}
+    local prefix=${3:-""}
+    
+    if [ -z "$name" ]; then
+        echo -e "${RED}Fehler: Instanzname erforderlich${NC}"
+        exit 1
+    fi
+    
+    if ! instance_exists "$name"; then
+        echo -e "${RED}Fehler: Instanz '$name' existiert nicht${NC}"
+        exit 1
+    fi
+    
+    local instance_dir="$INSTANCES_DIR/$name"
+    
+    if [ ! -f "$instance_dir/.env" ]; then
+        echo -e "${RED}Fehler: .env-Datei für Instanz '$name' nicht gefunden${NC}"
+        exit 1
+    fi
+    
+    source "$instance_dir/.env"
+    
+    if [ "$format" = "json" ]; then
+        cat << EOF
+{
+  "instance": "$name",
+  "database": {
+    "host": "mariadb",
+    "port": "3306",
+    "name": "$MYSQL_DATABASE",
+    "user": "$MYSQL_USER",
+    "password": "$MYSQL_PASSWORD",
+    "root_password": "$MYSQL_ROOT_PASSWORD"
+  }
+}
+EOF
+    elif [ "$format" = "env" ]; then
+        echo "${prefix}MYSQL_DATABASE=$MYSQL_DATABASE"
+        echo "${prefix}MYSQL_USER=$MYSQL_USER"
+        echo "${prefix}MYSQL_PASSWORD=$MYSQL_PASSWORD"
+        echo "${prefix}MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD"
+    elif [ "$format" = "setup" ]; then
+        echo -e "${GREEN}Datenbankonfiguration für REDAXO-Setup:${NC}"
+        echo -e "${YELLOW}═══════════════════════════════════════════════${NC}"
+        echo ""
+        echo -e "${BLUE}Im REDAXO-Setup eingeben:${NC}"
+        echo "┌─────────────────────────────────────────────┐"
+        echo "│ Database Server: mariadb                    │"
+        printf "│ Database Name:   %-23s │\n" "$MYSQL_DATABASE"
+        printf "│ Username:        %-23s │\n" "$MYSQL_USER"
+        printf "│ Password:        %-23s │\n" "$MYSQL_PASSWORD"
+        echo "│ Host:            mariadb                    │"
+        echo "│ Port:            3306                       │"
+        echo "└─────────────────────────────────────────────┘"
+        echo ""
+        echo -e "${YELLOW}⚠ Wichtig: Verwenden Sie 'mariadb' als Host, nicht 'localhost'!${NC}"
+        echo -e "${YELLOW}  Dies ist der Docker-Container-Name für die Datenbank.${NC}"
+    else
+        echo "${prefix}${BLUE}Datenbankonfiguration:${NC}"
+        echo "${prefix}  Host:          mariadb"
+        echo "${prefix}  Port:          3306"
+        echo "${prefix}  Datenbank:     $MYSQL_DATABASE"
+        echo "${prefix}  Benutzer:      $MYSQL_USER"
+        echo "${prefix}  Passwort:      $MYSQL_PASSWORD"
+        echo "${prefix}  Root-Passwort: $MYSQL_ROOT_PASSWORD"
+    fi
+}
+
+# Zeigt vollständige Konfiguration einer Instanz
+show_full_config() {
+    local name=$1
+    local format=${2:-"table"}
+    
+    if [ -z "$name" ]; then
+        echo -e "${RED}Fehler: Instanzname erforderlich${NC}"
+        exit 1
+    fi
+    
+    if ! instance_exists "$name"; then
+        echo -e "${RED}Fehler: Instanz '$name' existiert nicht${NC}"
+        exit 1
+    fi
+    
+    local instance_dir="$INSTANCES_DIR/$name"
+    
+    if [ ! -f "$instance_dir/.env" ]; then
+        echo -e "${RED}Fehler: .env-Datei für Instanz '$name' nicht gefunden${NC}"
+        exit 1
+    fi
+    
+    source "$instance_dir/.env"
+    
+    # Status prüfen
+    local status="Gestoppt"
+    local status_color="${RED}"
+    if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
+        status="Läuft"
+        status_color="${GREEN}"
+    fi
+    
+    if [ "$format" = "json" ]; then
+        cat << EOF
+{
+  "instance": "$name",
+  "status": "$status",
+  "domain": "$DOMAIN",
+  "created": "$(date -r "$instance_dir" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo 'Unknown')",
+  "urls": {
+    "redaxo_http": "http://localhost:$HTTP_PORT",
+    "redaxo_https": "https://localhost:${HTTPS_PORT:-'N/A'}",
+    "phpmyadmin": "http://localhost:$PHPMYADMIN_PORT",
+    "mailhog": "http://localhost:$MAILHOG_PORT"
+  },
+  "database": {
+    "host": "mariadb",
+    "port": "3306",
+    "name": "$MYSQL_DATABASE",
+    "user": "$MYSQL_USER",
+    "password": "$MYSQL_PASSWORD",
+    "root_password": "$MYSQL_ROOT_PASSWORD"
+  },
+  "ports": {
+    "http": "$HTTP_PORT",
+    "https": "${HTTPS_PORT:-'N/A'}",
+    "phpmyadmin": "$PHPMYADMIN_PORT",
+    "mailhog": "$MAILHOG_PORT"
+  },
+  "ssl": {
+    "enabled": $([ -n "$HTTPS_PORT" ] && [ "$HTTPS_PORT" != "N/A" ] && echo "true" || echo "false"),
+    "cert_path": "$SSL_DIR/$name"
+  }
+}
+EOF
+    else
+        echo -e "${GREEN}══════════════════════════════════════════════════════════${NC}"
+        echo -e "${GREEN}Konfiguration für Instanz: $name${NC}"
+        echo -e "${GREEN}══════════════════════════════════════════════════════════${NC}"
+        echo ""
+        
+        echo -e "${BLUE}Allgemeine Informationen:${NC}"
+        echo "  Status:        $status_color$status${NC}"
+        echo "  Domain:        $DOMAIN"
+        echo "  Erstellt:      $(date -r "$instance_dir" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo 'Unknown')"
+        echo ""
+        
+        show_instance_urls "$name" "  "
+        echo ""
+        
+        show_db_config "$name" "table" "  "
+        echo ""
+        
+        echo -e "${BLUE}Port-Mapping:${NC}"
+        echo "  HTTP:          $HTTP_PORT"
+        if [ -n "$HTTPS_PORT" ] && [ "$HTTPS_PORT" != "N/A" ]; then
+            echo "  HTTPS:         $HTTPS_PORT"
+        fi
+        echo "  phpMyAdmin:    $PHPMYADMIN_PORT"
+        echo "  MailHog:       $MAILHOG_PORT"
+        echo ""
+        
+        echo -e "${BLUE}SSL-Konfiguration:${NC}"
+        if [ -n "$HTTPS_PORT" ] && [ "$HTTPS_PORT" != "N/A" ]; then
+            echo "  SSL aktiviert: ${GREEN}Ja${NC}"
+            echo "  Zertifikat:    $SSL_DIR/$name"
+        else
+            echo "  SSL aktiviert: ${RED}Nein${NC}"
+        fi
+        echo ""
+        
+        echo -e "${BLUE}Docker-Container:${NC}"
+        echo "  Apache:        redaxo-${name}-apache"
+        echo "  MariaDB:       redaxo-${name}-mariadb"
+        echo "  phpMyAdmin:    redaxo-${name}-phpmyadmin"
+        echo "  MailHog:       redaxo-${name}-mailhog"
+        echo ""
+        
+        echo -e "${BLUE}Dateipfade:${NC}"
+        echo "  Instance:      $instance_dir"
+        echo "  App:           $instance_dir/app"
+        echo "  Docker:        $instance_dir/docker"
+        if [ -n "$HTTPS_PORT" ] && [ "$HTTPS_PORT" != "N/A" ]; then
+            echo "  SSL:           $SSL_DIR/$name"
+        fi
+    fi
+}
+
+# Zeigt Konfiguration aller Instanzen
+show_all_configs() {
+    local format=${1:-"table"}
+    local filter=${2:-""}
+    
+    if [ ! -d "$INSTANCES_DIR" ] || [ -z "$(ls -A "$INSTANCES_DIR" 2>/dev/null)" ]; then
+        echo -e "${YELLOW}Keine Instanzen gefunden${NC}"
+        return
+    fi
+    
+    if [ "$format" = "json" ]; then
+        echo "{"
+        echo '  "instances": ['
+        local first=true
+        for instance in "$INSTANCES_DIR"/*; do
+            if [ -d "$instance" ]; then
+                local name=$(basename "$instance")
+                if [ -n "$filter" ] && [[ ! "$name" =~ $filter ]]; then
+                    continue
+                fi
+                if [ "$first" = false ]; then
+                    echo ","
+                fi
+                show_full_config "$name" "json" | sed 's/^/    /'
+                first=false
+            fi
+        done
+        echo ""
+        echo "  ],"
+        echo '  "total": '$(ls -1 "$INSTANCES_DIR" | wc -l | tr -d ' ')','
+        echo '  "generated": "'$(date -Iseconds)'"'
+        echo "}"
+    else
+        echo -e "${GREEN}REDAXO Multi-Instance Übersicht${NC}"
+        echo -e "${GREEN}═══════════════════════════════════════════════${NC}"
+        echo ""
+        
+        local total=0
+        local running=0
+        
+        for instance in "$INSTANCES_DIR"/*; do
+            if [ -d "$instance" ]; then
+                local name=$(basename "$instance")
+                if [ -n "$filter" ] && [[ ! "$name" =~ $filter ]]; then
+                    continue
+                fi
+                
+                ((total++))
+                
+                if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
+                    ((running++))
+                fi
+                
+                if [ "$format" = "summary" ]; then
+                    show_instance_summary "$name"
+                else
+                    show_full_config "$name" "table"
+                    echo ""
+                fi
+            fi
+        done
+        
+        echo -e "${BLUE}Zusammenfassung:${NC}"
+        echo "  Gesamt:        $total Instanzen"
+        echo "  Aktiv:         ${GREEN}$running${NC} Instanzen"
+        echo "  Gestoppt:      ${RED}$((total - running))${NC} Instanzen"
+    fi
+}
+
+# Zeigt kompakte Zusammenfassung einer Instanz
+show_instance_summary() {
+    local name=$1
+    local instance_dir="$INSTANCES_DIR/$name"
+    
+    if [ ! -f "$instance_dir/.env" ]; then
+        echo -e "${RED}  $name: Keine Konfiguration gefunden${NC}"
+        return
+    fi
+    
+    source "$instance_dir/.env"
+    
+    local status="Gestoppt"
+    local status_color="${RED}"
+    if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
+        status="Läuft"
+        status_color="${GREEN}"
+    fi
+    
+    printf "%-20s %s %s:%s" "$name" "$status_color$status${NC}" "HTTP" "$HTTP_PORT"
+    if [ -n "$HTTPS_PORT" ] && [ "$HTTPS_PORT" != "N/A" ]; then
+        printf " %s:%s" "HTTPS" "$HTTPS_PORT"
+    fi
+    printf " %s:%s" "DB" "$MYSQL_DATABASE"
+    echo ""
+}
+
+# Zeigt Datenbankonfiguration einer Instanz
+show_db_config() {
+    local name=$1
+    local format=${2:-"table"}
+    local prefix=${3:-""}
+    
+    if [ -z "$name" ]; then
+        echo -e "${RED}Fehler: Instanzname erforderlich${NC}"
+        return 1
+    fi
+    
+    if ! instance_exists "$name"; then
+        echo -e "${RED}Fehler: Instanz '$name' existiert nicht${NC}"
+        return 1
+    fi
+    
+    local instance_dir="$INSTANCES_DIR/$name"
+    
+    if [ ! -f "$instance_dir/.env" ]; then
+        echo -e "${RED}Fehler: .env-Datei für Instanz '$name' nicht gefunden${NC}"
+        return 1
+    fi
+    
+    source "$instance_dir/.env"
+    
+    if [ "$format" = "json" ]; then
+        cat << EOF
+{
+  "instance": "$name",
+  "database": {
+    "host": "mariadb",
+    "port": "3306",
+    "name": "$MYSQL_DATABASE",
+    "user": "$MYSQL_USER",
+    "password": "$MYSQL_PASSWORD",
+    "root_password": "$MYSQL_ROOT_PASSWORD"
+  }
+}
+EOF
+    elif [ "$format" = "env" ]; then
+        echo "${prefix}MYSQL_DATABASE=$MYSQL_DATABASE"
+        echo "${prefix}MYSQL_USER=$MYSQL_USER"
+        echo "${prefix}MYSQL_PASSWORD=$MYSQL_PASSWORD"
+        echo "${prefix}MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD"
+    else
+        echo "${prefix}${BLUE}Datenbankonfiguration:${NC}"
+        echo "${prefix}  Host:          mariadb"
+        echo "${prefix}  Port:          3306"
+        echo "${prefix}  Datenbank:     $MYSQL_DATABASE"
+        echo "${prefix}  Benutzer:      $MYSQL_USER"
+        echo "${prefix}  Passwort:      $MYSQL_PASSWORD"
+        echo "${prefix}  Root-Passwort: $MYSQL_ROOT_PASSWORD"
+    fi
+}
+
+# Zeigt vollständige Konfiguration einer Instanz
+show_full_config() {
+    local name=$1
+    local format=${2:-"table"}
+    
+    if [ -z "$name" ]; then
+        echo -e "${RED}Fehler: Instanzname erforderlich${NC}"
+        return 1
+    fi
+    
+    if ! instance_exists "$name"; then
+        echo -e "${RED}Fehler: Instanz '$name' existiert nicht${NC}"
+        return 1
+    fi
+    
+    local instance_dir="$INSTANCES_DIR/$name"
+    
+    if [ ! -f "$instance_dir/.env" ]; then
+        echo -e "${RED}Fehler: .env-Datei für Instanz '$name' nicht gefunden${NC}"
+        return 1
+    fi
+    
+    source "$instance_dir/.env"
+    
+    # Status prüfen
+    local status="Gestoppt"
+    local status_color="${RED}"
+    if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
+        status="Läuft"
+        status_color="${GREEN}"
+    fi
+    
+    if [ "$format" = "json" ]; then
+        cat << EOF
+{
+  "instance": "$name",
+  "status": "$status",
+  "domain": "$DOMAIN",
+  "created": "$(date -r "$instance_dir" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo 'Unknown')",
+  "urls": {
+    "redaxo_http": "http://localhost:$HTTP_PORT",
+    "redaxo_https": "https://localhost:${HTTPS_PORT:-'N/A'}",
+    "phpmyadmin": "http://localhost:$PHPMYADMIN_PORT",
+    "mailhog": "http://localhost:$MAILHOG_PORT"
+  },
+  "database": {
+    "host": "mariadb",
+    "port": "3306",
+    "name": "$MYSQL_DATABASE",
+    "user": "$MYSQL_USER",
+    "password": "$MYSQL_PASSWORD",
+    "root_password": "$MYSQL_ROOT_PASSWORD"
+  },
+  "ports": {
+    "http": "$HTTP_PORT",
+    "https": "${HTTPS_PORT:-'N/A'}",
+    "phpmyadmin": "$PHPMYADMIN_PORT",
+    "mailhog": "$MAILHOG_PORT"
+  },
+  "ssl": {
+    "enabled": $([ -n "$HTTPS_PORT" ] && echo "true" || echo "false"),
+    "cert_path": "$SSL_DIR/$name"
+  }
+}
+EOF
+    else
+        echo -e "${GREEN}══════════════════════════════════════════════════════════${NC}"
+        echo -e "${GREEN}Konfiguration für Instanz: $name${NC}"
+        echo -e "${GREEN}══════════════════════════════════════════════════════════${NC}"
+        echo ""
+        
+        echo -e "${BLUE}Allgemeine Informationen:${NC}"
+        echo "  Status:        $status_color$status${NC}"
+        echo "  Domain:        $DOMAIN"
+        echo "  Erstellt:      $(date -r "$instance_dir" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo 'Unknown')"
+        echo ""
+        
+        echo -e "${BLUE}URLs:${NC}"
+        echo "  REDAXO HTTP:   http://localhost:$HTTP_PORT"
+        if [ -n "$HTTPS_PORT" ]; then
+            echo "  REDAXO HTTPS:  https://localhost:$HTTPS_PORT"
+        fi
+        echo "  phpMyAdmin:    http://localhost:$PHPMYADMIN_PORT"
+        echo "  MailHog:       http://localhost:$MAILHOG_PORT"
+        echo ""
+        
+        show_db_config "$name" "table" "  "
+        echo ""
+        
+        echo -e "${BLUE}Port-Mapping:${NC}"
+        echo "  HTTP:          $HTTP_PORT"
+        if [ -n "$HTTPS_PORT" ]; then
+            echo "  HTTPS:         $HTTPS_PORT"
+        fi
+        echo "  phpMyAdmin:    $PHPMYADMIN_PORT"
+        echo "  MailHog:       $MAILHOG_PORT"
+        echo ""
+        
+        echo -e "${BLUE}SSL-Konfiguration:${NC}"
+        if [ -n "$HTTPS_PORT" ]; then
+            echo "  SSL aktiviert: ${GREEN}Ja${NC}"
+            echo "  Zertifikat:    $SSL_DIR/$name"
+        else
+            echo "  SSL aktiviert: ${RED}Nein${NC}"
+        fi
+        echo ""
+        
+        echo -e "${BLUE}Docker-Container:${NC}"
+        echo "  Apache:        redaxo-${name}-apache"
+        echo "  MariaDB:       redaxo-${name}-mariadb"
+        echo "  phpMyAdmin:    redaxo-${name}-phpmyadmin"
+        echo "  MailHog:       redaxo-${name}-mailhog"
+        echo ""
+        
+        echo -e "${BLUE}Dateipfade:${NC}"
+        echo "  Instance:      $instance_dir"
+        echo "  App:           $instance_dir/app"
+        echo "  Docker:        $instance_dir/docker"
+        echo "  SSL:           $SSL_DIR/$name"
+    fi
+}
+
+# Zeigt Konfiguration aller Instanzen
+show_all_configs() {
+    local format=${1:-"table"}
+    local filter=${2:-""}
+    
+    if [ ! -d "$INSTANCES_DIR" ] || [ -z "$(ls -A "$INSTANCES_DIR" 2>/dev/null)" ]; then
+        echo -e "${YELLOW}Keine Instanzen gefunden${NC}"
+        return
+    fi
+    
+    if [ "$format" = "json" ]; then
+        echo "{"
+        echo '  "instances": ['
+        local first=true
+        for instance in "$INSTANCES_DIR"/*; do
+            if [ -d "$instance" ]; then
+                local name=$(basename "$instance")
+                if [ -n "$filter" ] && [[ ! "$name" =~ $filter ]]; then
+                    continue
+                fi
+                if [ "$first" = false ]; then
+                    echo ","
+                fi
+                show_full_config "$name" "json" | sed 's/^/    /'
+                first=false
+            fi
+        done
+        echo ""
+        echo "  ],"
+        echo '  "total": '$(ls -1 "$INSTANCES_DIR" | wc -l | tr -d ' ')','
+        echo '  "generated": "'$(date -Iseconds)'"'
+        echo "}"
+    else
+        echo -e "${GREEN}REDAXO Multi-Instance Übersicht${NC}"
+        echo -e "${GREEN}═══════════════════════════════════════════════${NC}"
+        echo ""
+        
+        local total=0
+        local running=0
+        
+        for instance in "$INSTANCES_DIR"/*; do
+            if [ -d "$instance" ]; then
+                local name=$(basename "$instance")
+                if [ -n "$filter" ] && [[ ! "$name" =~ $filter ]]; then
+                    continue
+                fi
+                
+                ((total++))
+                
+                if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
+                    ((running++))
+                fi
+                
+                if [ "$format" = "summary" ]; then
+                    show_instance_summary "$name"
+                else
+                    show_full_config "$name" "table"
+                    echo ""
+                fi
+            fi
+        done
+        
+        echo -e "${BLUE}Zusammenfassung:${NC}"
+        echo "  Gesamt:        $total Instanzen"
+        echo "  Aktiv:         ${GREEN}$running${NC} Instanzen"
+        echo "  Gestoppt:      ${RED}$((total - running))${NC} Instanzen"
+    fi
+}
+
+# Zeigt kompakte Zusammenfassung einer Instanz
+show_instance_summary() {
+    local name=$1
+    local instance_dir="$INSTANCES_DIR/$name"
+    
+    if [ ! -f "$instance_dir/.env" ]; then
+        echo -e "${RED}  $name: Keine Konfiguration gefunden${NC}"
+        return
+    fi
+    
+    source "$instance_dir/.env"
+    
+    local status="Gestoppt"
+    local status_color="${RED}"
+    if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
+        status="Läuft"
+        status_color="${GREEN}"
+    fi
+    
+    printf "%-20s %s %s:%s" "$name" "$status_color$status${NC}" "HTTP" "$HTTP_PORT"
+    if [ -n "$HTTPS_PORT" ]; then
+        printf " %s:%s" "HTTPS" "$HTTPS_PORT"
+    fi
+    printf " %s:%s" "DB" "$MYSQL_DATABASE"
+    echo ""
 }
 
 # Zeigt Status einer oder aller Instanzen
@@ -720,6 +1340,33 @@ case $1 in
         ;;
     status)
         show_status "$2"
+        ;;
+    config)
+        if [ -z "$2" ]; then
+            echo -e "${RED}Fehler: Instanzname erforderlich${NC}"
+            echo "Verwendung: ./instance-manager.sh config <instanzname>"
+            exit 1
+        fi
+        show_full_config "$2" "${3:-table}"
+        ;;
+    config-all)
+        show_all_configs "${2:-table}" "$3"
+        ;;
+    db-config)
+        if [ -z "$2" ]; then
+            echo -e "${RED}Fehler: Instanzname erforderlich${NC}"
+            echo "Verwendung: ./instance-manager.sh db-config <instanzname>"
+            exit 1
+        fi
+        show_db_config "$2" "${3:-setup}"
+        ;;
+    urls)
+        if [ -z "$2" ]; then
+            echo -e "${RED}Fehler: Instanzname erforderlich${NC}"
+            echo "Verwendung: ./instance-manager.sh urls <instanzname>"
+            exit 1
+        fi
+        show_urls "$2"
         ;;
     logs)
         show_logs "$2"
