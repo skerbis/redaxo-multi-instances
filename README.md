@@ -383,7 +383,6 @@ redaxo-multi-instances/
 │   └── instanz2/
 ├── backups/                  # Backup-Dateien
 ├── logs/                     # System-Logs
-├── app-template/             # REDAXO-Fallback-Template
 ├── config.yml               # Hauptkonfiguration
 ├── redaxo                   # Haupt-Interface
 └── README.md
