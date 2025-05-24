@@ -1,0 +1,4 @@
+perm_general_quick_navigation[] = Quick Navi
+perm_general_quick_navigation[idinput] = Quick navi: permitir entrada de Ids de artigos
+perm_general_quick_navigation[history] = Quick Navi: artigos e mídias recentemente editados
+quick_navigation_no_entries = Nenhuma entrada encontrada

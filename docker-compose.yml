@@ -1,0 +1,88 @@
+# LEGACY FILE - NOT USED IN MULTI-INSTANCE SETUP
+# Diese Datei wurde durch das Multi-Instance System ersetzt.
+# Verwenden Sie stattdessen:
+#   ./redaxo create <instanz-name>
+#   ./redaxo start <instanz-name>
+#
+# Alte Konfiguration (nur zur Referenz):
+
+version: '3.8'
+
+services:
+  # Apache mit PHP
+  apache:
+    build:
+      context: ./docker/apache
+    container_name: ${PROJECT_NAME:-redaxo-docker}-apache
+    ports:
+      - "${APACHE_PORT:-8080}:80"
+    volumes:
+      - ${APP_DIR:-./app-template}:/var/www/html
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    networks:
+      - redaxo-network
+
+  # MariaDB
+  mariadb:
+    image: mariadb:latest
+    container_name: ${PROJECT_NAME:-redaxo-docker}-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-redaxo_root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-redaxo}
+      MYSQL_USER: ${MYSQL_USER:-redaxo}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-redaxo}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - redaxo-network
+
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: ${PROJECT_NAME:-redaxo-docker}-phpmyadmin
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: ${MYSQL_USER:-redaxo}
+      PMA_PASSWORD: ${MYSQL_PASSWORD:-redaxo}
+    ports:
+      - "${PHPMYADMIN_PORT:-8081}:80"
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+    networks:
+      - redaxo-network
+
+  # MailHog für SMTP-Debugging
+  mailhog:
+    image: mailhog/mailhog
+    container_name: ${PROJECT_NAME:-redaxo-docker}-mailhog
+    ports:
+      - "${MAILHOG_PORT:-8025}:8025"
+    restart: unless-stopped
+    networks:
+      - redaxo-network
+
+  # Portainer für Container-Management
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: ${PROJECT_NAME:-redaxo-docker}-portainer
+    command: -H unix:///var/run/docker.sock
+    ports:
+      - "${PORTAINER_PORT:-9000}:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: unless-stopped
+    networks:
+      - redaxo-network
+
+networks:
+  redaxo-network:
+    driver: bridge
+
+volumes:
+  mariadb_data:
+  portainer_data:

@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# REDAXO Multi-Instance Wrapper
+# Einfacher Zugang zu allen Funktionen
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# Farben
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+show_help() {
+    echo -e "${GREEN}REDAXO Multi-Instance Manager${NC}"
+    echo "Einfache Verwaltung von REDAXO-Instanzen"
+    echo ""
+    echo "Verwendung:"
+    echo "  ./redaxo [Befehl] [Optionen]"
+    echo ""
+    echo "Instance-Management:"
+    echo "  create <name>           - Neue Instanz erstellen"
+    echo "  start <name>            - Instanz starten"
+    echo "  stop <name>             - Instanz stoppen"
+    echo "  restart <name>          - Instanz neustarten"
+    echo "  remove <name>           - Instanz löschen"
+    echo "  list                    - Alle Instanzen auflisten"
+    echo "  status [name]           - Status anzeigen"
+    echo ""
+    echo "Backup & Restore:"
+    echo "  backup <name>           - Instanz sichern"
+    echo "  restore <name> <file>   - Instanz wiederherstellen"
+    echo "  backups                 - Alle Backups auflisten"
+    echo ""
+    echo "Tools:"
+    echo "  logs <name>             - Logs anzeigen"
+    echo "  shell <name>            - Shell öffnen"
+    echo "  ssl <name>              - SSL-Zertifikat erneuern"
+    echo "  cleanup [days]          - Alte Backups löschen"
+    echo ""
+    echo "System:"
+    echo "  setup                   - System einrichten (bereits ausgeführt)"
+    echo "  update                  - System aktualisieren"
+    echo "  help                    - Diese Hilfe anzeigen"
+}
+
+case $1 in
+    # Instance Management
+    create|start|stop|restart|remove|list|status|logs|shell|ssl)
+        "$SCRIPT_DIR/scripts/instance-manager.sh" "$@"
+        ;;
+    
+    # Backup Management
+    backup|restore|backups)
+        if [ "$1" = "backups" ]; then
+            "$SCRIPT_DIR/scripts/backup-manager.sh" list-backups
+        else
+            "$SCRIPT_DIR/scripts/backup-manager.sh" "$@"
+        fi
+        ;;
+    
+    # Tools
+    cleanup)
+        "$SCRIPT_DIR/scripts/backup-manager.sh" cleanup "$2"
+        ;;
+    
+    # System
+    setup)
+        echo -e "${GREEN}Setup bereits abgeschlossen!${NC}"
+        echo -e "${BLUE}Verwenden Sie './redaxo create <name>' um eine neue Instanz zu erstellen${NC}"
+        ;;
+    
+    update)
+        "$SCRIPT_DIR/scripts/update-manager.sh" "$@"
+        ;;
+    
+    help|--help|-h|"")
+        show_help
+        ;;
+    
+    *)
+        echo -e "${RED}Unbekannter Befehl: $1${NC}"
+        echo ""
+        show_help
+        exit 1
+        ;;
+esac

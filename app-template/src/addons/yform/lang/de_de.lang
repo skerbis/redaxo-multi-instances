@@ -1,0 +1,284 @@
+yform = YForm
+yform_format_datetime = d.m.Y H:i:s
+yform_format_date = d.m.Y
+yform_format_time = H:i
+
+yform_overview = Übersicht
+yform_description = Beschreibung
+yform_back_to_overview = Zurück zur Übersicht
+yform_table_name = MySQL Tabellenname
+
+yform_description_all = <p>Im Modul sind vor allem die Felddefinitionen wichtig, die sich in 3 Bereiche aufteilen.</p><div class="list-group"><div class="list-group-item"><h3 class="list-group-item-heading">Value-Felder</h3><p class="list-group-item-text">sind die Felder die im Formular normalerweise direkt auftauchen. Das können einerseits einfache Textfelder, Selektfelder, Checkboxen ... sein - aber genauso auch versteckte Felder, Geburtsdaten, Datenbankselektfelder sein.</p></div><div class="list-group-item"><h3 class="list-group-item-heading">Validate-Felder</h3><p class="list-group-item-text">sind Felder zum überprüfen der Werte in den Value-Felder. D.h. damit kann man z.B. überprüfen ob ein Wert eingetragen worden ist (empty) oder ob es ein String, Integer oder sonstiges Feld ist. Genauso kann aber auch überprüft werden ob ein Datenbankfeld mit diesem Wert schon existiert ...</p></div><div class="list-group-item"><h3 class="list-group-item-heading">Action-Felder</h3><p class="list-group-item-text">sind für die späteren Verwendungen wichtig. Soll eine E-Mail verschickt werden und/oder ein Eintrag in die Datenbank geschehen...</p></div></div>
+yform_description_type_heading = Typen-Übersicht
+list_message = {0} bis {1} von {2} Einträge
+
+yform_value = Values
+yform_validate = Validierungen
+yform_action = Aktionen
+
+yform_install_modul = Setup
+yform_install_modul_description = Um YForm als Formularsystem sinnvoll nutzen können, muss ein Modul erstellt werden.
+yform_install_yform_modul = Modul "{0}" installieren
+yform_install_update_module = Modul "{0}" aktualisieren
+
+yform_validate_compare_description = Vergleicht zwei Eingabe-Werte <b>miteinander</b>.
+yform_validate_compare_value_description = Vergleicht einen Eingabe-Wert mit einem <b>fest definierten Wert</b>.
+yform_validate_customfunction_description = Ruft eine eigene <b>PHP-Funktion</b> für einen Vergleich auf.
+yform_validate_email_description = Überprüft, ob der Eingabe-Typ eine <b>E-Mail-Adresse</b> ist.
+yform_validate_empty_description = Überprüft, ob ein Eingabe-Wert <b>vorhanden</b> ist.
+yform_validate_intfromto_description = Überprüft, ob der Eingabe-Wert <b>zwischen zwei Zahlen</b> liegt.
+yform_validate_size_description = Überprüft, ob der Eingabe-Wert eine <b>exakte Anzahl von Zeichen</b> hat.
+yform_validate_size_range_description = Überprüft, ob die <b>Länge</b> des Eingabe-Werts <b>zwischen zwei Zahlen</b> liegt.
+yform_validate_type_description = Überprüft, ob <b>der Typ</b> des Eingabe-Werts korrekt ist [int, float, numeric, string, email, url, date, hex]
+yform_validate_unique_description = Überprüft ob der Eingabe-Wert <b>noch nicht in anderen Datensätzen vorhanden</b> ist.
+
+yform_validate_empty_notices_name = Wenn mehrere Felder ausgewählt werden muss nur mindestens ein Feld ausgefüllt sein.
+
+
+yform_values_checkbox_description = 			Eine <b>Checkbox</b> mit vordefinierten Werten.
+yform_values_checkbox_sql_description =			Eine <b>Checkbox</b> mit Werten, die aus einer <b>SQL-Abfrage</b> stammen.
+yform_values_date_description =					Eine Reihe von Auswahlfeldern, in der ein <b>Datum</b> (Tag, Monat, Jahr) ausgewählt wird.
+yform_values_datestamp_description =			Ein unsichtbares Feld, in das ein <b>Zeitstempel</b> gespeichert wird, wenn der Datensatz hinzugefügt oder bearbeitet wird.
+yform_values_datestamp_notice =                 Formatierung entsprechend der PHP date() Funktion (http://php.net/manual/de/function.date.php)
+yform_values_datetime_description =				Eine Reihe von Auswahlfeldern, in der <b>Datum und Uhrzeit</b> (Tag, Monat, Jahr, Stunden, Minuten, Sekunden) ausgewählt wird.
+yform_values_date_modify_default =              Ändern des Defaultwertes über modify
+yform_values_date_modify_default_notics =       z.B. mit "today" für heute oder "+1 year" für in einem Jahr siehe https://www.php.net/manual/en/datetime.modify.php
+
+
+yform_values_email_description =				Ein einfaches Eingabefeld für <b>E-Mail-Adressen.</b>
+yform_values_emptyname_description =			Ein Feld <b>ohne</b> Eingabemöglichkeit.
+yform_values_fieldset_description =				Ein Fieldset gruppiert Formularfelder.
+yform_values_float_description =				Ein einfaches Eingabefeld für <b>Gleitkomma-Zahlen.</b>
+yform_values_generate_key_description =			Ein unsichtbares Feld, in das ein <b>zufälliger 32-stelliger Schlüssel bestehend aus Zahlen und Kleinbuchstaben</b> gespeichert wird, wenn der Datensatz hinzugefügt oder bearbeitet wird.
+yform_values_hashvalue_description =			Ein Feld, das aus dem Wert eines anderen Feldes einen <b>Hashwert</b> erzeugt.
+yform_values_hashvalue_deprecated =             Bitte das <b>Index</b> Feld nutzen.
+yform_values_html_description =					Gibt <b>HTML-Code</b> an der gewünschten Stelle des Eingabe-Formulars aus.
+yform_values_index_description =				Ein Feld, das einen <b>Index</b> / Schlüssel über mehrere Felder erzeugt.
+yform_values_integer_description =				Ein Eingabefeld für <b>ganze Zahlen. (INTEGER)</b>
+yform_values_number_description =               Ein Eingabefeld für <b>Zahlen mit oder ohne Nachkommastellen. (DECIMAL)</b>
+yform_values_php_description =					Führt <b>PHP-Code</b> an der gewünschten Stelle des Eingabe-Formulars aus.
+yform_values_radio_description =				Ein oder mehrere Auswahlfelder als <b>Radio-Buttons</b>.
+yform_values_select_description =				Ein <b>Auswahlfeld</b> mit vordefinierten Werten.
+yform_values_select_sql_description =			Ein <b>Auswahlfeld</b> mit Werten, die aus einer <b>SQL-Abfrage</b> stammen.
+yform_values_submit_description =				Ein oder mehrere <b>Submit-Buttons</b> zum Absenden des Formulars.
+yform_values_text_description =					Ein <b>einfaches Eingabefeld</b> für Text.
+yform_values_password_description =             Ein <b>Eingabefeld</b> für Passwörter
+yform_values_textarea_description =				Ein <b>mehrzeiliges Eingabefeld</b> für Text.
+yform_values_time_description =					Eine Reihe von Auswahlfeldern, in der die <b>Uhrzeit</b> (Stunden, Minuten, Sekunden) ausgewählt wird.
+yform_values_upload_description =				Ein <b>Upload-Feld</b>, mit dem eine Datei in <b>die Datenbank oder ein Verzeichnis</b> hochgeladen wird.
+yform_values_uuid_description =         Ein Feld, in dem universell <b>eindeutige UUID/GUID</b> erstellt wird.
+yform_values_ip_description =                   Ein <b>IP-Feld</b>, welche hiermit gespeichert wird
+yform_values_showvalue_description =            Ein Feld mit dem ausschließlich der Wert des Feldes angezeigt wird, aber nicht verändert werden kann.
+
+yform_values_checked = ausgewählt
+yform_values_not_checked = nicht ausgewählt
+
+yform_values_defaults_name = Name
+yform_values_defaults_label = Bezeichnung
+yform_values_defaults_table = Datenbank
+yform_values_defaults_notice = Notiz
+yform_values_defaults_options = Optionen
+yform_values_defaults_attributes = Individuelle Attribute
+yform_values_defaults_attributes_notice = Bitte als JSON schreiben. z.B. {"readonly":"readonly","placeholder":"Mein Placeholder"}
+yform_values_defaults_widgets = Widget
+yform_values_defaults_showvalue = Wert anzeigen
+yform_validate_defaults_message = Fehlermeldung
+yform_values_defaults_unit = Maßeinheit (z.B. € $ m mm %)
+
+yform_values_number_precision = Anzahl der Ziffern inkl. Dezimalstellen insg., z. B. <code>6</code> eingeben für <code>4999,95</code> oder <code>100.000</code> (PRECISION)
+yform_values_number_scale = Davon: Anzahl der Ziffern für Nachkommastellen, z. B. <code>2</code> eingeben für <code>4999,95</code> oder <code>0</code> für <code>100.000</code> (SCALE)
+
+yform_search_defaults_wildcard_notice = Beispiele: *name / !(empty) / (empty)
+yform_search_integer_notice = Beispiele: >5 / !=5 / 3-5 / 2..5 / !(empty) / (empty)
+yform_search_number_notice = Beispiele: >5 / !=5 / 3-5 / 2..5 / !(empty) / (empty)
+yform_search_defaults_select_notice = Mit CTRL oder COMMAND mehrere auswählen
+
+yform_values_checkbox_values = Werte (0,1) (nicht angeklickt,angeklickt)
+yform_values_checkbox_default = Defaultstatus
+yform_values_checkbox_sql_query = Query mit "select id, name from ..""
+yform_values_date_year_start = Startjahr
+yform_values_date_year_end = Endjahr
+yform_values_date_format = Anzeigeformat
+yform_values_date_current_date = Aktuelles Datum voreingestellt
+yform_values_date_search_notice = Format: {0} - {0}
+yform_values_datestamp_format = Anzeigeformat
+yform_values_datestamp_only_empty = Wann soll Wert gesetzt werden
+yform_values_datestamp_update_notice = Es wird das aktuelle Datum mit Uhrzeit ab dem Versand des Formulars gesetzt
+yform_values_datetime_year_start = Startjahr
+yform_values_datetime_year_end = Endjahr
+yform_values_datetime_minutes = Minutenformate
+yform_values_datetime_format = Anzeigeformat
+yform_values_datetime_current_date = Aktuelles Datum voreingestellt
+yform_values_format_show_notice = Diese Einstellung wird nur für die Ausgabe in der Listen-Übersicht und in der View-Ansicht verwendet
+yform_values_email_default = Defaultstatus
+yform_values_email_classname = Klassenname
+yform_values_float_scale = Nachkommastellen
+yform_values_float_default = Defaultwert
+yform_values_generate_key_only_empty = Wann soll Wert gesetzt werden
+yform_values_hashvalue_field = Input-Feld
+yform_values_hashvalue_function = Algorithmus
+yform_values_hashvalue_salt = Salt
+yform_values_html_HTML = HTML
+yform_values_index_names = Felder
+yform_values_index_names_notice = Kommasepariert, auch Felder aus Relationen möglich, z. B.: title,description,category_id.name
+yform_values_index_function = Optional Codierfunktion
+yform_values_index_function_notice = z.B. md5, sha1
+yform_values_index_add_this_param = Feldobjekt als 2. Parameter an die Funktion übergeben ?
+yform_values_index_salt = Salt
+yform_values_integer_default = Defaultwert
+yform_values_number_default = Defaultwert
+yform_values_php_code = PHP Code
+yform_values_radio_options = Selectdefinition, kommasepariert
+yform_values_radio_default = Defaultwert
+yform_values_select_options = Selectdefinition, kommasepariert
+yform_values_select_default = Defaultwert
+yform_values_select_multiple = Mehrere Felder möglich
+yform_values_select_size = Höhe der Auswahlbox
+yform_values_select_sql_query = Query mit "select id, name from .." es müssen id und name übergeben werden, ggf. "select id,kunde as name ..."
+yform_values_select_sql_default = Defaultwert (opt.)
+yform_values_select_sql_empty_option = Leeroption
+yform_values_select_sql_empty_value = Text bei Leeroption (Bitte auswählen)
+yform_values_select_sql_multiple = Mehrere Felder möglich
+yform_values_select_sql_size = Höhe der Auswahlbox
+yform_values_submit_labels = Bezeichnung (optional, kommasepariert)
+yform_values_submit_values = Werte (optional, kommasepariert)
+yform_values_submit_default = Defaultwert
+yform_values_submit_css_classes = CSS Klassen (kommasepariert)
+yform_values_text_default = Defaultwert
+yform_values_text_css_class = cssclassname
+yform_values_defaults_prepend = Zeichenfolge davor anzeigen. z.B. EUR
+yform_values_defaults_append = Zeichenfolge danach anzeigen. z.B. .00
+yform_values_textarea_default = Defaultwert
+yform_values_textarea_classes = classes
+yform_values_time_format = Anzeigeformat
+yform_values_time_format_notice = Default: HH:ii:ss
+yform_values_time_current_time = Aktuelle Uhrzeit voreingestellt
+yform_values_upload_sizes = Maximale Größe in Kb oder Range 100,500 (deprecated)
+yform_values_upload_types = Erlaubte Dateien (deprecated)
+yform_values_upload_types_notice = Format: jpg,gif,png ... (kommaseparierte Liste) oder * (für alle Dateien)
+yform_values_upload_required = Pflichtfeld
+yform_values_upload_messages = Fehlermeldungen/Text (kommasepariert) (deprecated)
+yform_values_upload_messages_notice = min_error_msg,max_error_msg,type_error_msg,empty_error_msg,delete_file_msg,system_error_msg
+yform_values_upload_modus = Speichermodus
+yform_values_upload_database_filename_field = bei `database`: Dateiname wird gespeichert in Feldnamen
+yform_values_upload_upload_folder = bei `upload`: Uploadordner festlegen
+yform_values_upload_upload_folder_notice = Relativen Pfad zu "{0}" eintragen
+yform_values_upload_file_prefix = Dateiprefix
+yform_values_upload_config = JSON Configuration
+yform_values_upload_config_notice = Beispiel: <br />{"sizes":{"min":0,"max":15360000},"allowed_extensions":["jpg","zip"],"disallowed_extensions":["exe"],"check":["multiple_extensions","zip_archive"],"messages":{"min_error":"min_error_msg","max_error":"max_error_msg","type_error":"type_error_msg","empty_error":"empty_error_msg","system_error":"system_error_msg","type_multiple_error":"type_multiple-msg","zip-type_error":"zip-type_error-msg {0}","type_zip_error":"type_zip_error-msg","delete_file":"delete_file_msg"}}
+
+yform_values_ip_server_var = Servervariable (optional)
+yform_values_ip_server_var_notice = default: REMOTE_ADDR
+
+yform_validate_compare_firstname = 1. Feldname
+yform_validate_compare_secondname = 2. Feldname
+yform_validate_compare_type = Fehlermeldung, wenn...
+yform_validate_compare_message = Fehlermeldung
+yform_validate_compare_value_name = Feldname
+yform_validate_compare_value_compare_value = Vergleichswert
+yform_validate_compare_value_compare_type = Fehlermeldung, wenn...
+yform_validate_compare_value_message = Fehlermeldung
+yform_validate_customfunction_name = Name
+yform_validate_customfunction_function = Name der Funktion
+yform_validate_customfunction_params = Weitere Parameter
+yform_validate_customfunction_message = Fehlermeldung
+yform_validate_customfunction_type = Validierungszeitpunkt
+yform_validate_email_name = Name
+yform_validate_email_message = Fehlermeldung
+yform_validate_empty_name = Name
+yform_validate_empty_message = Fehlermeldung
+yform_validate_intfromto_name = Name
+yform_validate_intfromto_from = Von
+yform_validate_intfromto_to = Bis
+yform_validate_intfromto_message = Fehlermeldung
+yform_validate_size_name = Name
+yform_validate_size_size = Anzahl der Zeichen
+yform_validate_size_message = Fehlermeldung
+yform_validate_type_name = Name
+yform_validate_type_type = Prüfung nach
+yform_validate_type_message = Fehlermeldung
+yform_validate_type_not_required = Feld muss nicht ausgefüllt werden
+yform_validate_unique_name = Name
+yform_validate_unique_message = Fehlermeldung
+yform_validate_unique_table = Tabelle
+yform_validate_unique_notice = Bitte kommasepariert die Liste der Felder eintragen. z.B. name,email
+yform_validate_unique_empty_option = Wert darf auch leer sein. (Funktioniert nur, wenn es sich um ein Feld handelt)
+
+yform_validate_preg_match_pattern = Suchmuster eingeben.
+yform_validate_preg_match_pattern_info = z.B. /^start/
+
+yform_validate_password_policy_description = Hiermit kann man ein Feld nach <b>Passwortregeln</b> validieren
+yform_validate_preg_match_description = PREG_MATCH Validierung
+yform_validate_password_policy_rules = Regelkonfiguration
+yform_validate_password_policy_rules_notice = Standard Regeln falls leer: {0}
+
+yform_values_options_name = 	Name
+yform_values_options_label = 	Bezeichnung
+yform_values_options_boolvalues	= 	Werte (0,1) (nicht angeklickt,angeklickt)
+
+yform_values_be_user_description = Backend User speichern
+yform_values_csrf_description = CSRF-Schutz
+
+yform_geo_get_position = Hole Position
+yform_geo_clear_position = Lösche Position
+
+
+yform_values_choice_attributes = Attribute für das Element (attributes)
+yform_values_choice_attributes_notice = Mit dieser Option können an jedem <code>div</code> oder <code>select</code> HTML-Attribute hinzugefügt werden. Callable: <code>foo($attributes)</code>; <code>foo::bar($attributes)</code> oder JSON: <code>{"class": "group-item"}</code> oder <code>{"size": "5"}</code>
+yform_values_choice_choice_attributes = Attribute für jede Auswahl (choice_attributes)
+yform_values_choice_choice_attributes_notice = Mit dieser Option können zu jeder Auswahl zusätzliche HTML-Attribute hinzugefügt werden. Callable: <code>foo($attributes, $value, $label)</code>; <code>foo::bar($attributes, $value, $label)</code> oder JSON: <code>{"class": "choicable", "DE": {"data-language": "de-de"}}</code>
+yform_values_choice_choice_label = Label via Callable beeinflussen (choice_label)
+yform_values_choice_choice_label_notice = Callable sollte einen String zurückgeben. Callable: <code>foo($value, $label)</code> oder <code>foo::bar($value, $label)</code>
+yform_values_choice_choices = Auswahlmöglichkeiten (choices)
+yform_values_choice_choices_notice = Dies ist der einfachste Weg, um die Optionen festzulegen, die von diesem Feld verwendet werden sollen. Die Option choices ist entweder ein kommaseparierter String (Bezeichung=Wert), ein JSON-Array, wobei der Arrayschlüssel die Bezeichnung des Elements und der Arraywert der Wert des Elements ist, oder ein Query "SELECT id, name FROM table"
+yform_values_choice_choices_table =<table style="margin-bottom: 60px;" class="table"> <colgroup> <col width="32%" /> <col width="69%" /> </colgroup> <thead valign="bottom"> <tr> <th>Beschreibung</th> <th>Beispiel</th> </tr> </thead> <tbody valign="top"> <tr> <td>Callable</td> <td><code>foo::bar</code>, welches ein Array zurück gibt<code>["value" => "label"]</code></td> </tr> <tr> <td>kommaseparierter String</td> <td><code>Dänemark=DK,Deutschland=DE,Österreich=AT,Schweiz=CH</code></td> </tr> <tr> <td>JSON-Array</td> <td><code>{"Dänemark": "DK", "Deutschland": "DE", "Österreich": "AT", "Schweiz": "CH"}</code></td> </tr> <tr> <td>JSON-Array mit <code>optgroup</code> für das select tag</td> <td><code>{"Europa": {"Dänemark": "DK", "Deutschland": "DE", "Österreich": "AT", "Schweiz": "CH"}, "Südamerika": {"Bolivien": "BO"}}</code></td> </tr> <tr> <td>Query</td> <td><code>SELECT id AS value, name AS label FROM country</code></td> </tr> <tr> <td>Query mit <code>optgroup</code> für das select tag<br /> (In der Option <code>group_by</code> muss <code>group_label</code> notiert werden)</td> <td><code>SELECT a.id AS value, a.name AS label, b.name AS group_label FROM country AS a LEFT JOIN continent AS b ON a.continent_id = b.id</code></td> </tr> </tbody> </table>
+yform_values_choice_default = Vorgabewerte (default)
+yform_values_choice_default_notice = Werden hier kommasepariert Werte angegeben, so werden diese bereits vorausgewählt
+yform_values_choice_description = Ein Mehrzweckfeld, mit dem der Benutzer eine oder mehrere Optionen "auswählen" kann. Es kann als Select-Tag, Radios oder Checkboxen dargestellt werden (Alternative zu <code>checkbox_sql</code>, <code>radio</code>, <code>radio_sql</code>, <code>select</code>, <code>select_sql</code>)
+yform_values_choice_expanded = <b>Erweitert</b> (expanded)
+yform_values_choice_expanded_notice = Wenn auf <b>true</b> (aktiviert) gesetzt, werden Radios oder Checkboxen gerendert (abhängig von multiple). Wenn <b>false</b>, wird ein Select-Element gerendert.
+yform_values_choice_expanded_multiple_table = <style>label[for=yform-table_field-rex_choicetest-field-6] {margin-top: 40px;}</style><table style="margin-bottom: 60px;" class="table"><colgroup><col width="16%" /><col width="16%" /><col width="69%" /></colgroup><thead valign="bottom"><tr><th>Erweitert</th><th>Mehrfachauswahl</th><th>Element</th></tr></thead><tbody valign="top"><tr><td><code>false</code></td><td><code>false</code></td><td>select tag</td></tr><tr><td><code>false</code></td><td><code>true</code></td><td>select tag (with <code>multiple</code> attribute)</td></tr><tr><td><code>true</code></td><td><code>false</code></td><td>radio buttons</td></tr><tr><td><code>true</code></td><td><code>true</code></td><td>checkboxes</td></tr></tbody></table>
+yform_values_choice_group_attributes = Attribute für die Gruppe (group_attributes)
+yform_values_choice_group_attributes_notice = Mit dieser Option können zum Element zusätzliche HTML-Attribute hinzugefügt werden. Callable: <code>foo($attributes)</code>; <code>foo::bar($attributes)</code> oder JSON: <code>{"class": "group", "data-yform": "awesome"}</code>
+yform_values_choice_group_by = Gruppierungen (group_by)
+yform_values_choice_group_by_notice = Mit dieser Option können Auswahlmöglichkeiten in einem select "gruppiert" werden. (Aktuell nur via Query möglich, Fieldname angeben)
+yform_values_choice_multiple = <b>Mehrfachauswahl</b> (multiple)
+yform_values_choice_multiple_notice = Wenn <b>true</b>, kann der Benutzer mehrere Optionen auswählen (im Gegensatz zu nur einer Option). Abhängig vom Wert der expanded Option wird entweder ein Select-Tag oder Checkboxen (<b>true</b>) oder ein Select-Tag bzw. Radios (<b>false</b>) angezeigt.
+yform_values_choice_placeholder = Platzhalter
+yform_values_choice_placeholder_notice = Diese Option legt fest, ob eine spezielle "leere" Option (z.B. "Wählen Sie eine Option") oben in einem Select-Widget erscheint. Diese Option gilt nur, wenn die Mehrfachoption auf false gesetzt ist.
+yform_values_choice_preferred_choices = Bevorzugte Auswahlmöglichkeiten (preferred_choices)
+yform_values_choice_preferred_choices_notice = Mit dieser Option werden bestimmte Auswahlmöglichkeiten an den Anfang der Liste verschoben, wobei ein optisches Trennzeichen zwischen ihnen und dem Rest der Optionen gesetzt wird.
+
+yform_values_status_output_values = Ausgabewerte eingeben
+yform_values_status_output_values_notice = 2 Werte kommasepariert. z.B. offline,online oder ▢,▣
+
+yform_values_message_is_missing = [Warnmeldung für Feld "{1}" fehlt]
+
+yform_validate_object_is_missing = Object "{1}" zur Validierung "{0}" fehlt
+
+yform_values_deprecated_checkbox_sql = Deprecated! Verwende stattdessen das Choice-Feld
+yform_values_deprecated_radio = Deprecated! Verwende stattdessen das Choice-Feld
+yform_values_deprecated_radio_sql = Deprecated! Verwende stattdessen das Choice-Feld
+yform_values_deprecated_select = Deprecated! Verwende stattdessen das Choice-Feld
+yform_values_deprecated_select_sql = Deprecated! Verwende stattdessen das Choice-Feld
+yform_values_deprecated_float = Deprecated! Verwende stattdessen das number-Feld
+
+yform_always = immer
+yform_onlyifempty = nur wenn leer
+yform_never = nie
+
+yform_values_number_error_precision = Bitte gib bei der Anzahl der Ziffern (PRECISION) eine Zahl zwischen {0} und {1} ein
+yform_values_number_error_scale = Bitte gib bei der Anzahl der Nachkommastellen (SCALE) eine Zahl zwischen {0} und {1} ein
+yform_values_number_error_compare = Die Nachkommastellen dürfen nicht höher sein als die Anzahl der Ziffern.
+
+yform_docs = Dokumentation
+yform_docs_intro = Einführung
+yform_docs_table_manager = Table Manager
+yform_docs_formbuilder = Formbuilder
+yform_docs_demos = Demos
+yform_docs_yorm = YOrm
+yform_docs_email = E-Mail Templates
+yform_docs_rest = REST-API
+yform_docs_tools = Tools
+
+

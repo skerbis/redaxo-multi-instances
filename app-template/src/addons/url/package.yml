@@ -1,0 +1,33 @@
+package: url
+version: '2.2.0'
+author: Thomas Blum
+supportpage: 'https://github.com/tbaddade/redaxo_url/issues'
+
+page:
+    title: 'translate:url'
+    perm: admin[]
+    pjax: false
+    icon: rex-icon fa fa-anchor
+    subpages:
+        generator:
+            title: 'translate:generator'
+            subpages:
+                profiles:
+                    title: 'translate:url_generator_profiles'
+                urls:
+                    title: 'translate:url_generator_urls_generated'
+        help:
+            title: translate:url_generator_help
+            pjax: false
+            subPath: README.md
+            itemClass: pull-right
+
+requires:
+    redaxo: ^5.7.0
+    packages:
+        yrewrite: ^2.2.0
+    php:
+        extensions: [intl]
+        version: '>=7.0'
+
+#load: late

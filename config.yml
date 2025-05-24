@@ -1,0 +1,38 @@
+# REDAXO Multi-Instance Configuration
+version: "1.0"
+
+# Standard-Ports für neue Instanzen
+default_ports:
+  http_start: 8080
+  https_start: 8443
+  phpmyadmin_start: 8180
+  mailhog_start: 8280
+
+# SSL-Konfiguration
+ssl:
+  enabled: true
+  country: "DE"
+  state: "Germany"
+  city: "City"
+  organization: "Organization"
+  validity_days: 365
+
+# Backup-Konfiguration
+backup:
+  retention_days: 30
+  compress: true
+  include_database: true
+
+# Docker-Images
+docker_images:
+  php: "php:8.2-apache"
+  mariadb: "mariadb:latest"
+  phpmyadmin: "phpmyadmin/phpmyadmin"
+  mailhog: "mailhog/mailhog"
+
+# REDAXO-Konfiguration
+redaxo:
+  version: "latest"
+  timezone: "Europe/Berlin"
+  memory_limit: "256M"
+  upload_max_filesize: "32M"

@@ -1,0 +1,18 @@
+package: theme
+version: '1.4.0'
+author: Friends Of REDAXO
+supportpage: https://github.com/FriendsOfREDAXO/theme
+
+theme_folder: 'theme'
+
+force_backwards_compatibility: false
+
+page:
+    title: translate:name
+    perm: admin
+    subpages:
+        settings: { title: translate:settings }
+        info: { title: translate:info }
+
+requires:
+    redaxo: '>=5.1.0'

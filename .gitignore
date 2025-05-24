@@ -1,0 +1,59 @@
+# REDAXO Multi-Instance Manager - GitIgnore
+
+# Instanzen (enthalten sensitive Daten)
+instances/*/
+!instances/.gitkeep
+
+# SSL-Zertifikate und Keys (sensible Daten)
+ssl/*/
+!ssl/.gitkeep
+
+# Backups
+backups/*/
+!backups/.gitkeep
+
+# Downloads
+downloads/*/
+downloads/*.zip
+!downloads/.gitkeep
+
+# Logs
+logs/*.log
+logs/*/
+!logs/.gitkeep
+
+# Temporary files
+temp/*/
+!temp/.gitkeep
+
+# Docker volumes und builds
+.docker/
+docker-compose.override.yml
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node modules (falls verwendet)
+node_modules/
+
+# Cache
+*.cache
+.cache/
+
+# Runtime
+*.pid
+*.seed
+*.pid.lock

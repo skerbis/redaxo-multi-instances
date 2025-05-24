@@ -1,0 +1,26 @@
+package: media_negotiator
+version: 5.0.3
+name: Media Negotiator
+author: Andreas Lenhardt
+supportpage: https://github.com/AndiLeni/media_negotiator
+
+pages:
+    media_manager/media_negotiator:
+        title: 'Media Negotiator'
+        perm: media_negotiator[]
+        subpages:
+                setup:
+                    { title: 'Setup', icon: rex-icon }    
+                config:
+                    { title: 'Einstellungen', icon: rex-icon fa-cog }    
+    
+default_config:
+    force_imagick: false
+    disable_avif: false
+
+requires:
+    redaxo: ^5.18.0
+    php:
+        version: "^8.1"
+    packages:
+        media_manager: '^2.17.0'

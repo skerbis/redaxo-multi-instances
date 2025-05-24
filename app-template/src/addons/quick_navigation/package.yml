@@ -1,0 +1,28 @@
+package: quick_navigation
+version: '8.2.4'
+author: 'Friends Of REDAXO'
+supportpage: https://github.com/FriendsOfREDAXO/quick_navigation
+perm: quick_navigation[]
+
+page:
+    title: translate:quick_navigation_title
+    icon: rex-icon fa-star
+    perm: quick_navigation[settings]
+    subpages:
+        config: { title: 'translate:quick_navigation_config' }
+        help:  
+             { title: 'translate:quick_navigation_help',  icon: rex-icon fa-question-circle, subPath: README.md} 
+requires:
+    packages:
+        structure/content: '^2.17.0'
+    redaxo: '^5.17.0'
+    php:
+        version: '>=8.1, <9'
+conflicts:
+    packages:
+        yform: '<2.0.0'
+        watson: '<2.3.0'
+        forcal: '<4.1.0'
+installer_ignore:
+    - .github
+    - .gitignore

@@ -1,0 +1,5 @@
+# SSL Directory
+
+Dieses Verzeichnis enthält SSL-Zertifikate und private Schlüssel.
+Die tatsächlichen Zertifikate werden nicht ins Repository aufgenommen
+aus Sicherheitsgründen.

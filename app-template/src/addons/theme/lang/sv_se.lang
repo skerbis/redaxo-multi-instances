@@ -1,0 +1,17 @@
+theme_name = Theme
+theme_settings = Inställningar
+theme_info = Info
+theme_synchronize = Ändra utvecklarens sökväg till temamappen (notera inställningarna för Developer AddOn!)
+theme_synchronize_yformemails = YForm: Synkronisera E-post mallar
+theme_synchronize_templates = Synkronisera mallar
+theme_synchronize_modules = Synkronisera moduler
+theme_synchronize_actions = Synkronisera aktioner
+theme_include_be_files = Ladda JS/CSS-filer i backend
+theme_save = Spara inställningar
+theme_saved = Inställningarna har sparats.
+theme_error = Ett fel uppstod.
+theme_set_by_theme = Deaktiverad av addon "Theme".
+theme_install_folders = Installera Theme-mappen
+theme_folders_installed = Theme-mappar har installerats. Eventuella redan existerande filer raderades inte.
+theme_folders_not_installed = Theme-mappen kunde inte installeras.
+theme_functionsphp_in_lib_folder_is_deprecated = <strong> Tema Addon: </ strong> Filen <strong> functions.php </ strong> ingår inte längre automatiskt i mappen <strong> lib </ strong>. Vänligen gå till mappen <strong> inc </ strong>.

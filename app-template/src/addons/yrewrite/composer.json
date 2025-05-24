@@ -1,0 +1,36 @@
+{
+    "name": "yakamara/redaxo_yrewrite",
+
+    "require": {
+        "php": ">=8.1"
+    },
+
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.15.1",
+        "friendsofredaxo/linter": "^1.4",
+        "j13k/yaml-lint": "@dev",
+        "redaxo/php-cs-fixer-config": "^2.1.1",
+        "redaxo/source": "^5.18.3",
+        "yakamara/redaxo_yform": "dev-master"
+    },
+
+    "autoload": {
+        "classmap": [
+            "lib/"
+        ]
+    },
+
+    "scripts": {
+        "cs": "php-cs-fixer fix -v --ansi",
+        "psalm": "psalm --no-suggestions",
+        "post-update-cmd": "@composer bump"
+    },
+
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "platform": {
+            "php": "8.1.16"
+        }
+    }
+}

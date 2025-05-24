@@ -1,0 +1,4 @@
+# Backups Directory
+
+Dieses Verzeichnis enthält Backups der REDAXO-Instanzen.
+Die tatsächlichen Backup-Dateien werden nicht ins Repository aufgenommen.

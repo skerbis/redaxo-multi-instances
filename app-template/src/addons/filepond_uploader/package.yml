@@ -1,0 +1,44 @@
+package: filepond_uploader
+version: '1.9.0-beta1'
+author: 'KLXM Crossmedia GmbH Thomas Skerbis'
+supportpage: https://github.com/KLXM/filepond_uploader
+requires:
+    php: '>=8.1'
+    redaxo: '^5.17.1'
+    packages:
+        yform: '>=4.0.0'
+        metainfo: '>=2.0.0'
+page:
+    title: 'translate:filepond_uploader_title'
+    perm: filepond_uploader[upload] 
+    subpages:
+        upload: { 
+            title: 'translate:filepond_uploader_upload',
+            perm: filepond_uploader[upload]  
+        }
+        settings: { 
+            title: 'translate:filepond_uploader_settings',
+            perm: admin
+        }
+default_config:
+    allowed_types: 'image/*,video/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    max_filesize: 200
+    max_files: 30
+    max_pixel: 2100
+    category_id: 0
+    lang: 'de_de'
+    image_quality: 90
+    enable_chunks: true
+    chunk_size: 5
+    create_thumbnails: true
+    always_show_meta: false
+    replace_mediapool: false
+    upload_skip_meta: false
+installer_ignore:
+    - node_modules
+    - package.json
+    - package-lock.json
+    - yarn.lock
+    - .gitignore
+    - .github
+    - .git

@@ -1,0 +1,20 @@
+package: developer
+version: '3.9.2'
+author: Friends Of REDAXO
+supportpage: https://github.com/FriendsOfREDAXO/developer
+
+page:
+    title: translate:name
+    perm: admin
+    subpages:
+        settings: { title: translate:settings }
+        readme: { title: translate:readme, subPath: README.md }
+
+console_commands:
+    developer:sync: rex_developer_command
+
+requires:
+    php:
+        version: '>=5.5'
+        extensions: [iconv]
+    redaxo: ^5.2

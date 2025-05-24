@@ -1,0 +1,57 @@
+mform_name = MForm
+mform_title = MForm
+
+mform_demo = Colección de muestra
+mform_demo_base = Ejemplos básicos
+mform_demo_extended = Ejemplos extendidos
+mform_demo_expert = Ejemplos de expertos
+mform_demo_community = Ejemplos de FOS
+mform_reference_demo = Colección de muestra
+mform_info = Info
+
+mform_modul_input = Entrada del módulo
+mform_modul_output = Salida del módulo
+
+
+mform_github = MForm Github Docu Wiki
+
+mform_repeater_remove_group_confirm_msg = ¿Eliminar grupo?
+mform_repeater_remove_field_confirm_msg = ¿Eliminar campo?
+
+mform_example_base_text = Entrada de texto y elementos ocultos
+mform_example_base_select = Seleccionar y multiselectar elementos
+mform_example_base_checkbox = Casilla de verificación y elemento de radio
+mform_example_base_info = Elementos estructurales en línea
+mform_example_base_system = Elementos del botón del sistema
+mform_example_extended_attribute_method = Atributos Método
+mform_example_extended_options_method = Método de Opciones
+mform_example_extended_parameter_method = Método de parámetro
+mform_example_extended_full_json_support = Soporte completo de valores JSON
+mform_example_extended_diverse_setter = Añadir un diverso Setter
+mform_example_expert_html_form_elements = Nuevos elementos de formulario HTML5
+mform_example_expert_datalist = Lista de datos para elementos de entrada
+mform_example_expert_placeholder = Marcador de posición
+mform_example_expert_validation = Validación experta
+mform_example_expert_debug_custom_theme = Modo de depuración y Tema personalizado
+
+mform_example_description_base = Los "Ejemplos Básicos" incluyen las llamadas básicas del elemento MForm respectivo, sin ningún "extra", extensiones y validaciones.
+mform_example_description_extended = Los "Ejemplos Extendidos" muestran más allá de los "ejemplos básicos", cómo expandir los elementos en torno a atributos, opciones, parámetros, etiquetas, etc.
+mform_example_description_expert = Los "Ejemplos Expertos" muestran que MForm puede usarse para más que solo estándares.
+mform_example_description_community = Luego
+
+mform_github = MForm Github Docu Wiki
+
+mform_redactor_profile_create_success = El perfil Redactor "%s" fue creado con éxito, ¡por favor recargue la pagina!
+
+var_extern_link = URL externo
+var_mailto_link = Enlace de Email
+var_phone_link = Enlace a phonenumber
+
+yform_values_custom_link_description = Widget CustomLink de mform. Proporciona un widget de enlace para múltiples tipos de enlaces. Medios, enlaces externos, internos y de email.
+yform_values_custom_link_media = Media-link button
+yform_values_custom_link_media_types = Tipos de medios (separados por comas)
+yform_values_custom_link_media_category = Categoría de medios (ID)
+yform_values_custom_link_external = Extern-link button
+yform_values_custom_link_mailto = Mailto-link button
+yform_values_custom_link_intern = Redaxo internal-link button
+yform_values_custom_link_link_category = Categoría de enlace

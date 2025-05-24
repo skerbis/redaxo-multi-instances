@@ -1,0 +1,7 @@
+# Instances Directory
+
+Dieses Verzeichnis enthält alle REDAXO-Instanzen.
+Jede Instanz wird in einem eigenen Unterverzeichnis gespeichert.
+
+Die tatsächlichen Instanzen werden nicht ins Repository aufgenommen,
+da sie sensible Daten enthalten können.

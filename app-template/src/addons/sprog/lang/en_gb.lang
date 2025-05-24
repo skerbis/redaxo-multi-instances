@@ -1,0 +1,127 @@
+sprog = Sprog
+sprog_title = Sprog
+
+sprog_function = Function
+sprog_function_add = add
+sprog_function_edit = edit
+sprog_no_results = No results
+
+sprog_settings = Settings
+sprog_settings_title = Configuration title
+sprog_settings_clang_base = Source language
+sprog_settings_config_saved = Configuration has been saved.
+sprog_settings_wildcard_clang_switch = From how many languages the site navigation should be displayed
+sprog_settings_wildcard_close_tag = Closing tag
+sprog_settings_wildcard_open_tag = Opening tag
+sprog_settings_synchronization = Synchronisierung
+
+sprog_settings_sync_metainfo = Meta Info
+sprog_settings_sync_metainfo_art = Article
+sprog_settings_sync_metainfo_cat = Categories
+sprog_settings_sync_metainfo_med = Media
+sprog_settings_sync_metainfo_note = Select the metainfo that stay in sync between languages.
+sprog_settings_sync_metainfo_not_found = No metainfo found
+
+sprog_settings_sync_structure = Structure
+sprog_settings_sync_structure_category_name_to_article_name = Category name depends on the start article name (within the same language)
+sprog_settings_sync_structure_article_name_to_category_name = Category name specifies the start article name (within the same language)
+sprog_settings_sync_structure_status = Synchronize status (online / offline) between languages
+sprog_settings_sync_structure_template = Synchronize template between languages
+
+sprog_settings_wildcard_open_close_tag = opening / closing tag
+
+
+
+sprog_wildcard = Placeholder
+sprog_wildcard_title = Placeholder title
+sprog_wildcard_add = Add placeholder
+sprog_wildcard_added = Placeholder has been added
+sprog_wildcard_caption = List of placeholders
+sprog_wildcard_caption_missing = List of not yet replaced placeholders within the {0}
+sprog_wildcard_deleted = Placeholder has been deleted
+sprog_wildcard_edit = Edit placeholder
+sprog_wildcard_edited = PLaceholder has been edited
+sprog_wildcard_error_no_wildcard = Please enter a placeholder name
+sprog_wildcard_go_to_the_article = To article
+sprog_wildcard_replace = Replacement
+sprog_wildcard_without_tag = Note placeholder without opening / closing tag
+
+sprog_search = Search
+
+sprog_artefact = Artifacts
+
+sprog_help = Help
+
+
+sprog_import = Import
+sprog_import_delimiter = Delimiter
+sprog_import_delimiter_comma = Comma
+sprog_import_delimiter_semicolon = Semicolon
+sprog_import_delimiter_tab = Tab
+sprog_import_description = Placeholders can be imported to Sprog here. Please note that only CSV files can be imported. The first line should contain the definitions as follows: <code>wildcard</code> | <code>de</code> | <code>en</code>. Where <b>de</b> and <b>en</b> reflect the language codes defined in the respective language under system. If a language code is found which isn't available in the system it can be added automatically. The import files encoding should be set to UTF-8.
+sprog_import_file = File
+sprog_import_heading = Import CSV file
+sprog_import_missing_language_add = add missing language to system
+sprog_import_missing_language_ignore = ignore language
+sprog_import_missing_language_label = If an imported language is not available in the system
+sprog_import_title = Import
+sprog_import_wildcard_added = {0} has been added
+sprog_import_wildcard_updated = {0} has been updated
+
+sprog_export = Export
+sprog_export_description = Download all placeholders in all languages in a CSV file. The edited file can be re-imported.
+sprog_export_heading = Export CSV file
+sprog_export_title = Export
+
+sprog_cleanup = Clean up
+
+
+sprog_copy_content = Copy contents
+sprog_copy_structure_content = Copy article contents
+sprog_copy_metadata = Copy metadata
+
+sprog_copy_clang_from = from language
+sprog_copy_clang_to = to language
+sprog_copy_delete_before = Delete content beforehand?
+
+sprog_copy_name = Article name
+sprog_copy_catname = Category name
+sprog_copy_priority = Article priority
+sprog_copy_catpriority = Category priority
+sprog_copy_status = Status
+sprog_copy_template_id = Template
+
+sprog_copy_structure_metadata = Copy/synchronise metadata
+sprog_copy_structure_metadata_articles = Articles
+sprog_copy_structure_metadata_categories = Categories
+sprog_copy_structure_metadata_fields = Choose fields
+sprog_copy_structure_metadata_structure = Structure
+
+
+
+sprog_copy_button_start = Let's do this!
+sprog_copy_button_success = Coo, thanks!
+sprog_copy_button_cancel = Cancel
+sprog_copy_button_again = Try again
+
+
+sprog_copy_time_elapsed = Time passed
+sprog_copy_error_title = Holy guacamolé, something went tits up!
+sprog_copy_error_text = <p>An error occurred while copying article contents. Details of what happened can be reviewed on the error page. Suggestions to improve the quality of this addon are greatly appreciated, if you encounter errors please create an issue on <a href="https://github.com/tbaddade/redaxo_sprog/issues">Github</a>. Thanks a bunch!
+sprog_copy_error_link = Link to error page
+
+
+sprog_copy_structure_content_title = Copied articles...
+sprog_copy_structure_content_progress = Articel <span class="sprog-copy__target__progress-from">1</span> of <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_content_finished_title = Done: article contents have been copied
+sprog_copy_structure_content_finished_text = <p>The contents for <strong><span class="sprog-copy__target__finished-articles-num">article</span> have been copied. This took about <strong class="sprog-copy__target__finished-time-num"></strong>.</p>
+sprog_copy_structure_content_nothing_title = No contents?
+sprog_copy_structure_content_nothing_text = <p>I'm sorry, but there are is no content to copy.</p>
+
+sprog_copy_structure_metadata_title = Copied/synchronised articels...
+sprog_copy_structure_metadata_progress = Article <span class="sprog-copy__target__progress-from">1</span> of <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_metadata_finished_title = Done: Metadata has been copied/synchronized
+sprog_copy_structure_metadata_finished_text = <p>Metadata for <strong><span class="sprog-copy__target__finished-articles-num">articles</span> have been copied/synchronised. This took about <strong class="sprog-copy__target__finished-time-num"></strong>.</p>
+sprog_copy_structure_metadata_nothing_title = No metadata?
+sprog_copy_structure_metadata_nothing_text = <p>I'm sorry, but there is no metadata to copy/synchronise.</p>
+

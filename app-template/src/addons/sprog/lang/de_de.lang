@@ -1,0 +1,138 @@
+sprog = Sprog
+sprog_title = Sprog
+
+sprog_function = Funktion
+sprog_function_add = hinzufügen
+sprog_function_edit = editieren
+sprog_no_results = Keine Ergebnisse
+
+sprog_settings = Konfiguration
+sprog_settings_title = Konfiguration
+sprog_settings_clang_base = Sprachbasis
+sprog_settings_config_saved = Konfiguration gespeichert.
+sprog_settings_wildcard_clang_switch = Sprachen als Unternavigation einblenden
+sprog_settings_wildcard_close_tag = schließendes Tag
+sprog_settings_wildcard_open_tag = öffnendes Tag
+sprog_settings_synchronization = Synchronisierung
+
+sprog_settings_sync_metainfo = Meta Info
+sprog_settings_sync_metainfo_art = Artikel
+sprog_settings_sync_metainfo_cat = Kategorien
+sprog_settings_sync_metainfo_med = Medien
+sprog_settings_sync_metainfo_note = Selektiere die Meta Infos, die zwischen den Sprachen synchron bleiben
+sprog_settings_sync_metainfo_not_found = Keine Meta Infos gefunden
+
+sprog_settings_sync_structure = Struktur
+sprog_settings_sync_structure_category_name_to_article_name = Kategoriename gibt den Startartikelnamen vor (innerhalb derselben Sprache)
+sprog_settings_sync_structure_article_name_to_category_name = Kategoriename richtet sich nach dem Startartikelnamen (innerhalb derselben Sprache)
+sprog_settings_sync_structure_status = Status (Online/Offline) zwischen den Sprachen synchronisieren
+sprog_settings_sync_structure_template = Template zwischen den Sprachen synchronisieren
+
+sprog_settings_wildcard_open_close_tag = öffnendes/schließendes Tag
+
+
+
+sprog_wildcard = Platzhalter
+sprog_wildcard_title = Platzhalter
+sprog_wildcard_add = Platzhalter hinzufügen
+sprog_wildcard_added = Platzhalter wurde hinzugefügt
+sprog_wildcard_caption = Liste der Platzhalter
+sprog_wildcard_caption_missing = Liste der noch nicht ersetzten Platzhalter innerhalb der {0}
+sprog_wildcard_deleted = Platzhalter wurde gelöscht
+sprog_wildcard_edit = Platzhalter editieren
+sprog_wildcard_edited = Platzhalter wurde editiert
+sprog_wildcard_error_no_wildcard = Bitte einen Platzhalter angeben
+sprog_wildcard_go_to_the_article = zum Artikel
+sprog_wildcard_replace = Ersetzung
+sprog_wildcard_without_tag = Platzhalter ohne öffnendes/schließendes Tag notieren
+
+sprog_search = Suchen
+
+sprog_artefact = Artefakte
+
+sprog_help = Hilfe
+
+
+sprog_import = Importieren
+sprog_import_delimiter = Trennzeichen
+sprog_import_delimiter_comma = Komma
+sprog_import_delimiter_semicolon = Semikolon
+sprog_import_delimiter_tab = Tabulator
+sprog_import_description = Hier kann man Platzhalter in Sprog importieren. Bitte beachten, dass nur CSV-Dateien importiert werden können. In der ersten Zeile sollten die Definitionen wie folgt enthalten sein: <code>wildcard</code> | <code>de</code> | <code>en</code>. Hierbei entsprechen <b>de</b> und <b>en</b> die in der Instanz hinterlegten Sprachcodes in der jeweiligen Sprache. Wird ein der Instanz unbekannter Sprachcode gefunden, kann optional die Sprache direkt mit angelegt werden. Weiterhin sollte das Encoding der Importdatei UTF-8 sein.
+sprog_import_file = Datei
+sprog_import_heading = CSV-Datei importieren
+sprog_import_missing_language_add = Sprache der Instanz hinzufügen
+sprog_import_missing_language_ignore = ignorieren
+sprog_import_missing_language_label = Wenn der Sprachcode nicht in der Instanz vorhanden ist, dann
+sprog_import_title = Import
+sprog_import_wildcard_added = {0} Platzhalter wurden hinzugefügt
+sprog_import_wildcard_updated = {0} Platzhalter wurden aktualisiert
+
+sprog_export = Exportieren
+sprog_export_description = Hier kann man alle Platzhalter in allen Sprachen als CSV-Datei herunterladen. Nach dem Bearbeiten kann die CSV-Datei wieder importiert werden.
+sprog_export_heading = CSV-Datei exportieren
+sprog_export_title = Export
+
+sprog_cleanup = Aufräumen
+
+
+sprog_copy_content = Inhalte kopieren
+sprog_copy_structure_content = Artikelinhalte kopieren
+sprog_copy_metadata = Metadaten kopieren
+
+sprog_copy_clang_from = von der Sprache
+sprog_copy_clang_to = zur Sprache
+sprog_copy_delete_before = Inhalte vorher löschen?
+
+sprog_copy_name = Artikelname
+sprog_copy_catname = Kategoriename
+sprog_copy_priority = Artikelpriorität
+sprog_copy_catpriority = Kategoriepriorität
+sprog_copy_status = Status
+sprog_copy_template_id = Template
+
+sprog_copy_structure_metadata = Metadaten kopieren/synchronisieren
+sprog_copy_structure_metadata_articles = Artikel
+sprog_copy_structure_metadata_categories = Kategorien
+sprog_copy_structure_metadata_fields = Felder auswählen
+sprog_copy_structure_metadata_structure = Struktur
+
+
+
+sprog_copy_button_start = Los geht es!
+sprog_copy_button_success = Prima, danke!
+sprog_copy_button_cancel = Abbrechen
+sprog_copy_button_again = Nochmal versuchen
+
+
+sprog_copy_time_elapsed = Verstrichene Zeit
+sprog_copy_error_title = Verdammt, etwas ist schief gelaufen!
+sprog_copy_error_text = <p>Beim Kopieren der Artikelinhalte ist ein Fehler aufgetreten. Details befinden sich auf der Fehlerseite. Wir freuen uns über jede Mithilfe, die Qualität des Addons zu verbessern, indem Fehler bei <a href="https://github.com/tbaddade/redaxo_sprog/issues">Github</a> gemeldet werden. Vielen Dank!</p>
+sprog_copy_error_link = Link zur Fehlerseite
+
+
+sprog_copy_structure_content_title = Kopierte Artikel…
+sprog_copy_structure_content_progress = Artikel <span class="sprog-copy__target__progress-from">1</span> von <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_content_finished_title = Fertig: Artikeinhalte wurden kopiert
+sprog_copy_structure_content_finished_text = <p>Die Inhalte wurden für <strong><span class="sprog-copy__target__finished-articles-num">Artikel</span> kopiert. Das hat etwa <strong class="sprog-copy__target__finished-time-num"></strong> gedauert.</p>
+sprog_copy_structure_content_nothing_title = Keine Inhalte?
+sprog_copy_structure_content_nothing_text = <p>Tut mir leid, aber es gibt keine Inhalte zum kopieren.</p>
+
+sprog_copy_structure_metadata_title = Kopierte/Synchronisierte Artikel…
+sprog_copy_structure_metadata_progress = Artikel <span class="sprog-copy__target__progress-from">1</span> von <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_metadata_finished_title = Fertig: Metadaten wurden kopiert/synchronisiert
+sprog_copy_structure_metadata_finished_text = <p>Die Metadaten wurden für <strong><span class="sprog-copy__target__finished-articles-num">Artikel</span> kopiert/synchronisiert. Das hat etwa <strong class="sprog-copy__target__finished-time-num"></strong> gedauert.</p>
+sprog_copy_structure_metadata_nothing_title = Keine Metadaten?
+sprog_copy_structure_metadata_nothing_text = <p>Tut mir leid, aber es gibt keine Metadaten zum kopieren/synchronisieren.</p>
+
+
+sprog_abbreviation = Abkürzung
+sprog_abbreviations = Abkürzungen
+sprog_abbreviation_added = Abkürzung wurde hinzugefügt
+sprog_abbreviation_caption = Liste der Abkürzungen
+sprog_abbreviation_deleted = Abkürzung wurde gelöscht
+sprog_abbreviation_edited = Abkürzung wurde gespeichert
+sprog_abbreviation_long_form = Langform
+sprog_abbreviation_error_delete = Abkürzung konnte nicht gelöscht werden
+sprog_abbreviation_error_exists = Die Abkürzung wurde nicht angelegt. Wahrscheinlich existiert diese schon.
+sprog_abbreviation_error_is_empty = Bitte die Eingabe prüfen!

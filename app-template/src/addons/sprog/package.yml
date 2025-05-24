@@ -1,0 +1,79 @@
+package: sprog
+version: '1.5.1'
+author: Thomas Blum
+supportpage: www.redaxo.org/de/forum/
+
+requires:
+    redaxo: '^5.11'
+
+filter:
+    - Sprog\Filter\Format
+    - Sprog\Filter\Limit
+    - Sprog\Filter\Lower
+    - Sprog\Filter\Markdown
+    - Sprog\Filter\Raw
+    - Sprog\Filter\Title
+    - Sprog\Filter\Upper
+    - Sprog\Filter\Words
+
+page:
+    title: 'translate:sprog'
+    perm: sprog[]
+    pjax: true
+    icon: rex-icon rex-icon-language
+    subpages:
+        wildcard:
+            title: 'translate:wildcard'
+        abbreviation:
+            title: 'translate:abbreviation'
+            perm: sprog[abbreviation]
+        copy:
+            title: 'translate:copy_content'
+            perm: admin[]
+            subpages:
+                structure_content:
+                    title: 'translate:copy_structure_content'
+                structure_metadata:
+                    title: 'translate:copy_structure_metadata'
+        artefact:
+            title: 'translate:artefact'
+            perm: admin[]
+            pjax: false
+            subpages:
+                import:
+                    title: 'translate:import'
+                export:
+                    title: 'translate:export'
+#                cleanup:
+#                    title: 'translate:cleanup'
+        settings:
+            title: 'translate:settings'
+            perm: admin[]
+        help:
+            title: 'translate:help'
+            subPath: README.md
+            perm: admin[]
+            itemclass: pull-right
+
+
+pages:
+    sprog.copy.structure_content_popup:
+        title: 'translate:copy_structure_content_popup'
+        main: true
+        popup: true
+        hidden: true
+    sprog.copy.structure_content_generate:
+        title: 'translate:copy_structure_content_generate'
+        main: true
+        hasLayout: false
+        hidden: true
+    sprog.copy.structure_metadata_popup:
+        title: 'translate:copy_structure_metadata_popup'
+        main: true
+        popup: true
+        hidden: true
+    sprog.copy.structure_metadata_generate:
+        title: 'translate:copy_structure_metadata_generate'
+        main: true
+        hasLayout: false
+        hidden: true

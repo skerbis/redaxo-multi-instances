@@ -1,0 +1,17 @@
+<?php
+
+/**
+ * yform.
+ *
+ * @author jan.kristinus[at]redaxo[dot]org Jan Kristinus
+ * @author <a href="http://www.yakamara.de">www.yakamara.de</a>
+ */
+
+rex_sql_table::get(rex::getTable('yform_table'))
+    ->drop();
+rex_sql_table::get(rex::getTable('yform_field'))
+    ->drop();
+rex_sql_table::get(rex::getTable('yform_history'))
+    ->drop();
+rex_sql_table::get(rex::getTable('yform_history_field'))
+    ->drop();
