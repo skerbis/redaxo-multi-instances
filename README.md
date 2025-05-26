@@ -1,6 +1,6 @@
 # 🚀 REDAXO Multi-Instance Manager
 
-> Automatisierte REDAXO-Instanzen für macOS-Entwickler
+> Automatisierte REDAXO-Instanzen für macOS-Entwickler - MAMP war gestern
 
 **Ein Befehl → Komplette REDAXO-Installation mit beliebigen PHP/MariaDB-Versionen**
 
@@ -49,6 +49,9 @@ chmod +x redaxo
 ./redaxo backup <name>                    # Backup erstellen
 ./redaxo restore <name> <backup>          # Backup wiederherstellen
 ./redaxo backups                          # Alle Backups anzeigen
+
+# System-Wartung
+./redaxo cleanup                          # Docker-System bereinigen
 
 # Versionen ändern
 ./redaxo update <name> --php-version 8.3  # PHP updaten
@@ -137,6 +140,14 @@ chmod +x redaxo
 # → Komplett zurückgesetzt auf Backup-Stand
 ```
 
+**System-Wartung**
+```bash
+# Docker-System bereinigen (Speicherplatz freigeben)
+./redaxo cleanup
+# → Entfernt verwaiste Container, Images und Build-Cache
+# → REDAXO-Instanzen bleiben unberührt
+```
+
 **Vollständiger Backup-Test**
 ```bash
 # Neue Instanz mit Auto-Install
@@ -168,6 +179,9 @@ docker logs redaxo-<name>-apache
 
 # Neustart
 ./redaxo stop <name> && ./redaxo start <name>
+
+# Docker-System bereinigen (bei Performance-Problemen)
+./redaxo cleanup
 
 # Komplett neu
 ./redaxo remove <name>

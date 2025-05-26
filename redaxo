@@ -55,6 +55,7 @@ show_help() {
     echo "  ${YELLOW}backup <name>${NC}     - Backup einer Instanz erstellen"
     echo "  ${YELLOW}restore <name> <backup>${NC} - Backup wiederherstellen"
     echo "  ${YELLOW}backups${NC}           - Alle Backups anzeigen"
+    echo "  ${YELLOW}cleanup${NC}           - Docker-System bereinigen (Orphans, Build-Cache)"
     echo "  ${YELLOW}help${NC}              - Diese Hilfe anzeigen"
     echo ""
     echo -e "${BLUE}Create-Optionen:${NC}"
@@ -1572,6 +1573,51 @@ list_backups() {
     echo "   ./redaxo restore <instance> <backup> - Backup wiederherstellen"
 }
 
+# === CLEANUP FUNCTIONS ===
+
+cleanup_docker() {
+    echo -e "${YELLOW}🧹 Docker-System bereinigen...${NC}"
+    echo ""
+    
+    echo -e "${BLUE}📊 Aktuelle Docker-Nutzung:${NC}"
+    docker system df
+    echo ""
+    
+    echo -e "${YELLOW}⚠️  Diese Bereinigung entfernt:${NC}"
+    echo "  • Verwaiste Container (orphaned containers)"
+    echo "  • Ungenutzte Netzwerke (unused networks)"
+    echo "  • Verwaiste Images (dangling images)"
+    echo "  • Build-Cache (build cache)"
+    echo ""
+    echo -e "${RED}⚠️  REDAXO-Instanzen werden NICHT betroffen!${NC}"
+    echo ""
+    
+    read -p "Bereinigung durchführen? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${YELLOW}⏭️  Bereinigung abgebrochen${NC}"
+        return
+    fi
+    
+    echo -e "${BLUE}🗑️  Entferne verwaiste Container und Netzwerke...${NC}"
+    docker system prune -f
+    echo ""
+    
+    echo -e "${BLUE}🗑️  Entferne verwaiste Volumes...${NC}"
+    docker volume prune -f
+    echo ""
+    
+    echo -e "${GREEN}✅ Docker-Bereinigung abgeschlossen!${NC}"
+    echo ""
+    
+    echo -e "${BLUE}📊 Neue Docker-Nutzung:${NC}"
+    docker system df
+    echo ""
+    
+    echo -e "${BLUE}💡 Ihre REDAXO-Instanzen sind weiterhin verfügbar:${NC}"
+    list_instances
+}
+
 # === MAIN LOGIC ===
 
 case ${1:-help} in
@@ -1618,6 +1664,9 @@ case ${1:-help} in
         ;;
     backups)
         list_backups
+        ;;
+    cleanup)
+        cleanup_docker
         ;;
     help|--help|-h)
         show_help
