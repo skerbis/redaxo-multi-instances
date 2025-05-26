@@ -408,8 +408,8 @@ services:
         - PHP_VERSION=${php_version}
     container_name: redaxo-${name}-apache
     ports:
-      - "${http_port}:80"
-      - "${https_port}:443"
+      - "\${HTTP_PORT}:80"
+      - "\${HTTPS_PORT}:443"
     volumes:
       - ./app:/var/www/html
       - ../../ssl/${name}/cert.crt:/etc/ssl/certs/cert.crt:ro
@@ -435,24 +435,24 @@ services:
       - redaxo-network
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
+    image: phpmyadmin:latest
     container_name: redaxo-${name}-phpmyadmin
     environment:
       PMA_HOST: mariadb
       PMA_USER: \${MYSQL_USER}
       PMA_PASSWORD: \${MYSQL_PASSWORD}
     ports:
-      - "${phpmyadmin_port}:80"
+      - "\${PHPMYADMIN_PORT}:80"
     depends_on:
       - mariadb
     networks:
       - redaxo-network
 
   mailhog:
-    image: mailhog/mailhog
+    image: mailhog/mailhog:latest
     container_name: redaxo-${name}-mailhog
     ports:
-      - "${mailhog_port}:8025"
+      - "\${MAILHOG_PORT}:8025"
     networks:
       - redaxo-network
 
@@ -741,8 +741,8 @@ services:
         - PHP_VERSION=${php_version}
     container_name: webserver-${name}-apache
     ports:
-      - "${http_port}:80"
-      - "${https_port}:443"
+      - "\${HTTP_PORT}:80"
+      - "\${HTTPS_PORT}:443"
     volumes:
       - ./app:/var/www/html
       - ../../ssl/${name}/cert.crt:/etc/ssl/certs/cert.crt:ro
