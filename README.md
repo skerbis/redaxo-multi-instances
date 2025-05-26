@@ -4,19 +4,57 @@
 
 **Ein Befehl → Komplette REDAXO-Installation mit beliebigen PHP/MariaDB-Versionen**
 
+## 📋 Systemvoraussetzungen
+
+**Minimal:**
+- **macOS** 10.15+ (Catalina oder neuer)
+- **Docker Desktop** 4.0+ ([Download](https://www.docker.com/products/docker-desktop/))
+- **Homebrew** ([Installation](https://brew.sh/))
+- **8 GB RAM** (empfohlen: 16 GB)
+- **10 GB freier Speicher** für Docker Images
+
+**Installation:**
+```bash
+# Docker Desktop installieren (GUI-Installation)
+# Dann Homebrew-Tools:
+brew install mkcert git
+```
+
+## 🆚 Warum besser als MAMP?
+
+| Feature | MAMP Pro | REDAXO Multi-Instance |
+|---------|----------|----------------------|
+| **Kosten** | 💰 $99/Jahr | 🆓 Kostenlos |
+| **PHP-Versionen** | ⚠️ Begrenzt | ✅ Alle verfügbaren |
+| **Parallele Instanzen** | ⚠️ Komplex | ✅ Einfach: `./redaxo create` |
+| **Isolation** | ❌ Shared Environment | ✅ Container-Isolation |
+| **Version-Conflicts** | ❌ Häufig | ✅ Unmöglich |
+| **REDAXO Auto-Install** | ❌ Manual | ✅ `--auto` Flag |
+| **SSL/HTTPS** | ⚠️ Basic | ✅ mkcert Integration |
+| **Backup-System** | ❌ Fehlt | ✅ Ein-Klick Backup/Restore |
+| **Performance** | ⚠️ Overhead | ✅ Optimiert |
+| **Portabilität** | ❌ macOS only | ✅ Docker überall |
+
+**Konkrete Vorteile:**
+- **🚀 Schneller**: REDAXO in 30 Sekunden statt 10 Minuten Setup
+- **🔧 Flexibler**: PHP 7.4 + 8.4 parallel ohne Konflikte  
+- **💡 Entwicklerfreundlich**: Shell-Zugriff, Composer, Git direkt verfügbar
+- **🔒 Sicherer**: Komplette Isolation zwischen Projekten
+- **💾 Backup-Ready**: Automatische Datensicherung mit einem Befehl
+
 ## ⚡ Quick Start
 
 ```bash
-# Voraussetzungen (macOS)
-brew install mkcert
-# + Docker Desktop
+# 1. Voraussetzungen installieren
+# Docker Desktop: https://www.docker.com/products/docker-desktop/
+brew install mkcert git
 
-# Setup
+# 2. Projekt einrichten
 git clone <repo-url> redaxo-multi-instances && cd redaxo-multi-instances
 chmod +x redaxo
 ./redaxo ssl-setup
 
-# Automatische REDAXO-Installation
+# 3. Erste REDAXO-Instanz (automatisch)
 ./redaxo create myproject --auto
 
 # ✅ Fertig: http://localhost:8080/redaxo/ (admin/admin123)
@@ -30,6 +68,8 @@ chmod +x redaxo
 - **🌐 Webserver-Mode** - Pure PHP-Instanzen
 - **🔧 Port-Auto** - Keine Konflikte
 - **💾 Backup-System** - Vollständige Datensicherung
+- **🏗️ Container-Isolation** - Jede Instanz komplett isoliert
+- **⚡ Performance** - Optimierte Docker-Container
 
 ## 📚 Befehle
 
@@ -67,14 +107,32 @@ chmod +x redaxo
 
 **Verschiedene Versionen**
 ```bash
-# Legacy-Projekt
-./redaxo create alt --php-version 7.4 --auto
+# Legacy-Projekt (PHP 7.4 + MariaDB 10.4)
+./redaxo create alt --php-version 7.4 --mariadb-version 10.4 --auto
 
-# Modern 
-./redaxo create neu --php-version 8.4 --auto
+# Modern (PHP 8.4 + MariaDB 11.0)
+./redaxo create neu --php-version 8.4 --mariadb-version 11.0 --auto
 
 # API-Server (ohne Datenbank)
 ./redaxo create api --type webserver --php-version 8.3
+
+# 🎯 Alle laufen parallel - kein MAMP-Chaos!
+./redaxo list
+```
+
+**MAMP vs. Multi-Instance Vergleich**
+```bash
+# ❌ MAMP: Umständlich, teuer, limitiert
+# 1. MAMP Pro kaufen ($99)
+# 2. PHP-Version global ändern
+# 3. Apache/MySQL neu starten
+# 4. Hoffen dass andere Projekte noch funktionieren
+# 5. SSL manuell konfigurieren
+# 6. Backup? Selber lösen...
+
+# ✅ Multi-Instance: Ein Befehl, fertig
+./redaxo create projekt-xyz --auto
+# → 30 Sekunden, komplett isoliert, SSL ready
 ```
 
 **Entwicklung**
