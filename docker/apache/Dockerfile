@@ -1,5 +1,5 @@
 # Für Apple Silicon (ARM64) und andere Architekturen optimiert
-ARG PHP_VERSION=8.2
+ARG PHP_VERSION=8.4
 FROM php:${PHP_VERSION}-apache
 
 # System-Abhängigkeiten installieren

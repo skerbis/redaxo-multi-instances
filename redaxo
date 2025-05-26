@@ -39,7 +39,7 @@ show_help() {
     echo "  ./redaxo <command> [options]"
     echo ""
     echo -e "${BLUE}Commands:${NC}"
-    echo "  ${YELLOW}create <name>${NC}     - Neue REDAXO-Instanz erstellen"
+    echo "  ${YELLOW}create <name>${NC}     - Neue REDAXO- oder Webserver-Instanz erstellen"
     echo "  ${YELLOW}start <name>${NC}      - Instanz starten"
     echo "  ${YELLOW}stop <name>${NC}       - Instanz stoppen"
     echo "  ${YELLOW}remove <name>${NC}     - Instanz löschen"
@@ -52,7 +52,8 @@ show_help() {
     echo "  ${YELLOW}help${NC}              - Diese Hilfe anzeigen"
     echo ""
     echo -e "${BLUE}Create-Optionen:${NC}"
-    echo "  ${YELLOW}--php-version <version>${NC}     - PHP-Version (Standard: 8.2)"
+    echo "  ${YELLOW}--type <type>${NC}               - Instanz-Typ: 'redaxo' oder 'webserver' (Standard: redaxo)"
+    echo "  ${YELLOW}--php-version <version>${NC}     - PHP-Version (Standard: 8.4)"
     echo "  ${YELLOW}--mariadb-version <version>${NC} - MariaDB-Version (Standard: latest)"
     echo "  ${YELLOW}--http-port <port>${NC}          - HTTP-Port (automatisch)"
     echo "  ${YELLOW}--https-port <port>${NC}         - HTTPS-Port (automatisch)"
@@ -60,9 +61,11 @@ show_help() {
     echo ""
     echo -e "${BLUE}Beispiele:${NC}"
     echo "  ./redaxo create mein-projekt"
+    echo "  ./redaxo create mein-webserver --type webserver"
     echo "  ./redaxo create mein-projekt --php-version 8.1 --mariadb-version 10.6"
     echo "  ./redaxo create mein-projekt --php-version 8.3"
     echo "  ./redaxo create standard-redaxo --repo redaxo/redaxo"
+    echo "  ./redaxo create test-server --type webserver --php-version 8.3"
     echo "  ./redaxo start mein-projekt"
     echo "  ./redaxo urls mein-projekt"
     echo "  ./redaxo db mein-projekt"
@@ -194,20 +197,30 @@ create_instance() {
     fi
     
     # Standard-Versionen
-    local php_version="8.2"
+    local php_version="8.4"
     local mariadb_version="latest"
     local custom_http_port=""
     local custom_https_port=""
     local custom_repo=""
+    local instance_type="redaxo"
     
     # Parse Argumente
     while [[ $# -gt 0 ]]; do
         case $1 in
+            --type)
+                instance_type="$2"
+                if [ "$instance_type" != "redaxo" ] && [ "$instance_type" != "webserver" ]; then
+                    echo -e "${RED}❌ Ungültiger Instanz-Typ: $instance_type${NC}"
+                    echo -e "${YELLOW}Verfügbare Typen: redaxo, webserver${NC}"
+                    exit 1
+                fi
+                shift 2
+                ;;
             --php-version)
                 php_version="$2"
                 if ! validate_php_version "$php_version"; then
                     echo -e "${RED}❌ Ungültige PHP-Version: $php_version${NC}"
-                    echo -e "${YELLOW}Verfügbare Versionen: 7.4, 8.0, 8.1, 8.2, 8.3${NC}"
+                    echo -e "${YELLOW}Verfügbare Versionen: 7.4, 8.0, 8.1, 8.2, 8.3, 8.4${NC}"
                     exit 1
                 fi
                 shift 2
@@ -240,9 +253,15 @@ create_instance() {
         esac
     done
     
-    echo -e "${GREEN}🚀 Erstelle REDAXO-Instanz '$name'${NC}"
+    if [ "$instance_type" = "webserver" ]; then
+        echo -e "${GREEN}🌐 Erstelle Webserver-Instanz '$name'${NC}"
+    else
+        echo -e "${GREEN}🚀 Erstelle REDAXO-Instanz '$name'${NC}"
+    fi
     echo -e "${YELLOW}  🐘 PHP-Version: $php_version${NC}"
-    echo -e "${YELLOW}  🗄️  MariaDB-Version: $mariadb_version${NC}"
+    if [ "$instance_type" = "redaxo" ]; then
+        echo -e "${YELLOW}  🗄️  MariaDB-Version: $mariadb_version${NC}"
+    fi
     
     # Finde verfügbare Ports
     if [ -n "$custom_http_port" ]; then
@@ -257,31 +276,48 @@ create_instance() {
         https_port=$(find_available_port 8440)
     fi
     
-    local phpmyadmin_port=$(find_available_port 8180)
-    local mailhog_port=$(find_available_port 8120)
-    
-    echo -e "${BLUE}📋 Konfiguration:${NC}"
-    echo "  • HTTP:       http://localhost:$http_port"
-    echo "  • HTTPS:      https://localhost:$https_port"
-    echo "  • phpMyAdmin: http://localhost:$phpmyadmin_port"
-    echo "  • MailHog:    http://localhost:$mailhog_port"
-    echo ""
+    if [ "$instance_type" = "webserver" ]; then
+        local phpmyadmin_port=""
+        local mailhog_port=""
+        
+        echo -e "${BLUE}📋 Konfiguration:${NC}"
+        echo "  • HTTP:  http://localhost:$http_port"
+        echo "  • HTTPS: https://localhost:$https_port"
+        echo ""
+    else
+        local phpmyadmin_port=$(find_available_port 8180)
+        local mailhog_port=$(find_available_port 8120)
+        
+        echo -e "${BLUE}📋 Konfiguration:${NC}"
+        echo "  • HTTP:       http://localhost:$http_port"
+        echo "  • HTTPS:      https://localhost:$https_port"
+        echo "  • phpMyAdmin: http://localhost:$phpmyadmin_port"
+        echo "  • MailHog:    http://localhost:$mailhog_port"
+        echo ""
+    fi
     
     local instance_dir="$INSTANCES_DIR/$name"
     mkdir -p "$instance_dir"
     
-    # Download REDAXO
-    echo -e "${YELLOW}📦 Lade REDAXO herunter...${NC}"
-    if [ -n "$custom_repo" ]; then
-        "$PROJECT_DIR/redaxo-downloader.sh" download latest --repo "$custom_repo" --extract-to "$instance_dir/app" >/dev/null 2>&1
+    if [ "$instance_type" = "webserver" ]; then
+        # Erstelle einfache Webserver-Struktur
+        echo -e "${YELLOW}🌐 Erstelle Webserver-Struktur...${NC}"
+        mkdir -p "$instance_dir/app"
+        create_webserver_index "$name" "$instance_dir/app/index.php" "$http_port" "$https_port" "$php_version"
     else
-        "$PROJECT_DIR/redaxo-downloader.sh" download latest --extract-to "$instance_dir/app" >/dev/null 2>&1
-    fi
-    
-    if [ ! -d "$instance_dir/app" ]; then
-        echo -e "${RED}❌ REDAXO-Download fehlgeschlagen${NC}"
-        rm -rf "$instance_dir"
-        exit 1
+        # Download REDAXO
+        echo -e "${YELLOW}📦 Lade REDAXO herunter...${NC}"
+        if [ -n "$custom_repo" ]; then
+            "$PROJECT_DIR/redaxo-downloader.sh" download latest --repo "$custom_repo" --extract-to "$instance_dir/app" >/dev/null 2>&1
+        else
+            "$PROJECT_DIR/redaxo-downloader.sh" download latest --extract-to "$instance_dir/app" >/dev/null 2>&1
+        fi
+        
+        if [ ! -d "$instance_dir/app" ]; then
+            echo -e "${RED}❌ REDAXO-Download fehlgeschlagen${NC}"
+            rm -rf "$instance_dir"
+            exit 1
+        fi
     fi
     
     # Kopiere Docker-Konfiguration
@@ -289,10 +325,19 @@ create_instance() {
     
     # Erkenne DocumentRoot und passe Apache-Konfiguration an
     local document_root=$(detect_document_root "$instance_dir")
-    echo -e "${YELLOW}🔧 Erkenne DocumentRoot: $document_root${NC}"
+    if [ "$instance_type" = "webserver" ]; then
+        echo -e "${YELLOW}🔧 Webserver DocumentRoot: /var/www/html${NC}"
+        document_root="/var/www/html"
+    else
+        echo -e "${YELLOW}🔧 Erkenne DocumentRoot: $document_root${NC}"
+    fi
     
     # Passe Apache-Konfiguration an
-    if [ "$document_root" = "/var/www/html" ]; then
+    if [ "$instance_type" = "webserver" ]; then
+        echo -e "${BLUE}🌐 Webserver-Instanz - DocumentRoot: $document_root${NC}"
+        # Für Webserver immer /var/www/html verwenden
+        sed -i '' 's|/var/www/html/public|/var/www/html|g' "$instance_dir/docker/apache/apache-vhost.conf"
+    elif [ "$document_root" = "/var/www/html" ]; then
         echo -e "${BLUE}📁 Standard-REDAXO erkannt - DocumentRoot: $document_root${NC}"
         # Ersetze /var/www/html/public mit /var/www/html in der Apache-Konfiguration
         sed -i '' 's|/var/www/html/public|/var/www/html|g' "$instance_dir/docker/apache/apache-vhost.conf"
@@ -307,10 +352,18 @@ create_instance() {
     setup_dockerfile_ssl "$name"
     
     # Erstelle docker-compose.yml mit gewählten Versionen
-    create_docker_compose_with_versions "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailhog_port" "$php_version" "$mariadb_version"
+    if [ "$instance_type" = "webserver" ]; then
+        create_webserver_docker_compose "$name" "$http_port" "$https_port" "$php_version"
+    else
+        create_docker_compose_with_versions "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailhog_port" "$php_version" "$mariadb_version"
+    fi
     
     # Erstelle .env-Datei
-    create_env_file "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailhog_port"
+    if [ "$instance_type" = "webserver" ]; then
+        create_webserver_env_file "$name" "$http_port" "$https_port"
+    else
+        create_env_file "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailhog_port"
+    fi
     
     echo -e "${GREEN}✅ Instanz '$name' erfolgreich erstellt${NC}"
     echo ""
@@ -328,7 +381,7 @@ create_docker_compose() {
     local mailhog_port=$5
     
     # Standard-Versionen
-    create_docker_compose_with_versions "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailhog_port" "8.2" "latest"
+    create_docker_compose_with_versions "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailhog_port" "8.4" "latest"
 }
 
 create_docker_compose_with_versions() {
@@ -436,6 +489,291 @@ MAILHOG_PORT=$mailhog_port
 EOF
 }
 
+# === WEBSERVER FUNCTIONS ===
+
+create_webserver_index() {
+    local name=$1
+    local index_file=$2
+    local http_port=$3
+    local https_port=$4
+    local php_version=$5
+    
+    cat > "$index_file" << 'EOF'
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $_SERVER['HTTP_HOST']; ?> - Webserver Info</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 1.2em;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-card h3 {
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-card .icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .info-value {
+            color: #333;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+        }
+        
+        .status-ok {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        .timestamp {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 Webserver-Instanz</h1>
+            <div class="subtitle"><?php echo gethostname(); ?></div>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <h3><span class="icon">🖥️</span>Server-Info</h3>
+                <div class="info-item">
+                    <span class="info-label">Instanz:</span>
+                    <span class="info-value"><?php echo getenv('INSTANCE_NAME') ?: 'N/A'; ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Host:</span>
+                    <span class="info-value"><?php echo $_SERVER['HTTP_HOST']; ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Port:</span>
+                    <span class="info-value"><?php echo $_SERVER['SERVER_PORT']; ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Protokoll:</span>
+                    <span class="info-value"><?php echo isset($_SERVER['HTTPS']) ? 'HTTPS' : 'HTTP'; ?></span>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3><span class="icon">🐘</span>PHP-Info</h3>
+                <div class="info-item">
+                    <span class="info-label">Version:</span>
+                    <span class="info-value status-ok"><?php echo PHP_VERSION; ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">SAPI:</span>
+                    <span class="info-value"><?php echo php_sapi_name(); ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Extensions:</span>
+                    <span class="info-value"><?php echo count(get_loaded_extensions()); ?> geladen</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Memory Limit:</span>
+                    <span class="info-value"><?php echo ini_get('memory_limit'); ?></span>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3><span class="icon">🌐</span>URLs</h3>
+                <div class="info-item">
+                    <span class="info-label">HTTP:</span>
+                    <span class="info-value">
+                        <a href="http://localhost:<?php echo getenv('HTTP_PORT') ?: '80'; ?>" target="_blank">
+                            http://localhost:<?php echo getenv('HTTP_PORT') ?: '80'; ?>
+                        </a>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">HTTPS:</span>
+                    <span class="info-value">
+                        <a href="https://localhost:<?php echo getenv('HTTPS_PORT') ?: '443'; ?>" target="_blank">
+                            https://localhost:<?php echo getenv('HTTPS_PORT') ?: '443'; ?>
+                        </a>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3><span class="icon">📁</span>Dateisystem</h3>
+                <div class="info-item">
+                    <span class="info-label">Document Root:</span>
+                    <span class="info-value"><?php echo $_SERVER['DOCUMENT_ROOT']; ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Script:</span>
+                    <span class="info-value"><?php echo basename($_SERVER['SCRIPT_FILENAME']); ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Writable:</span>
+                    <span class="info-value status-ok"><?php echo is_writable($_SERVER['DOCUMENT_ROOT']) ? 'Ja' : 'Nein'; ?></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timestamp">
+            Zuletzt aktualisiert: <?php echo date('d.m.Y H:i:s'); ?>
+        </div>
+        
+        <div class="footer">
+            <p>🚀 REDAXO Multi-Instance Manager - Webserver-Instanz</p>
+            <p>Erstellt mit dem REDAXO Multi-Instance Manager</p>
+        </div>
+    </div>
+</body>
+</html>
+EOF
+
+    echo -e "${GREEN}  ✅ Informative index.php erstellt${NC}"
+}
+
+create_webserver_docker_compose() {
+    local name=$1
+    local http_port=$2
+    local https_port=$3
+    local php_version=$4
+    
+    cat > "$INSTANCES_DIR/$name/docker-compose.yml" << EOF
+version: '3.8'
+
+services:
+  apache:
+    build:
+      context: ./docker/apache
+      dockerfile: Dockerfile
+      args:
+        - PHP_VERSION=${php_version}
+    container_name: webserver-${name}-apache
+    ports:
+      - "${http_port}:80"
+      - "${https_port}:443"
+    volumes:
+      - ./app:/var/www/html
+      - ../../ssl/${name}/cert.crt:/etc/ssl/certs/cert.crt:ro
+      - ../../ssl/${name}/private.key:/etc/ssl/private/private.key:ro
+    networks:
+      - webserver-network
+    environment:
+      - INSTANCE_NAME=${name}
+      - HTTP_PORT=${http_port}
+      - HTTPS_PORT=${https_port}
+
+networks:
+  webserver-network:
+EOF
+}
+
+create_webserver_env_file() {
+    local name=$1
+    local http_port=$2
+    local https_port=$3
+    
+    cat > "$INSTANCES_DIR/$name/.env" << EOF
+# Webserver Instance: $name
+INSTANCE_NAME=$name
+
+# Ports
+HTTP_PORT=$http_port
+HTTPS_PORT=$https_port
+EOF
+}
+
 start_instance() {
     local name=$1
     
@@ -524,7 +862,7 @@ remove_instance() {
 }
 
 list_instances() {
-    echo -e "${GREEN}📋 REDAXO-Instanzen${NC}"
+    echo -e "${GREEN}📋 Alle Instanzen${NC}"
     echo ""
     
     if [ ! -d "$INSTANCES_DIR" ] || [ -z "$(ls -A "$INSTANCES_DIR" 2>/dev/null)" ]; then
@@ -532,6 +870,7 @@ list_instances() {
         echo ""
         echo -e "${BLUE}💡 Erstellen Sie eine neue Instanz mit:${NC}"
         echo "   ./redaxo create mein-projekt"
+        echo "   ./redaxo create mein-webserver --type webserver"
         return
     fi
     
@@ -539,8 +878,8 @@ list_instances() {
         if [ -d "$instance" ]; then
             local name=$(basename "$instance")
             
-            # Status prüfen
-            if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
+            # Status prüfen - sowohl für REDAXO als auch Webserver
+            if docker ps --format "table {{.Names}}" | grep -q -E "(redaxo-${name}-apache|webserver-${name}-apache)"; then
                 echo -e "  ${GREEN}🟢 $name${NC} (läuft)"
                 show_instance_info "$name" "    "
             else
@@ -584,21 +923,38 @@ show_urls() {
     
     echo -e "${GREEN}🌐 URLs für '$name'${NC}"
     echo ""
-    echo -e "${BLUE}REDAXO:${NC}"
-    echo "  🌐 HTTP:  http://localhost:$HTTP_PORT"
-    echo "  🔒 HTTPS: https://localhost:$HTTPS_PORT"
-    echo ""
-    echo -e "${BLUE}Tools:${NC}"
-    echo "  🗄️  phpMyAdmin: http://localhost:$PHPMYADMIN_PORT"
-    echo "  📧 MailHog:    http://localhost:$MAILHOG_PORT"
-    echo ""
     
-    # Status prüfen
-    if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
-        echo -e "${GREEN}✅ Instanz läuft - URLs sind erreichbar${NC}"
+    # Prüfe ob es eine Webserver-Instanz ist (keine MariaDB-Variablen)
+    if [ -z "$MYSQL_DATABASE" ]; then
+        echo -e "${BLUE}Webserver:${NC}"
+        echo "  🌐 HTTP:  http://localhost:$HTTP_PORT"
+        echo "  🔒 HTTPS: https://localhost:$HTTPS_PORT"
+        echo ""
+        
+        # Status prüfen für Webserver
+        if docker ps --format "table {{.Names}}" | grep -q "webserver-${name}-apache"; then
+            echo -e "${GREEN}✅ Webserver läuft - URLs sind erreichbar${NC}"
+        else
+            echo -e "${RED}⚠️  Webserver gestoppt${NC}"
+            echo -e "${YELLOW}💡 Starten mit: ./redaxo start $name${NC}"
+        fi
     else
-        echo -e "${RED}⚠️  Instanz gestoppt${NC}"
-        echo -e "${YELLOW}💡 Starten mit: ./redaxo start $name${NC}"
+        echo -e "${BLUE}REDAXO:${NC}"
+        echo "  🌐 HTTP:  http://localhost:$HTTP_PORT"
+        echo "  🔒 HTTPS: https://localhost:$HTTPS_PORT"
+        echo ""
+        echo -e "${BLUE}Tools:${NC}"
+        echo "  🗄️  phpMyAdmin: http://localhost:$PHPMYADMIN_PORT"
+        echo "  📧 MailHog:    http://localhost:$MAILHOG_PORT"
+        echo ""
+        
+        # Status prüfen für REDAXO
+        if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
+            echo -e "${GREEN}✅ Instanz läuft - URLs sind erreichbar${NC}"
+        else
+            echo -e "${RED}⚠️  Instanz gestoppt${NC}"
+            echo -e "${YELLOW}💡 Starten mit: ./redaxo start $name${NC}"
+        fi
     fi
 }
 
@@ -683,7 +1039,7 @@ show_versions() {
     local mariadb_version=$(grep "image: mariadb:" "$compose_file" | sed 's/.*mariadb://' | head -1)
     
     if [ -z "$php_version" ]; then
-        php_version="8.2 (Standard)"
+        php_version="8.4 (Standard)"
     fi
     if [ -z "$mariadb_version" ]; then
         mariadb_version="latest"
@@ -730,7 +1086,7 @@ update_instance_versions() {
                 php_version="$2"
                 if ! validate_php_version "$php_version"; then
                     echo -e "${RED}❌ Ungültige PHP-Version: $php_version${NC}"
-                    echo -e "${YELLOW}Verfügbare Versionen: 7.4, 8.0, 8.1, 8.2, 8.3${NC}"
+                    echo -e "${YELLOW}Verfügbare Versionen: 7.4, 8.0, 8.1, 8.2, 8.3, 8.4${NC}"
                     exit 1
                 fi
                 rebuild_containers=true
@@ -775,7 +1131,7 @@ update_instance_versions() {
     
     # Verwende aktuelle Versionen falls nicht angegeben
     if [ -z "$php_version" ]; then
-        php_version=$(grep "image: php:" docker-compose.yml | head -1 | sed 's/.*php://' | sed 's/-.*//' || echo "8.2")
+        php_version=$(grep "image: php:" docker-compose.yml | head -1 | sed 's/.*php://' | sed 's/-.*//' || echo "8.4")
     fi
     if [ -z "$mariadb_version" ]; then
         mariadb_version=$(grep "image: mariadb:" docker-compose.yml | sed 's/.*mariadb://' | head -1 || echo "latest")

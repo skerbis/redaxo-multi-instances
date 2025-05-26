@@ -23,6 +23,7 @@ Stell dir vor, du möchtest:
 
 - 🏗️ **Ein Skript für alles** - Alle Funktionen in einem `./redaxo` Befehl
 - 🔧 **Super einfach** - `./redaxo create mein-projekt` und fertig!
+- 🌐 **Zwei Instanz-Typen** - REDAXO-Projekte oder einfache Webserver
 - 🔒 **HTTPS inklusive** - Automatische SSL-Zertifikate
 - 🐳 **Docker-Power** - Jede Instanz läuft sauber isoliert
 - 📊 **Perfekte Übersicht** - Alle Projekte auf einen Blick
@@ -109,7 +110,8 @@ Das `./redaxo` Skript kann alles:
 
 ```bash
 # ✨ INSTANZEN VERWALTEN
-./redaxo create <name>          # Neue Instanz erstellen
+./redaxo create <name>          # Neue REDAXO-Instanz erstellen
+./redaxo create <name> --type webserver  # Einfache Webserver-Instanz erstellen
 ./redaxo create <name> --php-version 8.3 --mariadb-version 10.6  # Mit bestimmten Versionen
 ./redaxo start <name>           # Instanz starten
 ./redaxo stop <name>            # Instanz stoppen
@@ -135,9 +137,9 @@ Das `./redaxo` Skript kann alles:
 - **PHP 7.4** - Für Legacy-Projekte
 - **PHP 8.0** - Stabile Version
 - **PHP 8.1** - Weit verbreitet
-- **PHP 8.2** - Standard (empfohlen)
-- **PHP 8.3** - Neueste Version
-- **PHP 8.4** - Bleeding Edge
+- **PHP 8.2** - Weitverbreitet
+- **PHP 8.3** - Neuere Version
+- **PHP 8.4** - Standard (empfohlen)
 
 ### 🗄️ Verfügbare MariaDB-Versionen
 - **10.4** - Ältere stabile Version
@@ -260,7 +262,23 @@ Für REDAXO-Setup:
 
 ## 🎨 Praktische Beispiele
 
-### Beispiel 1: Verschiedene PHP-Versionen für Projekte
+### Beispiel 1: Webserver-Instanzen für schnelle Tests
+```bash
+# Einfacher Webserver für PHP-Tests
+./redaxo create php-playground --type webserver --php-version 8.3
+
+# API-Entwicklung mit PHP 8.2
+./redaxo create api-test --type webserver --php-version 8.2
+
+# Legacy-Test mit PHP 7.4
+./redaxo create legacy-test --type webserver --php-version 7.4
+
+# URLs anzeigen
+./redaxo urls php-playground
+# Zeigt: http://localhost:8080 mit informativer index.php
+```
+
+### Beispiel 2: Verschiedene PHP-Versionen für REDAXO-Projekte
 ```bash
 # Legacy-Projekt mit PHP 7.4
 ./redaxo create legacy-kunde --php-version 7.4 --mariadb-version 10.4
@@ -283,7 +301,7 @@ Für REDAXO-Setup:
 ./redaxo versions zukunft-projekt
 ```
 
-### Beispiel 2: Kundenprojekte verwalten
+### Beispiel 3: Kundenprojekte verwalten
 ```bash
 # Drei Kundenprojekte erstellen
 ./redaxo create kunde-mueller
@@ -299,7 +317,7 @@ Für REDAXO-Setup:
 ./redaxo list
 ```
 
-### Beispiel 3: Upgrade-Testing
+### Beispiel 4: Upgrade-Testing
 ```bash
 # Aktuelle Produktionsumgebung (PHP 8.1)
 ./redaxo create produktion-test --php-version 8.1 --mariadb-version 10.6
@@ -311,7 +329,7 @@ Für REDAXO-Setup:
 ./redaxo update produktion-test --php-version 8.3 --mariadb-version 11.0
 ```
 
-### Beispiel 4: PHP-Version für bestehende Instanz ändern
+### Beispiel 5: PHP-Version für bestehende Instanz ändern
 ```bash
 # Vor größeren Änderungen Backup erstellen
 ./redaxo backup wichtiges-projekt
@@ -325,6 +343,28 @@ Für REDAXO-Setup:
 
 ## 🔧 Erweiterte Funktionen
 
+### 🌐 Webserver-Instanzen - Neu!
+
+Seit Version 2.0 können Sie auch einfache Webserver-Instanzen ohne REDAXO erstellen:
+
+```bash
+# Einfacher PHP-Webserver
+./redaxo create mein-webserver --type webserver
+
+# Mit spezifischer PHP-Version
+./redaxo create test-server --type webserver --php-version 8.3
+
+# Mit benutzerdefinierten Ports
+./redaxo create api-server --type webserver --http-port 9000 --https-port 9443
+```
+
+**Was beinhaltet eine Webserver-Instanz:**
+- ✅ **Informative index.php** mit Server- und PHP-Informationen
+- ✅ **SSL-Unterstützung** (HTTPS) inklusive
+- ✅ **Keine Datenbank** - schlanker und schneller
+- ✅ **Gleiche Verwaltung** wie REDAXO-Instanzen (`start`, `stop`, `urls`)
+- ✅ **Perfekt für:** API-Entwicklung, PHP-Tests, Prototypen
+
 ### 🐘 PHP- und MariaDB-Versionen wählen
 
 ```bash
@@ -334,7 +374,7 @@ Für REDAXO-Setup:
 # Nur PHP-Version angeben (MariaDB bleibt auf "latest")
 ./redaxo create legacy-projekt --php-version 7.4
 
-# Nur MariaDB-Version angeben (PHP bleibt auf 8.2)
+# Nur MariaDB-Version angeben (PHP bleibt auf 8.4)
 ./redaxo create db-test --mariadb-version 11.0
 
 # Aktuelle Versionen einer Instanz anzeigen
@@ -350,8 +390,8 @@ Für REDAXO-Setup:
 
 | REDAXO Version | Empfohlene PHP-Version | Min. PHP | MariaDB |
 |----------------|------------------------|----------|---------|
-| REDAXO 5.18+   | **PHP 8.2** oder 8.3  | PHP 8.0  | 10.4+   |
-| REDAXO 5.15+   | **PHP 8.1** oder 8.2  | PHP 7.4  | 10.2+   |
+| REDAXO 5.18+   | **PHP 8.4** oder 8.3  | PHP 8.0  | 10.4+   |
+| REDAXO 5.15+   | **PHP 8.2** oder 8.3  | PHP 7.4  | 10.2+   |
 | Legacy         | **PHP 7.4** oder 8.0  | PHP 7.3  | 5.7+    |
 
 ### Mit spezifischen Ports
@@ -467,7 +507,7 @@ MIT-Lizenz - nutzen Sie es frei für Ihre Projekte!
 # 1. Script ausführbar machen
 chmod +x redaxo
 
-# 2. Erste Instanz erstellen (PHP 8.2, MariaDB latest)
+# 2. Erste Instanz erstellen (PHP 8.4, MariaDB latest)
 ./redaxo create mein-projekt
 
 # 3. URLs anzeigen
