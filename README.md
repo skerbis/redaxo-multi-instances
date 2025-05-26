@@ -70,6 +70,7 @@ chmod +x redaxo
 - **💾 Backup-System** - Vollständige Datensicherung
 - **🏗️ Container-Isolation** - Jede Instanz komplett isoliert
 - **⚡ Performance** - Optimierte Docker-Container
+- **📁 Flexible Strukturen** - Modern Structure oder klassisches REDAXO
 
 ## 📚 Befehle
 
@@ -78,6 +79,7 @@ chmod +x redaxo
 ./redaxo create <name>                    # Manuelles Setup
 ./redaxo create <name> --auto             # Automatisches Setup
 ./redaxo create <name> --php-version 8.3  # Spezifische PHP-Version
+./redaxo create <name> --repo redaxo/redaxo --auto  # Klassische REDAXO-Struktur
 
 # Verwaltung
 ./redaxo start|stop|remove <name>         # Lebenszyklus
@@ -97,6 +99,26 @@ chmod +x redaxo
 ./redaxo update <name> --php-version 8.3  # PHP updaten
 ```
 
+## 📁 REDAXO-Strukturen
+
+**Standard (empfohlen):** Modern Structure
+- **Repository:** `skerbis/REDAXO_MODERN_STRUCTURE` (Standard)
+- **Vorteile:** Optimierte Ordnerstruktur, bessere Entwicklung
+- **Verwendung:** `./redaxo create projekt --auto`
+
+**Klassisch:** Original REDAXO
+- **Repository:** `redaxo/redaxo`
+- **Vorteile:** Gewohnte Struktur, kompatibel mit älteren Tutorials
+- **Verwendung:** `./redaxo create projekt --repo redaxo/redaxo --auto`
+
+```bash
+# Modern Structure (Standard)
+./redaxo create modern-projekt --auto
+
+# Klassische Struktur
+./redaxo create klassisch-projekt --repo redaxo/redaxo --auto
+```
+
 ## 🔧 Beispiele
 
 **Automatisches Setup (empfohlen)**
@@ -112,6 +134,9 @@ chmod +x redaxo
 
 # Modern (PHP 8.4 + MariaDB 11.0)
 ./redaxo create neu --php-version 8.4 --mariadb-version 11.0 --auto
+
+# Klassische REDAXO-Struktur (statt Modern Structure)
+./redaxo create klassisch --repo redaxo/redaxo --auto
 
 # API-Server (ohne Datenbank)
 ./redaxo create api --type webserver --php-version 8.3
@@ -173,6 +198,13 @@ chmod +x redaxo
 **Legacy-Migration**  
 ```bash
 ./redaxo create legacy-migration --php-version 7.4 --mariadb-version 10.4 --auto
+```
+
+**Klassische REDAXO-Struktur**
+```bash
+./redaxo create projekt-klassisch --repo redaxo/redaxo --auto
+# → Verwendet die Standard REDAXO-Struktur statt Modern Structure
+# → Ideal für bestehende Projekte oder wenn Sie die gewohnte Struktur bevorzugen
 ```
 
 **API-Entwicklung**
