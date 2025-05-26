@@ -280,3 +280,27 @@ redaxo-multi-instances/
 ./redaxo start mein-projekt   # Fortsetzen
 ./redaxo remove mein-projekt  # Löschen
 ```
+
+---
+
+## 👨‍💻 Credits & Support
+
+**Entwickelt von [Thomas Skerbis](https://github.com/skerbis)**
+- 🏢 Geschäftsführer der **[KLXM Crossmedia GmbH](https://klxm.de)**
+- 🚀 Core-Entwickler von **[REDAXO CMS](https://redaxo.org)** seit 2007
+- 📚 Haupt-Contributor der **[REDAXO Dokumentation](https://github.com/redaxo/docs)**
+- 🎯 Ersteller von 50+ **[REDAXO AddOns](https://github.com/FriendsOfREDAXO)**
+
+### 💖 Unterstützen
+
+**Wenn dieses Tool Ihnen Zeit spart und Ihr Entwicklerleben vereinfacht:**
+
+🌟 **[⭐ Star auf GitHub](https://github.com/skerbis/redaxo-multi-instances)**  
+☕ **[💰 Sponsor werden](https://github.com/sponsors/skerbis)** - ab $2/Monat  
+🐛 **[🐞 Issues melden](https://github.com/skerbis/redaxo-multi-instances/issues)**  
+🔧 **[🤝 Pull Requests](https://github.com/skerbis/redaxo-multi-instances/pulls)**
+
+> 💡 **Warum sponsern?** Alle Tools sind MIT-lizenziert und kostenlos. Mit Ihrem Support ermöglichen Sie weitere Entwicklung und coole neue Features für die REDAXO-Community!
+
+
+*Made with ❤️ in Moers, Germany*
