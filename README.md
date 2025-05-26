@@ -287,7 +287,7 @@ redaxo-multi-instances/
 
 **Entwickelt von [Thomas Skerbis](https://github.com/skerbis)**
 - 🏢 Geschäftsführer der **[KLXM Crossmedia GmbH](https://klxm.de)**
-- 🚀 Core-Entwickler von **[REDAXO CMS](https://redaxo.org)** seit 2007
+- 🚀 REDAXP-Entwickler  **[REDAXO CMS](https://redaxo.org)** seit 2007
 - 📚 Haupt-Contributor der **[REDAXO Dokumentation](https://github.com/redaxo/docs)**
 - 🎯 Ersteller von 50+ **[REDAXO AddOns](https://github.com/FriendsOfREDAXO)**
 
