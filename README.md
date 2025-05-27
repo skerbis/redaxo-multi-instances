@@ -345,3 +345,5 @@ redaxo-multi-instances/
 
 
 *Made with ❤️ in Moers, Germany*
+
+by: Thomas Skerbis
