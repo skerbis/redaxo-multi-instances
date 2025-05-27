@@ -24,7 +24,7 @@ brew install mkcert git
 
 | Feature | MAMP Pro | REDAXO Multi-Instance |
 |---------|----------|----------------------|
-| **Kosten** | 💰 $99/Jahr | 🆓 Kostenlos |
+| **Kosten** | 💰 $99/Jahr | 🆓 Kostenlos / Sponsoring welcome |
 | **PHP-Versionen** | ⚠️ Begrenzt | ✅ Alle verfügbaren |
 | **Parallele Instanzen** | ⚠️ Komplex | ✅ Einfach: `./redaxo create` |
 | **Isolation** | ❌ Shared Environment | ✅ Container-Isolation |
