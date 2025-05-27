@@ -310,12 +310,14 @@ create_instance() {
     else
         local phpmyadmin_port=$(find_available_port 8180)
         local mailpit_port=$(find_available_port 8120)
+        local smtp_port=$(find_available_port 1025)
         
         echo -e "${BLUE}📋 Konfiguration:${NC}"
         echo "  • HTTP:       http://localhost:$http_port"
         echo "  • HTTPS:      https://localhost:$https_port"
         echo "  • phpMyAdmin: http://localhost:$phpmyadmin_port"
         echo "  • Mailpit:    http://localhost:$mailpit_port"
+        echo "  • SMTP:       localhost:$smtp_port"
         echo ""
     fi
     
@@ -385,7 +387,7 @@ create_instance() {
     if [ "$instance_type" = "webserver" ]; then
         create_webserver_env_file "$name" "$http_port" "$https_port"
     else
-        create_env_file "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailpit_port"
+        create_env_file "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailpit_port" "$smtp_port"
     fi
     
     echo -e "${GREEN}✅ Instanz '$name' erfolgreich erstellt${NC}"
@@ -483,7 +485,7 @@ services:
     container_name: redaxo-${name}-mailpit
     ports:
       - "\${MAILPIT_PORT}:8025"
-      - "1025:1025"
+      - "\${SMTP_PORT}:1025"
     networks:
       - redaxo-network
     environment:
@@ -504,6 +506,7 @@ create_env_file() {
     local https_port=$3
     local phpmyadmin_port=$4
     local mailpit_port=$5
+    local smtp_port=$6
     
     cat > "$INSTANCES_DIR/$name/.env" << EOF
 # REDAXO Instance: $name
@@ -520,6 +523,7 @@ HTTP_PORT=$http_port
 HTTPS_PORT=$https_port
 PHPMYADMIN_PORT=$phpmyadmin_port
 MAILPIT_PORT=$mailpit_port
+SMTP_PORT=$smtp_port
 EOF
 }
 

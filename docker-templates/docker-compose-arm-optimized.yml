@@ -60,7 +60,7 @@ services:
     container_name: redaxo-${INSTANCE_NAME}-mailpit
     ports:
       - "${MAILPIT_PORT}:8025"  # Web UI
-      - "1025:1025"            # SMTP
+      - "${SMTP_PORT}:1025"     # SMTP
     networks:
       - redaxo-network
     environment:

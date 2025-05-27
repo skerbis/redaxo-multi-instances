@@ -257,6 +257,34 @@ chmod +x redaxo
 
 ## 🚨 Troubleshooting
 
+### ⚠️ "Starte 'instanz'..." hängt ohne Fortschritt
+
+**Problem:** Der `create` Befehl bleibt beim Starten hängen
+```bash
+./redaxo create mein-projekt --auto
+# Zeigt: "Starte 'mein-projekt'..." ohne weiteren Fortschritt
+```
+
+**Lösung:**
+```bash
+# 1. Container-Status prüfen
+docker ps -a | grep mein-projekt
+
+# 2. Wenn Container im Status "Created": Manuell starten
+./redaxo start mein-projekt
+
+# 3. Status überprüfen
+./redaxo list
+```
+
+**Ursachen:**
+- Docker-Performance-Issues (Container brauchen länger zum Starten)
+- Port-Konflikte mit anderen Anwendungen
+- Zu wenig RAM/CPU für Docker
+- Docker-Netzwerk-Probleme
+
+### 🔧 Allgemeine Problembehebung
+
 ```bash
 # Status prüfen
 ./redaxo list
@@ -276,6 +304,26 @@ docker logs redaxo-<name>-apache
 # Komplett neu
 ./redaxo remove <name>
 ./redaxo create <name> --auto
+```
+
+### 🚑 Notfall-Diagnose
+
+```bash
+# Docker-Status prüfen
+docker ps -a
+
+# Container-Logs ansehen
+docker logs redaxo-<name>-apache
+docker logs redaxo-<name>-mariadb
+
+# Port-Konflikte prüfen
+lsof -i :8080  # HTTP-Port
+lsof -i :8180  # phpMyAdmin-Port
+lsof -i :8120  # Mailpit-Port
+
+# Docker-Ressourcen prüfen
+docker system df
+docker system prune  # Vorsicht: Löscht verwaiste Container/Images
 ```
 
 ## 📁 Struktur
