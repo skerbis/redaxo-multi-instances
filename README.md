@@ -315,19 +315,28 @@ redaxo-multi-instances/
 
 ---
 
-## 👨‍💻 Credits & Support
+## 📋 Changelog
 
-**Entwickelt von [Thomas Skerbis](https://github.com/skerbis)**
-- 🏢 Geschäftsführer der **[KLXM Crossmedia GmbH](https://klxm.de)**
-- 🚀 REDAXP-Entwickler  **[REDAXO CMS](https://redaxo.org)** seit 2007
-- 📚 Haupt-Contributor der **[REDAXO Dokumentation](https://github.com/redaxo/docs)**
-- 🎯 Ersteller von 50+ **[REDAXO AddOns](https://github.com/FriendsOfREDAXO)**
+### 🆕 Version 2025.05.27 - Mailpit Migration
+- **✨ Mailhog → Mailpit**: Modernisierung des E-Mail-Test-Tools
+  - **Bessere Performance**: Schnellere und effizientere Implementierung
+  - **ARM64 Support**: Optimiert für Apple Silicon (M1/M2/M3)
+  - **Erweiterte Features**: Verbesserte Web-UI und Suchfunktionen
+  - **Aktive Entwicklung**: Mailpit wird aktiv maintained (Mailhog ist deprecated)
+  - **Bessere SMTP-Kompatibilität**: Erweiterte SMTP-Funktionen für komplexere Tests
+  
+- **🔧 Technische Verbesserungen**:
+  - Container-Name: `mailhog` → `mailpit`
+  - Docker Image: `mailhog/mailhog:latest` → `axllent/mailpit:latest`
+  - Zusätzlicher SMTP-Port 1025 für direkte SMTP-Tests
+  - Erweiterte Umgebungsvariablen für bessere SMTP-Kompatibilität
 
-### 💖 Unterstützen
+- **📦 Automatische Migration**: Bestehende Instanzen werden automatisch aktualisiert
 
-**Wenn dieses Tool Ihnen Zeit spart und Ihr Entwicklerleben vereinfacht:**
+---
 
-🌟 **[⭐ Star auf GitHub](https://github.com/skerbis/redaxo-multi-instances)**  
+## 🤝 Support & Community
+
 ☕ **[💰 Sponsor werden](https://github.com/sponsors/skerbis)** - ab $2/Monat  
 🐛 **[🐞 Issues melden](https://github.com/skerbis/redaxo-multi-instances/issues)**  
 🔧 **[🤝 Pull Requests](https://github.com/skerbis/redaxo-multi-instances/pulls)**

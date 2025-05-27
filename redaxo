@@ -301,7 +301,7 @@ create_instance() {
     
     if [ "$instance_type" = "webserver" ]; then
         local phpmyadmin_port=""
-        local mailhog_port=""
+        local mailpit_port=""
         
         echo -e "${BLUE}📋 Konfiguration:${NC}"
         echo "  • HTTP:  http://localhost:$http_port"
@@ -309,13 +309,13 @@ create_instance() {
         echo ""
     else
         local phpmyadmin_port=$(find_available_port 8180)
-        local mailhog_port=$(find_available_port 8120)
+        local mailpit_port=$(find_available_port 8120)
         
         echo -e "${BLUE}📋 Konfiguration:${NC}"
         echo "  • HTTP:       http://localhost:$http_port"
         echo "  • HTTPS:      https://localhost:$https_port"
         echo "  • phpMyAdmin: http://localhost:$phpmyadmin_port"
-        echo "  • MailHog:    http://localhost:$mailhog_port"
+        echo "  • Mailpit:    http://localhost:$mailpit_port"
         echo ""
     fi
     
@@ -378,14 +378,14 @@ create_instance() {
     if [ "$instance_type" = "webserver" ]; then
         create_webserver_docker_compose "$name" "$http_port" "$https_port" "$php_version"
     else
-        create_docker_compose_with_versions "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailhog_port" "$php_version" "$mariadb_version"
+        create_docker_compose_with_versions "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailpit_port" "$php_version" "$mariadb_version"
     fi
     
     # Erstelle .env-Datei
     if [ "$instance_type" = "webserver" ]; then
         create_webserver_env_file "$name" "$http_port" "$https_port"
     else
-        create_env_file "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailhog_port"
+        create_env_file "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailpit_port"
     fi
     
     echo -e "${GREEN}✅ Instanz '$name' erfolgreich erstellt${NC}"
@@ -408,10 +408,10 @@ create_docker_compose() {
     local http_port=$2
     local https_port=$3
     local phpmyadmin_port=$4
-    local mailhog_port=$5
+    local mailpit_port=$5
     
     # Standard-Versionen
-    create_docker_compose_with_versions "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailhog_port" "8.4" "latest"
+    create_docker_compose_with_versions "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailpit_port" "8.4" "latest"
 }
 
 create_docker_compose_with_versions() {
@@ -419,7 +419,7 @@ create_docker_compose_with_versions() {
     local http_port=$2
     local https_port=$3
     local phpmyadmin_port=$4
-    local mailhog_port=$5
+    local mailpit_port=$5
     local php_version=${6:-"8.2"}
     local mariadb_version=${7:-"latest"}
     
@@ -478,13 +478,17 @@ services:
     networks:
       - redaxo-network
 
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: redaxo-${name}-mailhog
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: redaxo-${name}-mailpit
     ports:
-      - "\${MAILHOG_PORT}:8025"
+      - "\${MAILPIT_PORT}:8025"
+      - "1025:1025"
     networks:
       - redaxo-network
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
 
 networks:
   redaxo-network:
@@ -499,7 +503,7 @@ create_env_file() {
     local http_port=$2
     local https_port=$3
     local phpmyadmin_port=$4
-    local mailhog_port=$5
+    local mailpit_port=$5
     
     cat > "$INSTANCES_DIR/$name/.env" << EOF
 # REDAXO Instance: $name
@@ -515,7 +519,7 @@ MYSQL_PASSWORD=redaxo_$(date +%s)
 HTTP_PORT=$http_port
 HTTPS_PORT=$https_port
 PHPMYADMIN_PORT=$phpmyadmin_port
-MAILHOG_PORT=$mailhog_port
+MAILPIT_PORT=$mailpit_port
 EOF
 }
 
@@ -975,7 +979,7 @@ show_urls() {
         echo ""
         echo -e "${BLUE}Tools:${NC}"
         echo "  🗄️  phpMyAdmin: http://localhost:$PHPMYADMIN_PORT"
-        echo "  📧 MailHog:    http://localhost:$MAILHOG_PORT"
+        echo "  📧 Mailpit:    http://localhost:$MAILPIT_PORT"
         echo ""
         
         # Status prüfen für REDAXO
@@ -1261,7 +1265,7 @@ update_instance_versions() {
     echo -e "${YELLOW}  🗄️  MariaDB-Version: $mariadb_version${NC}"
     
     # Generiere neue docker-compose.yml mit aktualisierten Versionen
-    create_docker_compose_with_versions "$name" "$HTTP_PORT" "$HTTPS_PORT" "$PHPMYADMIN_PORT" "$MAILHOG_PORT" "$php_version" "$mariadb_version"
+    create_docker_compose_with_versions "$name" "$HTTP_PORT" "$HTTPS_PORT" "$PHPMYADMIN_PORT" "$MAILPIT_PORT" "$php_version" "$mariadb_version"
     
     # Container neu bauen und starten
     echo -e "${YELLOW}  🔨 Baue Container neu...${NC}"

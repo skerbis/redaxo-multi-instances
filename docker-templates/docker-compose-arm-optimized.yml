@@ -54,12 +54,12 @@ services:
     networks:
       - redaxo-network
 
-  # ARM-kompatible MailHog Alternative mit MailPit
+  # ARM-kompatible E-Mail-Test-Tool mit Mailpit
   mailpit:
     image: axllent/mailpit:latest
     container_name: redaxo-${INSTANCE_NAME}-mailpit
     ports:
-      - "${MAILHOG_PORT}:8025"  # Web UI
+      - "${MAILPIT_PORT}:8025"  # Web UI
       - "1025:1025"            # SMTP
     networks:
       - redaxo-network
