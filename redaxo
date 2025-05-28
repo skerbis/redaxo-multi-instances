@@ -1186,7 +1186,13 @@ auto_install_redaxo() {
         echo ""
         echo -e "${BLUE}🌐 REDAXO öffnen:${NC}"
         echo "  • Frontend: http://localhost:$HTTP_PORT"
+        echo "  • Frontend HTTPS: https://localhost:$HTTPS_PORT"
         echo "  • Backend:  http://localhost:$HTTP_PORT/redaxo/"
+        echo "  • Backend HTTPS:  https://localhost:$HTTPS_PORT/redaxo/"
+        echo ""
+        echo -e "${BLUE}🛠️  Tools:${NC}"
+        echo "  • phpMyAdmin: http://localhost:$PHPMYADMIN_PORT"
+        echo "  • Mailpit:    http://localhost:$MAILPIT_PORT"
         echo ""
     else
         echo -e "${YELLOW}  ⚠️  Automatische Installation fehlgeschlagen${NC}"
