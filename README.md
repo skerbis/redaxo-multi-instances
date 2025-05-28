@@ -28,8 +28,8 @@
 brew install mkcert git
 
 # 2. Projekt einrichten
-git clone <repo-url> redaxo-multi-instances && cd redaxo-multi-instances
-chmod +x redaxo import-dump
+git clone https://github.com/skerbis/redaxo-multi-instances.git && cd redaxo-multi-instances
+chmod +x redaxo import-dump penpot
 ./redaxo ssl-setup
 
 # 3. Erste REDAXO-Instanz erstellen
@@ -365,6 +365,23 @@ docker logs redaxo-<name>-mariadb
 # Status aller Container
 docker ps -a
 ```
+
+---
+
+## 👨‍💻 Über den Entwickler
+
+Dieses Tool wurde von **[Thomas Skerbis](https://github.com/skerbis)** entwickelt - Geschäftsführer der **[KLXM Crossmedia GmbH](https://klxm.de)** und aktiver **Friend of REDAXO**.
+
+### 🏆 REDAXO-Expertise
+- **Core-Contributor** bei [REDAXO](https://github.com/redaxo/redaxo) (336⭐)
+- **Maintainer** der [REDAXO-Dokumentation](https://github.com/redaxo/docs)
+- **Entwickler** von 50+ REDAXO AddOns bei [FriendsOfREDAXO](https://github.com/FriendsOfREDAXO)
+
+### 🌟 Beliebte REDAXO-AddOns
+- **[Quick Navigation](https://github.com/FriendsOfREDAXO/quick_navigation)** (67⭐) - Backend-Navigation
+- **[erecht24](https://github.com/FriendsOfREDAXO/erecht24)** (18⭐) - Rechtstexte-Integration
+- **[sA11y](https://github.com/FriendsOfREDAXO/for_sa11y)** (18⭐) - Accessibility-Check
+- **[Vidstack](https://github.com/FriendsOfREDAXO/vidstack)** (10⭐) - Moderne Video-Player
 
 ---
 
