@@ -236,6 +236,7 @@ services:
       - PENPOT_ASSETS_STORAGE_BACKEND=\${PENPOT_ASSETS_STORAGE_BACKEND}
       - PENPOT_STORAGE_ASSETS_FS_DIRECTORY=\${PENPOT_STORAGE_ASSETS_FS_DIRECTORY}
       - PENPOT_TELEMETRY_ENABLED=\${PENPOT_TELEMETRY_ENABLED}
+      - PENPOT_SMTP_ENABLED=\${PENPOT_SMTP_ENABLED}
 
   penpot-exporter:
     image: "penpotapp/exporter:latest"
@@ -296,9 +297,12 @@ HTTP_PORT=$http_port
 HTTPS_PORT=$https_port
 
 # Penpot Configuration
-PENPOT_FLAGS=enable-registration enable-login-with-ldap
+PENPOT_FLAGS="enable-registration enable-login-with-ldap disable-email-verification disable-smtp"
 PENPOT_SECRET_KEY=$secret_key
 PENPOT_PUBLIC_URI=http://localhost:$http_port
+
+# Email Configuration (disabled for local development)
+PENPOT_SMTP_ENABLED=false
 
 # Database
 PENPOT_DATABASE_URI=postgresql://penpot-postgres/penpot

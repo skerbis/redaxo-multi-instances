@@ -435,6 +435,11 @@ docker system prune  # Vorsicht: Löscht verwaiste Container/Images
 #          http://localhost:9090 (HTTP)
 ```
 
+**🔑 Erster Login (ohne E-Mail-Bestätigung):**
+- Registrieren Sie sich direkt über die Penpot-Oberfläche
+- **Keine E-Mail-Bestätigung erforderlich** - Sofort einsatzbereit
+- E-Mail-Verifikation ist für lokale Entwicklung deaktiviert
+
 ### 📚 Penpot Befehle
 
 ```bash
@@ -548,6 +553,16 @@ docker system prune  # Vorsicht: Löscht verwaiste Container/Images
 ```
 
 ### 🚨 Penpot Troubleshooting
+
+**E-Mail-Bestätigung Problem (gelöst):**
+```bash
+# Problem: Penpot forderte E-Mail-Bestätigung bei Registrierung
+# ✅ LÖSUNG: Automatisch deaktiviert in allen Instanzen
+
+# E-Mail-Bestätigung ist standardmäßig deaktiviert
+# Registrierung funktioniert ohne E-Mail-Verifikation
+# Sofortige Nutzung nach Account-Erstellung
+```
 
 **Container startet nicht:**
 ```bash
