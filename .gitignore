@@ -4,6 +4,10 @@
 instances/*/
 !instances/.gitkeep
 
+# Penpot-Instanzen (enthalten sensitive Design-Daten)
+penpot-instances/*/
+!penpot-instances/.gitkeep
+
 # SSL-Zertifikate und Keys (sensible Daten)
 ssl/*/
 !ssl/.gitkeep
@@ -11,6 +15,10 @@ ssl/*/
 # Backups
 backups/*/
 !backups/.gitkeep
+
+# Penpot-Backups (sensible Design-Daten)
+penpot-backups/*/
+!penpot-backups/.gitkeep
 
 # Downloads
 downloads/*/

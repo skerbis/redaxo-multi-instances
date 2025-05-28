@@ -1,0 +1,7 @@
+# Penpot Instances Directory
+
+Dieses Verzeichnis enthält alle Penpot Design-Tool Instanzen.
+Jede Instanz wird in einem eigenen Unterverzeichnis gespeichert.
+
+Die tatsächlichen Instanzen werden nicht ins Repository aufgenommen,
+da sie sensitive Konfigurationsdaten (Passwörter, API-Keys) enthalten.
