@@ -391,72 +391,226 @@ docker system df
 docker system prune  # Vorsicht: Löscht verwaiste Container/Images
 ```
 
-## 📁 Struktur
-
-```
-redaxo-multi-instances/
-├── redaxo                 # Hauptskript
-├── instances/             # Ihre Projekte
-│   ├── projekt-a/app/    # REDAXO-Dateien hier
-│   └── kunde-b/app/      # REDAXO-Dateien hier
-├── backups/              # Automatische Backups
-│   ├── projekt-a/        # Backups für projekt-a
-│   └── kunde-b/          # Backups für kunde-b
-└── ssl/                  # SSL-Zertifikate
-```
-
-**Ihre REDAXO-Dateien:** `instances/<name>/app/`  
-**Ihre Backups:** `backups/<name>/`
-
-> 💡 **Backup-Sicherheit:** Backups werden automatisch von Git ignoriert (.gitignore), da sie sensible Daten enthalten können.
-
 ---
 
-**🎯 Typischer Workflow:**
+## 🎨 Penpot Design Tool Integration
+
+**Penpot** ist ein **Open-Source Design & Prototyping Tool**, das als Alternative zu Figma, Sketch oder Adobe XD dient. Es ist vollständig in das REDAXO Multi-Instance System integriert und läuft lokal auf Ihrem Mac.
+
+### 🚀 Warum Penpot?
+
+- **🆓 100% Open Source** - Keine Lizenzkosten, keine Cloud-Abhängigkeit
+- **🔒 Datenschutz** - Ihre Designs bleiben lokal auf Ihrem System
+- **🌐 Web-basiert** - Läuft im Browser, kein App-Download nötig
+- **👥 Kollaboration** - Team-Features für gemeinsames Arbeiten
+- **📱 Responsive Design** - Perfekt für moderne Web-Entwicklung
+- **🎯 Integration** - Nahtlos mit REDAXO-Projekten kombinierbar
+- **⚡ Performance** - Läuft lokal ohne Cloud-Latenz
+- **💾 Backup-System** - Vollständige Datensicherung wie bei REDAXO
+
+### 🎯 Penpot Features
+
+- **Vector Design** - Professionelle Designwerkzeuge
+- **Prototyping** - Interaktive Prototypen erstellen
+- **Design Systems** - Komponenten und Style Guides
+- **Collaboration** - Echtzeit-Zusammenarbeit im Team
+- **Developer Handoff** - CSS-Code-Export für Entwickler
+- **Version Control** - Versionierung von Designs
+- **Multi-Format Export** - SVG, PNG, JPG Export
+- **Typography** - Erweiterte Text- und Font-Features
+
+### ⚡ Quick Start Penpot
 
 ```bash
-# 1. Neue Instanz
-./redaxo create mein-projekt --auto
+# 1. SSL-Setup (falls noch nicht gemacht)
+./penpot ssl-setup
 
-# 2. Entwickeln in: instances/mein-projekt/app/
+# 2. Penpot-Instanz erstellen
+./penpot create design-team
 
-# 3. Bei Bedarf verwalten
-./redaxo stop mein-projekt    # Pausieren
-./redaxo start mein-projekt   # Fortsetzen
-./redaxo remove mein-projekt  # Löschen
+# 3. Penpot starten
+./penpot start design-team
+
+# ✅ Fertig: https://localhost:9450 (HTTPS)
+#          http://localhost:9090 (HTTP)
+```
+
+### 📚 Penpot Befehle
+
+```bash
+# Instanz-Management
+./penpot create <name>                    # Neue Penpot-Instanz erstellen
+./penpot create <name> --port 9100        # Mit spezifischem Port
+./penpot start|stop|remove <name>         # Lebenszyklus
+./penpot remove all                       # Alle Penpot-Instanzen löschen
+./penpot list                             # Alle Instanzen anzeigen
+./penpot urls <name>                      # URLs anzeigen
+
+# Entwicklung & Debugging
+./penpot shell <name>                     # Shell in Container öffnen
+./penpot logs <name>                      # Container-Logs anzeigen
+
+# Backup & Restore
+./penpot backup <name>                    # Vollständiges Backup
+./penpot restore <name> <backup>          # Backup wiederherstellen
+./penpot backups                          # Alle Backups anzeigen
+
+# System-Wartung
+./penpot repair <name>                    # Docker-Probleme beheben
+./penpot cleanup                          # Docker-System bereinigen
+./penpot ssl-setup                        # SSL-Zertifikate einrichten
+```
+
+### 🔧 Penpot Beispiele
+
+**Standard-Setup (empfohlen)**
+```bash
+./penpot create haupt-design
+./penpot start haupt-design
+# → https://localhost:9450 (HTTPS mit SSL)
+# → http://localhost:9090 (HTTP)
+```
+
+**Mehrere Design-Teams**
+```bash
+# Design-Team A
+./penpot create team-a --port 9100
+# → https://localhost:9500 (HTTPS)
+# → http://localhost:9100 (HTTP)
+
+# Design-Team B  
+./penpot create team-b --port 9200
+# → https://localhost:9600 (HTTPS)
+# → http://localhost:9200 (HTTP)
+
+# Kunde-spezifische Designs
+./penpot create kunde-xyz --port 9300
+# → https://localhost:9700 (HTTPS)
+# → http://localhost:9300 (HTTP)
+
+# Alle parallel nutzen
+./penpot list
+```
+
+**Backup-Workflow für Designs**
+```bash
+# Vor wichtigen Design-Änderungen
+./penpot backup design-projekt
+
+# Design-Arbeiten durchführen...
+# Browser: https://localhost:9450
+
+# Alle Backups anzeigen
+./penpot backups
+
+# Bei Fehlern: Backup wiederherstellen
+./penpot restore design-projekt design-projekt_20250526_143022
+```
+
+### 🎨 Design-Workflow mit REDAXO
+
+**Kompletter Design-zu-Code Workflow:**
+
+```bash
+# 1. REDAXO-Instanz für Entwicklung
+./redaxo create kunde-website --auto
+
+# 2. Penpot-Instanz für Design
+./penpot create kunde-design
+
+# 3. Beide starten
+./redaxo start kunde-website
+./penpot start kunde-design
+
+# 4. Arbeiten
+# Design: https://localhost:9450 (Penpot)
+# Code:   http://localhost:8080 (REDAXO)
+
+# 5. Backups vor wichtigen Meilensteinen
+./redaxo backup kunde-website
+./penpot backup kunde-design
+```
+
+**Team-Kollaboration:**
+```bash
+# Designer
+./penpot create projekt-design
+./penpot start projekt-design
+# → Designs in Penpot erstellen: https://localhost:9450
+
+# Entwickler (parallel)
+./redaxo create projekt-code --auto  
+./redaxo start projekt-code
+# → REDAXO entwickeln: http://localhost:8080
+
+# Code aus Penpot exportieren
+# → CSS/SVG direkt in REDAXO übernehmen
+```
+
+### 🚨 Penpot Troubleshooting
+
+**Container startet nicht:**
+```bash
+# Status prüfen
+./penpot list
+
+# Logs ansehen
+./penpot logs <name>
+
+# Docker-Probleme beheben
+./penpot repair <name>
+
+# Neustart
+./penpot stop <name> && ./penpot start <name>
+```
+
+**Port-Konflikte:**
+```bash
+# Andere Ports verwenden
+./penpot create design-alt --port 9500
+
+# Verwendete Ports prüfen
+lsof -i :9090  # HTTP
+lsof -i :9450  # HTTPS
+```
+
+**Performance-Probleme:**
+```bash
+# Docker-System bereinigen
+./penpot cleanup
+
+# Container-Ressourcen prüfen
+docker stats
+```
+
+### 💡 Design-Integration Tipps
+
+**CSS aus Penpot zu REDAXO:**
+1. Design in Penpot erstellen
+2. CSS-Code exportieren 
+3. Direkt in REDAXO-Theme einbauen
+4. Assets (SVG/PNG) in REDAXO-Assets kopieren
+
+**Asset-Management:**
+```bash
+# Penpot-Container für Asset-Export
+./penpot shell design-projekt
+# → SVG/PNG-Dateien direkt zugänglich
+
+# REDAXO-Container für Asset-Import
+./redaxo shell web-projekt  
+# → Assets in /var/www/html/assets/ kopieren
+```
+
+**Backup-Strategie:**
+```bash
+# Vor jedem Design-Meilenstein
+./penpot backup design-projekt
+
+# Vor jedem Code-Deployment
+./redaxo backup web-projekt
+
+# → Komplette Projekt-Historie
 ```
 
 ---
-
-## 📋 Changelog
-
-### 🆕 Version 2025.05.27 - Mailpit Migration
-- **✨ Mailhog → Mailpit**: Modernisierung des E-Mail-Test-Tools
-  - **Bessere Performance**: Schnellere und effizientere Implementierung
-  - **ARM64 Support**: Optimiert für Apple Silicon (M1/M2/M3)
-  - **Erweiterte Features**: Verbesserte Web-UI und Suchfunktionen
-  - **Aktive Entwicklung**: Mailpit wird aktiv maintained (Mailhog ist deprecated)
-  - **Bessere SMTP-Kompatibilität**: Erweiterte SMTP-Funktionen für komplexere Tests
-  
-- **🔧 Technische Verbesserungen**:
-  - Container-Name: `mailhog` → `mailpit`
-  - Docker Image: `mailhog/mailhog:latest` → `axllent/mailpit:latest`
-  - Zusätzlicher SMTP-Port 1025 für direkte SMTP-Tests
-  - Erweiterte Umgebungsvariablen für bessere SMTP-Kompatibilität
-
-- **📦 Automatische Migration**: Bestehende Instanzen werden automatisch aktualisiert
-
----
-
-## 🤝 Support & Community
-
-☕ **[💰 Sponsor werden](https://github.com/sponsors/skerbis)** - ab $2/Monat  
-🐛 **[🐞 Issues melden](https://github.com/skerbis/redaxo-multi-instances/issues)**  
-🔧 **[🤝 Pull Requests](https://github.com/skerbis/redaxo-multi-instances/pulls)**
-
-> 💡 **Warum sponsern?** Alle Tools sind MIT-lizenziert und kostenlos. Mit Ihrem Support ermöglichen Sie weitere Entwicklung und coole neue Features für die REDAXO-Community!
-
-
-*Made with ❤️ in Moers, Germany*
-
-by: Thomas Skerbis
