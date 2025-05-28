@@ -42,6 +42,7 @@ show_help() {
     echo -e "${BLUE}Commands:${NC}"
     echo "  ${YELLOW}create <name>${NC}     - Neue REDAXO- oder Webserver-Instanz erstellen"
     echo "  ${YELLOW}create <name> --auto${NC} - Mit automatischer REDAXO-Installation"
+    echo "  ${YELLOW}import-dump <name> <dump-file.zip>${NC} - REDAXO-Instanz aus Dump-Datei erstellen"
     echo "  ${YELLOW}penpot <name>${NC}     - Neue Penpot Design-Instanz erstellen"
     echo "  ${YELLOW}start <name>${NC}      - Instanz starten"
     echo "  ${YELLOW}stop <name>${NC}       - Instanz stoppen"
@@ -1875,6 +1876,10 @@ case ${1:-help} in
     create)
         shift
         create_instance "$@"
+        ;;
+    import-dump)
+        shift
+        "$PROJECT_DIR/import-dump" "$@"
         ;;
     start)
         start_instance "$2"

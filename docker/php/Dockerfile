@@ -40,5 +40,12 @@ RUN echo "upload_max_filesize = 64M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 64M" >> /usr/local/etc/php/conf.d/uploads.ini \
     && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
 
+# PHP Error Reporting - nur loggen, nicht ausgeben
+RUN echo "error_reporting = E_ALL" > /usr/local/etc/php/conf.d/error-reporting.ini \
+    && echo "display_errors = Off" >> /usr/local/etc/php/conf.d/error-reporting.ini \
+    && echo "display_startup_errors = Off" >> /usr/local/etc/php/conf.d/error-reporting.ini \
+    && echo "log_errors = On" >> /usr/local/etc/php/conf.d/error-reporting.ini \
+    && echo "error_log = /var/log/php_errors.log" >> /usr/local/etc/php/conf.d/error-reporting.ini
+
 # Volume für Profiler-Daten
 RUN mkdir -p /var/www/html/profiler && chmod 777 /var/www/html/profiler

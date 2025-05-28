@@ -25,6 +25,11 @@ downloads/*/
 downloads/*.zip
 !downloads/.gitkeep
 
+# Dumps (enthalten sensitive Projektdaten)
+dump/*/
+dump/*.zip
+!dump/.gitkeep
+
 # Logs
 logs/*.log
 logs/*/

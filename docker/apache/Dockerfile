@@ -66,5 +66,12 @@ RUN echo "upload_max_filesize = 64M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "opcache.validate_timestamps=1" >> /usr/local/etc/php/conf.d/opcache.ini \
     && echo "opcache.revalidate_freq=0" >> /usr/local/etc/php/conf.d/opcache.ini
 
+# PHP Error Reporting - nur loggen, nicht anzeigen
+RUN echo "error_reporting = E_ALL" > /usr/local/etc/php/conf.d/error-reporting.ini \
+    && echo "display_errors = Off" >> /usr/local/etc/php/conf.d/error-reporting.ini \
+    && echo "display_startup_errors = Off" >> /usr/local/etc/php/conf.d/error-reporting.ini \
+    && echo "log_errors = On" >> /usr/local/etc/php/conf.d/error-reporting.ini \
+    && echo "error_log = /var/log/php_errors.log" >> /usr/local/etc/php/conf.d/error-reporting.ini
+
 # Volume für Profiler-Daten
 RUN mkdir -p /var/www/html/profiler && chmod 777 /var/www/html/profiler

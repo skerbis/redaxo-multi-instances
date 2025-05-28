@@ -1,0 +1,661 @@
+#!/bin/bash
+
+# REDAXO Multi-I    echo -e "${YELLOW}--php-version <version>${NC}     - PHP-Version (Standard: 8.2)"stance Manager - Dump Import
+# Erstellt eine REDAXO-Instanz aus einer dump.zip Datei
+
+# Farben
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Konfiguration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+PROJECT_DIR="$SCRIPT_DIR"
+INSTANCES_DIR="$PROJECT_DIR/instances"
+SSL_DIR="$PROJECT_DIR/ssl"
+DUMP_DIR="$PROJECT_DIR/dump"
+
+# === HELPER FUNCTIONS ===
+
+show_help() {
+    echo -e "${GREEN}📦 REDAXO Dump Import${NC}"
+    echo ""
+    echo -e "${BLUE}Verwendung:${NC}"
+    echo "  ./import-dump <instance-name> <dump-file.zip> [options]"
+    echo ""
+    echo -e "${BLUE}Parameter:${NC}"
+    echo "  ${YELLOW}<instance-name>${NC}              - Name der neuen REDAXO-Instanz"
+    echo "  ${YELLOW}<dump-file.zip>${NC}              - Name der Zip-Datei im dump/ Ordner"
+    echo ""
+    echo -e "${BLUE}Optionen:${NC}"
+    echo "  ${YELLOW}--php-version <version>${NC}     - PHP-Version (Standard: 8.2)"
+    echo "  ${YELLOW}--mariadb-version <version>${NC} - MariaDB-Version (Standard: latest)"
+    echo "  ${YELLOW}--http-port <port>${NC}          - HTTP-Port (automatisch)"
+    echo "  ${YELLOW}--https-port <port>${NC}         - HTTPS-Port (automatisch)"
+    echo ""
+    echo -e "${BLUE}Beispiele:${NC}"
+    echo "  ./import-dump meine-website dump.zip"
+    echo "  ./import-dump projekt backup-2024.zip --php-version 8.3"
+    echo ""
+    echo -e "${YELLOW}💡 Die Zip-Datei muss im dump/ Ordner liegen${NC}"
+    echo -e "${BLUE}📋 Verfügbare PHP-Versionen:${NC} 7.4, 8.0, 8.1, 8.2, 8.3, 8.4"
+    echo -e "${BLUE}📋 Verfügbare MariaDB-Versionen:${NC} 10.4, 10.5, 10.6, 10.11, 11.0, latest"
+}
+
+instance_exists() {
+    [ -d "$INSTANCES_DIR/$1" ]
+}
+
+find_available_port() {
+    local start_port=$1
+    local port=$start_port
+    
+    while [ $port -lt 65535 ]; do
+        if ! lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
+            echo $port
+            return
+        fi
+        ((port++))
+    done
+    
+    echo "Fehler: Kein verfügbarer Port gefunden" >&2
+    exit 1
+}
+
+# Versionsprüfung für PHP
+validate_php_version() {
+    local version=$1
+    local valid_versions=("7.4" "8.0" "8.1" "8.2" "8.3" "8.4")
+    
+    for valid_version in "${valid_versions[@]}"; do
+        if [ "$version" = "$valid_version" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Versionsprüfung für MariaDB
+validate_mariadb_version() {
+    local version=$1
+    local valid_versions=("10.4" "10.5" "10.6" "10.11" "11.0" "latest")
+    
+    for valid_version in "${valid_versions[@]}"; do
+        if [ "$version" = "$valid_version" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Erkennt automatisch den DocumentRoot basierend auf der REDAXO-Struktur
+detect_document_root() {
+    local temp_dir=$1
+    
+    if [ -f "$temp_dir/public/index.php" ]; then
+        echo "/var/www/html/public"
+    elif [ -f "$temp_dir/index.php" ]; then
+        echo "/var/www/html"
+    else
+        echo "/var/www/html"
+    fi
+}
+
+# SSL-Zertifikat generieren
+generate_ssl_cert() {
+    local name=$1
+    local cert_dir="$SSL_DIR/$name"
+    
+    echo -e "${YELLOW}🔐 Generiere SSL-Zertifikat für $name...${NC}"
+    
+    mkdir -p "$cert_dir"
+    cd "$cert_dir"
+    
+    # Prüfe ob mkcert verfügbar ist
+    if ! command -v mkcert &> /dev/null; then
+        echo -e "${RED}❌ mkcert nicht gefunden${NC}"
+        echo -e "${YELLOW}💡 Installieren Sie mkcert: brew install mkcert${NC}"
+        echo -e "${YELLOW}💡 Dann SSL einrichten: ./redaxo ssl-setup${NC}"
+        return 1
+    fi
+    
+    # Generiere mkcert-Zertifikat
+    mkcert -key-file private.key -cert-file cert.crt localhost 127.0.0.1 "$name.local" "*.local" >/dev/null 2>&1
+    
+    if [ $? -eq 0 ]; then
+        # Erstelle kombinierte Dateien für Docker
+        cat cert.crt private.key > combined.pem
+        cp cert.crt fullchain.crt
+        echo -e "${GREEN}  ✅ SSL-Zertifikat erstellt${NC}"
+    else
+        echo -e "${RED}  ❌ Fehler beim Erstellen des SSL-Zertifikats${NC}"
+    fi
+}
+
+# Erstelle docker-compose.yml
+create_docker_compose_with_versions() {
+    local name=$1
+    local http_port=$2
+    local https_port=$3
+    local phpmyadmin_port=$4
+    local mailpit_port=$5
+    local php_version=${6:-"8.4"}
+    local mariadb_version=${7:-"latest"}
+    local document_root=$8
+    
+    cat > "$INSTANCES_DIR/$name/docker-compose.yml" << EOF
+version: '3.8'
+
+services:
+  apache:
+    build:
+      context: ./docker/apache
+      dockerfile: Dockerfile
+      args:
+        - PHP_VERSION=${php_version}
+    container_name: redaxo-${name}-apache
+    ports:
+      - "\${HTTP_PORT}:80"
+      - "\${HTTPS_PORT}:443"
+    volumes:
+      - ./app:/var/www/html
+      - ../../ssl/${name}/cert.crt:/etc/ssl/certs/cert.crt:ro
+      - ../../ssl/${name}/private.key:/etc/ssl/private/private.key:ro
+    depends_on:
+      - mariadb
+    networks:
+      - redaxo-network
+    environment:
+      - APACHE_DOCUMENT_ROOT=${document_root}
+
+  mariadb:
+    image: mariadb:${mariadb_version}
+    container_name: redaxo-${name}-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: \${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: \${MYSQL_DATABASE}
+      MYSQL_USER: \${MYSQL_USER}
+      MYSQL_PASSWORD: \${MYSQL_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - redaxo-network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: redaxo-${name}-phpmyadmin
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: \${MYSQL_USER}
+      PMA_PASSWORD: \${MYSQL_PASSWORD}
+    ports:
+      - "\${PHPMYADMIN_PORT}:80"
+    depends_on:
+      - mariadb
+    networks:
+      - redaxo-network
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: redaxo-${name}-mailpit
+    ports:
+      - "\${MAILPIT_PORT}:8025"
+      - "\${SMTP_PORT}:1025"
+    networks:
+      - redaxo-network
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+
+networks:
+  redaxo-network:
+
+volumes:
+  mariadb_data:
+EOF
+}
+
+# Erstelle .env-Datei
+create_env_file() {
+    local name=$1
+    local http_port=$2
+    local https_port=$3
+    local phpmyadmin_port=$4
+    local mailpit_port=$5
+    local smtp_port=$6
+    
+    cat > "$INSTANCES_DIR/$name/.env" << EOF
+# REDAXO Instance: $name (imported from dump)
+INSTANCE_NAME=$name
+
+# Database
+MYSQL_ROOT_PASSWORD=redaxo_root_$(date +%s)
+MYSQL_DATABASE=redaxo_$name
+MYSQL_USER=redaxo_$name
+MYSQL_PASSWORD=redaxo_$(date +%s)
+
+# Ports
+HTTP_PORT=$http_port
+HTTPS_PORT=$https_port
+PHPMYADMIN_PORT=$phpmyadmin_port
+MAILPIT_PORT=$mailpit_port
+SMTP_PORT=$smtp_port
+EOF
+}
+
+# Konfiguriere REDAXO für die neue Umgebung
+configure_redaxo() {
+    local name=$1
+    local instance_dir="$INSTANCES_DIR/$name"
+    local config_file=""
+    
+    # Finde config.yml - suche in mehreren möglichen Pfaden
+    if [ -f "$instance_dir/app/redaxo/data/core/config.yml" ]; then
+        config_file="$instance_dir/app/redaxo/data/core/config.yml"
+        echo -e "${GREEN}  📄 Gefunden: redaxo/data/core/config.yml${NC}"
+    elif [ -f "$instance_dir/app/redaxo/src/core/config.yml" ]; then
+        config_file="$instance_dir/app/redaxo/src/core/config.yml"
+        echo -e "${GREEN}  📄 Gefunden: redaxo/src/core/config.yml${NC}"
+    elif [ -f "$instance_dir/app/src/core/config.yml" ]; then
+        config_file="$instance_dir/app/src/core/config.yml"
+        echo -e "${GREEN}  📄 Gefunden: src/core/config.yml${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Keine config.yml gefunden - erstelle neue${NC}"
+        # Erstelle config.yml im Standard-Pfad
+        mkdir -p "$instance_dir/app/redaxo/data/core"
+        config_file="$instance_dir/app/redaxo/data/core/config.yml"
+    fi
+    
+    echo -e "${YELLOW}🔧 Konfiguriere REDAXO für lokale Umgebung...${NC}"
+    
+    # Lade Umgebungsvariablen
+    source "$instance_dir/.env"
+    
+    # Erstelle Backup der originalen config.yml falls vorhanden
+    if [ -f "$config_file" ]; then
+        cp "$config_file" "$config_file.backup.$(date +%Y%m%d_%H%M%S)"
+        echo -e "${BLUE}  💾 Backup der Original-Konfiguration erstellt${NC}"
+    fi
+    
+    # Aktualisiere Datenbankverbindung und Server-URLs
+    cat > "$config_file" << EOF
+setup: false
+live_mode: false
+safe_mode: false
+debug:
+    enabled: false
+    throw_always_exception: false
+instname: '$name'
+server: https://localhost:$HTTPS_PORT
+servername: REDAXO
+error_email: null
+fileperm: '0664'
+dirperm: '0775'
+session_duration: 7200
+session_keep_alive: 21600
+session_max_overall_duration: 2419200
+backend_login_policy:
+    login_tries_until_blocked: 50
+    login_tries_until_delay: 3
+    relogin_delay: 5
+    enable_stay_logged_in: true
+session:
+    backend:
+        cookie:
+            lifetime: null
+            path: null
+            domain: null
+            secure: null
+            httponly: true
+            samesite: 'Lax'
+    frontend:
+        cookie:
+            lifetime: null
+            path: null
+            domain: null
+            secure: null
+            httponly: true
+            samesite: 'Lax'
+password_policy:
+    length: {min: 8, max: 4096}
+    lowercase: {min: 0}
+    uppercase: {min: 0}
+    digit: {min: 0}
+lang: de_de
+lang_fallback: [de_de, en_gb]
+use_https: true
+use_hsts: false
+hsts_max_age: 31536000
+use_gzip: false
+use_etag: true
+use_last_modified: false
+start_page: structure
+timezone: Europe/Berlin
+socket_proxy: null
+setup_addons:
+    - backup
+    - be_style
+    - install
+system_addons:
+    - backup
+    - mediapool
+    - structure
+    - metainfo
+    - be_style
+    - media_manager
+    - users
+    - install
+    - project
+table_prefix: rex_
+temp_prefix: tmp_
+db:
+    1:
+        host: mariadb
+        login: $MYSQL_USER
+        password: $MYSQL_PASSWORD
+        name: $MYSQL_DATABASE
+        persistent: false
+        ssl_key: null
+        ssl_cert: null
+        ssl_ca: null
+        ssl_verify_server_cert: false
+use_accesskeys: true
+accesskeys:
+    save: s
+    apply: x
+    delete: d
+    add: a
+    add_2: y
+editor: null
+editor_basepath: null
+theme: null
+EOF
+    
+    echo -e "${GREEN}  ✅ REDAXO-Konfiguration aktualisiert${NC}"
+}
+
+# === MAIN IMPORT FUNCTION ===
+
+import_dump() {
+    local name=$1
+    local dump_filename=$2
+    shift 2
+    
+    if [ -z "$name" ]; then
+        echo -e "${RED}❌ Fehler: Instanzname erforderlich${NC}"
+        echo "Verwendung: ./import-dump <name> <dump-file.zip> [--php-version <version>] [--mariadb-version <version>]"
+        exit 1
+    fi
+    
+    if [ -z "$dump_filename" ]; then
+        echo -e "${RED}❌ Fehler: Dump-Dateiname erforderlich${NC}"
+        echo "Verwendung: ./import-dump <name> <dump-file.zip> [--php-version <version>] [--mariadb-version <version>]"
+        exit 1
+    fi
+    
+    if instance_exists "$name"; then
+        echo -e "${RED}❌ Fehler: Instanz '$name' existiert bereits${NC}"
+        exit 1
+    fi
+    
+    local dump_file="$DUMP_DIR/$dump_filename"
+    if [ ! -f "$dump_file" ]; then
+        echo -e "${RED}❌ Fehler: $dump_filename nicht gefunden in $DUMP_DIR${NC}"
+        echo -e "${YELLOW}💡 Legen Sie Ihre Dump-Datei in den dump/ Ordner${NC}"
+        exit 1
+    fi
+    
+    # Standard-Versionen
+    local php_version="8.2"
+    local mariadb_version="latest"
+    local custom_http_port=""
+    local custom_https_port=""
+    
+    # Parse Argumente
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --php-version)
+                php_version="$2"
+                if ! validate_php_version "$php_version"; then
+                    echo -e "${RED}❌ Ungültige PHP-Version: $php_version${NC}"
+                    echo -e "${YELLOW}Verfügbare Versionen: 7.4, 8.0, 8.1, 8.2, 8.3, 8.4${NC}"
+                    exit 1
+                fi
+                shift 2
+                ;;
+            --mariadb-version)
+                mariadb_version="$2"
+                if ! validate_mariadb_version "$mariadb_version"; then
+                    echo -e "${RED}❌ Ungültige MariaDB-Version: $mariadb_version${NC}"
+                    echo -e "${YELLOW}Verfügbare Versionen: 10.4, 10.5, 10.6, 10.11, 11.0, latest${NC}"
+                    exit 1
+                fi
+                shift 2
+                ;;
+            --http-port)
+                custom_http_port="$2"
+                shift 2
+                ;;
+            --https-port)
+                custom_https_port="$2"
+                shift 2
+                ;;
+            *)
+                echo -e "${RED}❌ Unbekannte Option: $1${NC}"
+                exit 1
+                ;;
+        esac
+    done
+    
+    echo -e "${GREEN}📦 Importiere REDAXO-Dump '$name'${NC}"
+    echo -e "${YELLOW}  🐘 PHP-Version: $php_version (Standard: 8.2)${NC}"
+    echo -e "${YELLOW}  🗄️  MariaDB-Version: $mariadb_version${NC}"
+    
+    # Finde verfügbare Ports
+    if [ -n "$custom_http_port" ]; then
+        http_port="$custom_http_port"
+    else
+        http_port=$(find_available_port 8080)
+    fi
+    
+    if [ -n "$custom_https_port" ]; then
+        https_port="$custom_https_port"
+    else
+        https_port=$(find_available_port 8440)
+    fi
+    
+    local phpmyadmin_port=$(find_available_port 8180)
+    local mailpit_port=$(find_available_port 8120)
+    local smtp_port=$(find_available_port 1025)
+    
+    echo -e "${BLUE}📋 Konfiguration:${NC}"
+    echo "  • HTTP:       http://localhost:$http_port"
+    echo "  • HTTPS:      https://localhost:$https_port"
+    echo "  • phpMyAdmin: http://localhost:$phpmyadmin_port"
+    echo "  • Mailpit:    http://localhost:$mailpit_port"
+    echo ""
+    
+    # Erstelle temporäres Verzeichnis
+    local temp_dir="/tmp/redaxo_dump_$$"
+    mkdir -p "$temp_dir"
+    
+    echo -e "${YELLOW}📦 Extrahiere $dump_filename...${NC}"
+    cd "$temp_dir"
+    unzip -o -q "$dump_file"
+    
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Fehler beim Extrahieren der $dump_filename${NC}"
+        rm -rf "$temp_dir"
+        exit 1
+    fi
+    
+    # Erkenne REDAXO-Struktur
+    local app_source_dir=""
+    local document_root=""
+    
+    if [ -d "$temp_dir/public" ] && [ -f "$temp_dir/public/index.php" ]; then
+        echo -e "${BLUE}🔍 Moderne REDAXO-Struktur erkannt (public/ Ordner)${NC}"
+        app_source_dir="$temp_dir"
+        document_root="/var/www/html/public"
+    elif [ -f "$temp_dir/index.php" ]; then
+        echo -e "${BLUE}🔍 Klassische REDAXO-Struktur erkannt${NC}"
+        app_source_dir="$temp_dir"
+        document_root="/var/www/html"
+    else
+        echo -e "${RED}❌ Keine gültige REDAXO-Struktur gefunden${NC}"
+        rm -rf "$temp_dir"
+        exit 1
+    fi
+    
+    # Suche nach Datenbankdump
+    local db_dump=$(find "$temp_dir" -name "*.sql.zip" | head -1)
+    if [ -z "$db_dump" ]; then
+        echo -e "${YELLOW}⚠️  Keine *.sql.zip Datenbankdatei gefunden${NC}"
+        echo -e "${BLUE}💡 Suche nach anderen SQL-Dateien...${NC}"
+        db_dump=$(find "$temp_dir" -name "*.sql" | head -1)
+        if [ -z "$db_dump" ]; then
+            echo -e "${RED}❌ Keine Datenbankdatei gefunden${NC}"
+            rm -rf "$temp_dir"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}🗄️  Datenbankdump gefunden: $(basename "$db_dump")${NC}"
+    fi
+    
+    # Erstelle Instanz-Struktur
+    local instance_dir="$INSTANCES_DIR/$name"
+    mkdir -p "$instance_dir"
+    
+    # Prüfe und handle bestehenden app/ Ordner
+    if [ -d "$instance_dir/app" ]; then
+        echo -e "${YELLOW}⚠️  Bestehender app/ Ordner gefunden${NC}"
+        local backup_dir="$instance_dir/app.backup.$(date +%Y%m%d_%H%M%S)"
+        echo -e "${BLUE}📦 Sichere bestehenden Ordner nach: $(basename "$backup_dir")${NC}"
+        mv "$instance_dir/app" "$backup_dir"
+    fi
+    
+    echo -e "${YELLOW}📁 Kopiere Dateien...${NC}"
+    cp -r "$app_source_dir" "$instance_dir/app"
+    
+    # Kopiere Docker-Konfiguration
+    cp -r "$PROJECT_DIR/docker" "$instance_dir/"
+    
+    # Passe Apache-Konfiguration an
+    if [ "$document_root" = "/var/www/html" ]; then
+        echo -e "${BLUE}🔧 Konfiguriere für klassische Struktur...${NC}"
+        sed -i '' 's|/var/www/html/public|/var/www/html|g' "$instance_dir/docker/apache/apache-vhost.conf"
+    else
+        echo -e "${BLUE}🔧 Konfiguriere für moderne Struktur...${NC}"
+    fi
+    
+    # SSL-Zertifikat generieren
+    generate_ssl_cert "$name"
+    
+    # Erstelle docker-compose.yml
+    create_docker_compose_with_versions "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailpit_port" "$php_version" "$mariadb_version" "$document_root"
+    
+    # Erstelle .env-Datei
+    create_env_file "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailpit_port" "$smtp_port"
+    
+    # Konfiguriere REDAXO
+    configure_redaxo "$name"
+    
+    echo -e "${GREEN}✅ Instanz '$name' erfolgreich erstellt${NC}"
+    echo ""
+    
+    # Starte Instanz
+    echo -e "${YELLOW}🔄 Starte Instanz...${NC}"
+    cd "$instance_dir"
+    docker-compose up -d >/dev/null 2>&1
+    
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Fehler beim Starten der Instanz${NC}"
+        rm -rf "$temp_dir"
+        exit 1
+    fi
+    
+    # Warte auf Datenbank
+    echo -e "${BLUE}⏳ Warte auf Datenbank-Bereitschaft...${NC}"
+    source "$instance_dir/.env"
+    
+    local max_attempts=60
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        if docker exec "redaxo-${name}-apache" php -r "try { \$pdo = new PDO('mysql:host=mariadb;dbname=$MYSQL_DATABASE', '$MYSQL_USER', '$MYSQL_PASSWORD'); exit(0); } catch(PDOException \$e) { exit(1); }" >/dev/null 2>&1; then
+            echo -e "${GREEN}  ✅ Datenbank ist bereit${NC}"
+            break
+        fi
+        
+        if [ $attempt -eq $max_attempts ]; then
+            echo -e "${RED}  ❌ Timeout: Datenbank nicht erreichbar${NC}"
+            rm -rf "$temp_dir"
+            exit 1
+        fi
+        
+        if [ $((attempt % 10)) -eq 0 ]; then
+            echo -e "${YELLOW}  ⏳ Warte auf Datenbank... (${attempt}/${max_attempts})${NC}"
+        fi
+        
+        sleep 1
+        ((attempt++))
+    done
+    
+    # Importiere Datenbank
+    echo -e "${YELLOW}🗄️  Importiere Datenbank...${NC}"
+    
+    # Bestimme den richtigen DB-Befehl (mariadb oder mysql)
+    local db_cmd="mariadb"
+    if ! docker exec "redaxo-${name}-mariadb" which mariadb >/dev/null 2>&1; then
+        db_cmd="mysql"
+    fi
+    
+    if [[ "$db_dump" == *.zip ]]; then
+        # SQL.zip entpacken und importieren
+        local sql_file="/tmp/dump_sql_$$"
+        unzip -p "$db_dump" > "$sql_file"
+        docker exec -i "redaxo-${name}-mariadb" $db_cmd -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < "$sql_file"
+        local import_result=$?
+        rm -f "$sql_file"
+    else
+        # SQL direkt importieren
+        docker exec -i "redaxo-${name}-mariadb" $db_cmd -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < "$db_dump"
+        local import_result=$?
+    fi
+    
+    if [ $import_result -eq 0 ]; then
+        echo -e "${GREEN}  ✅ Datenbank erfolgreich importiert${NC}"
+    else
+        echo -e "${RED}  ❌ Fehler beim Datenbankimport${NC}"
+        echo -e "${YELLOW}  💡 Versuche manuellen Import über phpMyAdmin${NC}"
+    fi
+    
+    # Aufräumen
+    rm -rf "$temp_dir"
+    
+    echo -e "${GREEN}🎉 Import erfolgreich abgeschlossen!${NC}"
+    echo ""
+    echo -e "${BLUE}🌐 URLs:${NC}"
+    echo "  • HTTP:       http://localhost:$http_port"
+    echo "  • HTTPS:      https://localhost:$https_port"
+    echo "  • Backend:    https://localhost:$https_port/redaxo/"
+    echo ""
+    echo -e "${BLUE}🛠️  Tools:${NC}"
+    echo "  • phpMyAdmin: http://localhost:$phpmyadmin_port"
+    echo "  • Mailpit:    http://localhost:$mailpit_port"
+    echo ""
+    echo -e "${YELLOW}💡 Tipp: Überprüfen Sie die REDAXO-Konfiguration und Addon-Einstellungen${NC}"
+}
+
+# === MAIN LOGIC ===
+
+case ${1:-help} in
+    help|--help|-h)
+        show_help
+        ;;
+    *)
+        import_dump "$@"
+        ;;
+esac
