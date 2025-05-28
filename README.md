@@ -41,6 +41,9 @@ brew install mkcert git
 - **💡 Entwicklerfreundlich**: Shell-Zugriff, Composer, Git direkt verfügbar
 - **🔒 Sicherer**: Komplette Isolation zwischen Projekten
 - **💾 Backup-Ready**: Automatische Datensicherung mit einem Befehl
+- **🛠️ Selbstheilend**: Automatische Docker-Reparatur bei Problemen
+- **🧹 Wartungsarm**: Intelligente Bereinigung verwaister Dateien
+- **🗑️ Massenoperationen**: Alle Instanzen mit einem Befehl verwalten
 
 ## ⚡ Quick Start
 
@@ -71,6 +74,9 @@ chmod +x redaxo
 - **🏗️ Container-Isolation** - Jede Instanz komplett isoliert
 - **⚡ Performance** - Optimierte Docker-Container
 - **📁 Flexible Strukturen** - Modern Structure oder klassisches REDAXO
+- **🔧 Repair-System** - Automatische Docker-Problemlösung
+- **🧹 Smart-Cleanup** - Intelligente Bereinigung verwaister Dateien
+- **🗑️ Bulk-Remove** - Alle Instanzen mit einem Befehl löschen
 
 ## 📚 Befehle
 
@@ -83,6 +89,7 @@ chmod +x redaxo
 
 # Verwaltung
 ./redaxo start|stop|remove <name>         # Lebenszyklus
+./redaxo remove all                       # Alle Instanzen löschen
 ./redaxo list                             # Übersicht
 ./redaxo urls <name>                      # URLs anzeigen
 ./redaxo shell <name>                     # Shell in Container
@@ -92,8 +99,9 @@ chmod +x redaxo
 ./redaxo restore <name> <backup>          # Backup wiederherstellen
 ./redaxo backups                          # Alle Backups anzeigen
 
-# System-Wartung
-./redaxo cleanup                          # Docker-System bereinigen
+# System-Wartung & Reparatur
+./redaxo cleanup                          # Erweiterte Docker-Bereinigung
+./redaxo repair <name>                    # Docker-Probleme beheben
 
 # Versionen ändern
 ./redaxo update <name> --php-version 8.3  # PHP updaten
@@ -230,12 +238,41 @@ chmod +x redaxo
 # → Komplett zurückgesetzt auf Backup-Stand
 ```
 
-**System-Wartung**
+**System-Wartung & Problemlösung**
 ```bash
-# Docker-System bereinigen (Speicherplatz freigeben)
+# Erweiterte Docker-Bereinigung (Speicherplatz freigeben)
 ./redaxo cleanup
 # → Entfernt verwaiste Container, Images und Build-Cache
+# → Sucht und entfernt verwaiste SSL-Zertifikate
+# → Findet verwaiste Backup-Ordner (zeigt Warnung)
 # → REDAXO-Instanzen bleiben unberührt
+
+# Docker-Probleme einer Instanz beheben
+./redaxo repair mein-projekt
+# → Stoppt Container und entfernt Probleme
+# → Baut Container ohne Cache neu auf
+# → Startet Instanz sauber neu
+# → Löst 90% aller Docker-Probleme
+
+# Alle Instanzen komplett löschen
+./redaxo remove all
+# → Sicherheitsabfrage: "DELETE ALL" eingeben
+# → Löscht alle Instanzen, SSL-Zertifikate, Backups
+# → Docker-Ressourcen werden bereinigt
+```
+
+**Notfall-Szenarien**
+```bash
+# Container startet nicht richtig
+./redaxo repair problematische-instanz
+
+# Docker läuft langsam / Speicherplatz knapp
+./redaxo cleanup
+
+# Kompletter Neustart aller Projekte
+./redaxo remove all
+./redaxo create projekt-1 --auto
+./redaxo create projekt-2 --auto
 ```
 
 **Vollständiger Backup-Test**
@@ -295,15 +332,43 @@ docker logs redaxo-<name>-apache
 # Shell öffnen für Debugging
 ./redaxo shell <name>
 
-# Neustart
+# Docker-Probleme automatisch beheben
+./redaxo repair <name>
+
+# Neustart (nach repair meist nicht nötig)
 ./redaxo stop <name> && ./redaxo start <name>
 
 # Docker-System bereinigen (bei Performance-Problemen)
 ./redaxo cleanup
 
-# Komplett neu
+# Komplett neu (wenn alles andere fehlschlägt)
 ./redaxo remove <name>
 ./redaxo create <name> --auto
+```
+
+### 🚑 Neue Notfall-Tools
+
+**Docker-Probleme einer Instanz:**
+```bash
+./redaxo repair mein-projekt
+# → Löst 90% aller Container-Probleme automatisch
+# → Neuaufbau ohne Cache
+# → Entfernt verwaiste Volumes/Netzwerke
+```
+
+**System-Performance-Probleme:**
+```bash
+./redaxo cleanup
+# → Erweiterte Bereinigung mit Orphaned-Files-Suche
+# → Entfernt verwaiste SSL-Zertifikate automatisch
+# → Zeigt verwaiste Backup-Ordner an
+```
+
+**Alles zurücksetzen:**
+```bash
+./redaxo remove all
+# → Sicherheitsabfrage verhindert Versehen
+# → Löscht alle Instanzen + Docker-Ressourcen
 ```
 
 ### 🚑 Notfall-Diagnose

@@ -45,6 +45,7 @@ show_help() {
     echo "  ${YELLOW}start <name>${NC}      - Instanz starten"
     echo "  ${YELLOW}stop <name>${NC}       - Instanz stoppen"
     echo "  ${YELLOW}remove <name>${NC}     - Instanz löschen"
+    echo "  ${YELLOW}remove all${NC}        - Alle Instanzen löschen"
     echo "  ${YELLOW}list${NC}              - Alle Instanzen anzeigen"
     echo "  ${YELLOW}urls <name>${NC}       - URLs einer Instanz anzeigen"
     echo "  ${YELLOW}db <name>${NC}         - Datenbank-Zugangsdaten anzeigen"
@@ -52,10 +53,11 @@ show_help() {
     echo "  ${YELLOW}versions <name>${NC}   - PHP/MariaDB-Versionen einer Instanz anzeigen"
     echo "  ${YELLOW}update <name>${NC}     - PHP/MariaDB-Versionen einer Instanz aktualisieren"
     echo "  ${YELLOW}shell <name>${NC}      - Shell in Instanz öffnen"
+    echo "  ${YELLOW}repair <name>${NC}     - Docker-Probleme einer Instanz reparieren"
     echo "  ${YELLOW}backup <name>${NC}     - Backup einer Instanz erstellen"
     echo "  ${YELLOW}restore <name> <backup>${NC} - Backup wiederherstellen"
     echo "  ${YELLOW}backups${NC}           - Alle Backups anzeigen"
-    echo "  ${YELLOW}cleanup${NC}           - Docker-System bereinigen (Orphans, Build-Cache)"
+    echo "  ${YELLOW}cleanup${NC}           - Docker-System und verwaiste Dateien bereinigen"
     echo "  ${YELLOW}help${NC}              - Diese Hilfe anzeigen"
     echo ""
     echo -e "${BLUE}Create-Optionen:${NC}"
@@ -871,7 +873,14 @@ remove_instance() {
     
     if [ -z "$name" ]; then
         echo -e "${RED}❌ Instanzname erforderlich${NC}"
+        echo "Verwendung: ./redaxo remove <name> oder ./redaxo remove all"
         exit 1
+    fi
+    
+    # Spezialbehandlung für "all"
+    if [ "$name" = "all" ]; then
+        remove_all_instances
+        return
     fi
     
     if ! instance_exists "$name"; then
@@ -893,9 +902,82 @@ remove_instance() {
         rm -rf "$INSTANCES_DIR/$name"
         rm -rf "$SSL_DIR/$name"
         
+        # Lösche auch Backups der Instanz
+        if [ -d "$BACKUPS_DIR/$name" ]; then
+            echo -e "${YELLOW}  🗑️  Lösche Backups...${NC}"
+            rm -rf "$BACKUPS_DIR/$name"
+        fi
+        
         echo -e "${GREEN}✅ '$name' gelöscht${NC}"
     else
         echo -e "${YELLOW}❌ Abgebrochen${NC}"
+    fi
+}
+
+# Neue Funktion: Alle Instanzen löschen
+remove_all_instances() {
+    if [ ! -d "$INSTANCES_DIR" ] || [ -z "$(ls -A "$INSTANCES_DIR" 2>/dev/null)" ]; then
+        echo -e "${YELLOW}📭 Keine Instanzen zum Löschen gefunden${NC}"
+        return
+    fi
+    
+    echo -e "${RED}⚠️  WARNUNG: Alle REDAXO-Instanzen werden gelöscht!${NC}"
+    echo ""
+    echo -e "${BLUE}📋 Gefundene Instanzen:${NC}"
+    
+    local instance_count=0
+    for instance in "$INSTANCES_DIR"/*; do
+        if [ -d "$instance" ]; then
+            local name=$(basename "$instance")
+            echo "  • $name"
+            ((instance_count++))
+        fi
+    done
+    
+    echo ""
+    echo -e "${RED}⚠️  Diese Aktion kann NICHT rückgängig gemacht werden!${NC}"
+    echo -e "${YELLOW}Alle Daten, Container, Volumes und SSL-Zertifikate werden entfernt.${NC}"
+    echo ""
+    echo -e "${YELLOW}Zum Bestätigen tippen Sie 'DELETE ALL': ${NC}"
+    read -r confirmation
+    
+    if [ "$confirmation" = "DELETE ALL" ]; then
+        echo -e "${YELLOW}🗑️  Lösche alle $instance_count Instanzen...${NC}"
+        echo ""
+        
+        for instance in "$INSTANCES_DIR"/*; do
+            if [ -d "$instance" ]; then
+                local name=$(basename "$instance")
+                echo -e "${BLUE}  🗑️  Lösche '$name'...${NC}"
+                
+                # Stoppe Container falls sie laufen
+                cd "$instance"
+                docker-compose down -v >/dev/null 2>&1
+                
+                # Lösche Instanz-Dateien
+                rm -rf "$instance"
+                
+                # Lösche SSL-Zertifikate
+                if [ -d "$SSL_DIR/$name" ]; then
+                    rm -rf "$SSL_DIR/$name"
+                fi
+                
+                # Lösche Backups
+                if [ -d "$BACKUPS_DIR/$name" ]; then
+                    rm -rf "$BACKUPS_DIR/$name"
+                fi
+            fi
+        done
+        
+        # Zusätzliche Docker-Bereinigung
+        echo -e "${BLUE}  🧹 Bereinige Docker-Ressourcen...${NC}"
+        docker system prune -f >/dev/null 2>&1
+        docker volume prune -f >/dev/null 2>&1
+        
+        echo -e "${GREEN}✅ Alle Instanzen erfolgreich gelöscht${NC}"
+        echo -e "${BLUE}💡 Erstellen Sie neue Instanzen mit: ./redaxo create <name>${NC}"
+    else
+        echo -e "${YELLOW}❌ Abgebrochen - Eingabe war nicht 'DELETE ALL'${NC}"
     fi
 }
 
@@ -1591,16 +1673,18 @@ cleanup_docker() {
     docker system df
     echo ""
     
-    echo -e "${YELLOW}⚠️  Diese Bereinigung entfernt:${NC}"
+    echo -e "${YELLOW}⚠️  Diese erweiterte Bereinigung entfernt:${NC}"
     echo "  • Verwaiste Container (orphaned containers)"
     echo "  • Ungenutzte Netzwerke (unused networks)"
     echo "  • Verwaiste Images (dangling images)"
     echo "  • Build-Cache (build cache)"
+    echo "  • Verwaiste Dateien in instances/ (ohne aktive Instanz)"
+    echo "  • Verwaiste SSL-Zertifikate"
     echo ""
     echo -e "${RED}⚠️  REDAXO-Instanzen werden NICHT betroffen!${NC}"
     echo ""
     
-    read -p "Bereinigung durchführen? (y/N): " -n 1 -r
+    read -p "Erweiterte Bereinigung durchführen? (y/N): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         echo -e "${YELLOW}⏭️  Bereinigung abgebrochen${NC}"
@@ -1615,15 +1699,166 @@ cleanup_docker() {
     docker volume prune -f
     echo ""
     
-    echo -e "${GREEN}✅ Docker-Bereinigung abgeschlossen!${NC}"
+    echo -e "${BLUE}🗑️  Suche nach verwaisten Dateien...${NC}"
+    
+    # Sammle aktive Instanzen
+    local active_instances=()
+    if [ -d "$INSTANCES_DIR" ]; then
+        for instance_dir in "$INSTANCES_DIR"/*; do
+            if [ -d "$instance_dir" ]; then
+                local instance_name=$(basename "$instance_dir")
+                active_instances+=("$instance_name")
+            fi
+        done
+    fi
+    
+    # Prüfe SSL-Verzeichnis auf verwaiste Zertifikate
+    if [ -d "$SSL_DIR" ]; then
+        echo -e "${BLUE}  🔍 Prüfe SSL-Zertifikate...${NC}"
+        for ssl_dir in "$SSL_DIR"/*; do
+            if [ -d "$ssl_dir" ]; then
+                local ssl_name=$(basename "$ssl_dir")
+                local found=false
+                
+                for active_instance in "${active_instances[@]}"; do
+                    if [ "$ssl_name" = "$active_instance" ]; then
+                        found=true
+                        break
+                    fi
+                done
+                
+                if [ "$found" = false ]; then
+                    echo -e "${YELLOW}    🗑️  Entferne verwaistes SSL-Zertifikat: $ssl_name${NC}"
+                    rm -rf "$ssl_dir"
+                fi
+            fi
+        done
+    fi
+    
+    # Prüfe Backup-Verzeichnis auf verwaiste Backups
+    if [ -d "$BACKUPS_DIR" ]; then
+        echo -e "${BLUE}  🔍 Prüfe Backup-Verzeichnis...${NC}"
+        for backup_dir in "$BACKUPS_DIR"/*; do
+            if [ -d "$backup_dir" ]; then
+                local backup_name=$(basename "$backup_dir")
+                local found=false
+                
+                for active_instance in "${active_instances[@]}"; do
+                    if [ "$backup_name" = "$active_instance" ]; then
+                        found=true
+                        break
+                    fi
+                done
+                
+                if [ "$found" = false ]; then
+                    echo -e "${YELLOW}    ⚠️  Verwaistes Backup-Verzeichnis gefunden: $backup_name${NC}"
+                    echo -e "${BLUE}      💡 Manuell löschen: rm -rf $backup_dir${NC}"
+                    echo -e "${BLUE}      (Backups werden nicht automatisch gelöscht)${NC}"
+                fi
+            fi
+        done
+    fi
+    
+    # Docker-Images bereinigen (nur dangling)
+    echo -e "${BLUE}🗑️  Entferne verwaiste Docker-Images...${NC}"
+    docker image prune -f >/dev/null 2>&1
+    
+    echo -e "${GREEN}✅ Erweiterte Docker-Bereinigung abgeschlossen!${NC}"
     echo ""
     
     echo -e "${BLUE}📊 Neue Docker-Nutzung:${NC}"
     docker system df
     echo ""
     
-    echo -e "${BLUE}💡 Ihre REDAXO-Instanzen sind weiterhin verfügbar:${NC}"
-    list_instances
+    # Zeige aktive Instanzen
+    if [ ${#active_instances[@]} -gt 0 ]; then
+        echo -e "${BLUE}💡 Ihre aktiven REDAXO-Instanzen:${NC}"
+        for instance in "${active_instances[@]}"; do
+            local status="gestoppt"
+            if docker ps --format "table {{.Names}}" | grep -q -E "(redaxo-${instance}-apache|webserver-${instance}-apache)"; then
+                status="${GREEN}läuft${NC}"
+            else
+                status="${YELLOW}gestoppt${NC}"
+            fi
+            echo -e "  • $instance ($status)"
+        done
+    else
+        echo -e "${YELLOW}📭 Keine aktiven Instanzen gefunden${NC}"
+        echo -e "${BLUE}💡 Neue Instanz erstellen: ./redaxo create <name>${NC}"
+    fi
+}
+
+# === REPAIR FUNCTIONS ===
+
+repair_instance() {
+    local name=$1
+    
+    if [ -z "$name" ]; then
+        echo -e "${RED}❌ Instanzname erforderlich${NC}"
+        echo "Verwendung: ./redaxo repair <name>"
+        exit 1
+    fi
+    
+    if ! instance_exists "$name"; then
+        echo -e "${RED}❌ Instanz '$name' existiert nicht${NC}"
+        exit 1
+    fi
+    
+    echo -e "${GREEN}🔧 Repariere Instanz '$name'${NC}"
+    echo ""
+    
+    local instance_dir="$INSTANCES_DIR/$name"
+    cd "$instance_dir"
+    
+    echo -e "${BLUE}1. 🛑 Stoppe alle Container...${NC}"
+    docker-compose down -v 2>/dev/null || true
+    
+    echo -e "${BLUE}2. 🗑️  Entferne verwaiste Container...${NC}"
+    docker container prune -f >/dev/null 2>&1
+    
+    echo -e "${BLUE}3. 🗄️  Entferne verwaiste Volumes...${NC}"
+    # Entferne nur spezifische Volumes für diese Instanz
+    local instance_volumes=$(docker volume ls -q | grep "${name}" || true)
+    if [ -n "$instance_volumes" ]; then
+        echo "$instance_volumes" | xargs docker volume rm -f 2>/dev/null || true
+    fi
+    
+    echo -e "${BLUE}4. 🌐 Entferne verwaiste Netzwerke...${NC}"
+    docker network prune -f >/dev/null 2>&1
+    
+    echo -e "${BLUE}5. 🔄 Baue Container neu...${NC}"
+    docker-compose build --no-cache >/dev/null 2>&1
+    
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Fehler beim Neuaufbau der Container${NC}"
+        exit 1
+    fi
+    
+    echo -e "${BLUE}6. 🚀 Starte Instanz neu...${NC}"
+    docker-compose up -d >/dev/null 2>&1
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Instanz '$name' erfolgreich repariert!${NC}"
+        echo ""
+        
+        # Kurz warten und Status prüfen
+        sleep 3
+        
+        # Status der Container prüfen
+        local running_containers=$(docker ps --format "table {{.Names}}" | grep "$name" | wc -l)
+        if [ $running_containers -gt 0 ]; then
+            echo -e "${GREEN}✅ Container laufen wieder${NC}"
+            echo ""
+            show_urls "$name"
+        else
+            echo -e "${YELLOW}⚠️  Container sind gestartet, aber möglicherweise nicht alle bereit${NC}"
+            echo -e "${BLUE}💡 Prüfen Sie den Status mit: ./redaxo list${NC}"
+        fi
+    else
+        echo -e "${RED}❌ Fehler beim Starten der reparierten Instanz${NC}"
+        echo -e "${BLUE}💡 Logs anzeigen: docker-compose logs${NC}"
+        exit 1
+    fi
 }
 
 # === MAIN LOGIC ===
@@ -1675,6 +1910,9 @@ case ${1:-help} in
         ;;
     cleanup)
         cleanup_docker
+        ;;
+    repair)
+        repair_instance "$2"
         ;;
     help|--help|-h)
         show_help
