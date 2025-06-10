@@ -42,12 +42,21 @@ show_help() {
     echo "  ${YELLOW}cleanup${NC}           - Docker-System bereinigen"
     echo "  ${YELLOW}ssl-setup${NC}         - SSL-Zertifikate einrichten"
     echo ""
+    echo -e "${BLUE}🤖 AI Copilot:${NC}"
+    echo "  ${YELLOW}copilot start${NC}     - Penpot Copilot (AI-Assistent) starten"
+    echo "  ${YELLOW}copilot stop${NC}      - Penpot Copilot stoppen"
+    echo "  ${YELLOW}copilot status${NC}    - Copilot-Status anzeigen"
+    echo "  ${YELLOW}copilot logs${NC}      - Copilot-Logs anzeigen"
+    echo "  ${YELLOW}copilot install${NC}   - Copilot in Penpot-Instanz installieren"
+    echo ""
     echo -e "${BLUE}Beispiele:${NC}"
     echo "  ./penpot create design-team"
     echo "  ./penpot create kunde-a --port 9090"
     echo "  ./penpot start design-team"
     echo "  ./penpot urls design-team"
     echo "  ./penpot backup design-team"
+    echo "  ./penpot copilot start"
+    echo "  ./penpot copilot install design-team"
     echo ""
     echo -e "${YELLOW}💡 Tipp: Penpot läuft standardmäßig auf Port 9090 + SSL${NC}"
     echo -e "${BLUE}🎨 Penpot ist ein Open-Source Design & Prototyping Tool${NC}"
@@ -193,15 +202,13 @@ create_docker_compose() {
     local https_port=$3
     
     cat > "$PENPOT_DIR/$name/docker-compose.yml" << EOF
-version: "3.8"
-
 services:
   penpot-frontend:
     image: "penpotapp/frontend:latest"
     container_name: penpot-${name}-frontend
     restart: always
     ports:
-      - "${http_port}:80"
+      - "${http_port}:8080"
       - "${https_port}:443"
     volumes:
       - penpot_assets:/opt/data/assets
