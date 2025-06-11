@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# REDAXO Dashboard mit PM2 (Persistent)
+cd "$(dirname "$0")/dashboard"
+
+echo "🚀 REDAXO Dashboard wird persistent gestartet (PM2)..."
+
+# Prüfe ob PM2 installiert ist
+if ! command -v pm2 >/dev/null 2>&1; then
+    echo "📦 PM2 wird installiert..."
+    npm install -g pm2
+fi
+
+# Prüfe ob Dependencies installiert sind
+if [ ! -d "node_modules" ]; then
+    echo "📦 Abhängigkeiten werden installiert..."
+    npm install
+fi
+
+# PM2 Ecosystem-Datei erstellen falls nicht vorhanden
+if [ ! -f "ecosystem.config.js" ]; then
+    echo "⚙️ PM2-Konfiguration wird erstellt..."
+    cat > ecosystem.config.js << 'EOF'
+module.exports = {
+  apps: [{
+    name: 'redaxo-dashboard',
+    script: 'server.js',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3000
+    },
+    error_file: './logs/err.log',
+    out_file: './logs/out.log',
+    log_file: './logs/combined.log',
+    time: true
+  }]
+}
+EOF
+    
+    # Logs-Verzeichnis erstellen
+    mkdir -p logs
+fi
+
+# Dashboard mit PM2 starten
+echo "🔄 Dashboard wird mit PM2 gestartet..."
+pm2 start ecosystem.config.js
+
+# PM2 Status anzeigen
+echo ""
+echo "📊 PM2 Status:"
+pm2 status
+
+echo ""
+echo "✅ Dashboard läuft persistent unter: http://localhost:3000"
+echo ""
+echo "📋 PM2 Befehle:"
+echo "   • Status prüfen:    pm2 status"
+echo "   • Logs anzeigen:    pm2 logs redaxo-dashboard"
+echo "   • Neustart:         pm2 restart redaxo-dashboard"
+echo "   • Stoppen:          pm2 stop redaxo-dashboard"
+echo "   • Entfernen:        pm2 delete redaxo-dashboard"
+echo "   • Startup Setup:    pm2 startup"
+echo ""
