@@ -86,6 +86,25 @@
                         </label>
                     </div>
                     
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="importDump" name="importDump" onchange="dashboard.toggleDumpSelection()">
+                            <span class="checkmark"></span>
+                            Dump importieren (überschreibt Auto-Installation)
+                        </label>
+                    </div>
+                    
+                    <div class="form-group dump-selection" id="dumpSelection">
+                        <label for="dumpFile">Dump-Datei auswählen</label>
+                        <select id="dumpFile" name="dumpFile">
+                            <option value="">Verfügbare Dumps werden geladen...</option>
+                        </select>
+                        <small class="form-hint">
+                            <i class="fas fa-info-circle"></i>
+                            Dumps im /dump Verzeichnis. Neue Dumps dort ablegen und Modal neu öffnen.
+                        </small>
+                    </div>
+                    
                     <div class="modal-footer">
                         <button type="button" class="glass-button secondary" onclick="dashboard.hideCreateModal()">
                             Abbrechen

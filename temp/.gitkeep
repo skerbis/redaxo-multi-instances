@@ -1,0 +1,2 @@
+# Diese Datei sorgt dafür, dass der temp/ Ordner in Git verfolgt wird,
+# aber temporäre Dateien selbst werden durch .gitignore ausgeschlossen

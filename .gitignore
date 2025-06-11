@@ -30,6 +30,14 @@ dump/*/
 dump/*.zip
 !dump/.gitkeep
 
+# Dashboard Screenshots (projektspezifische Daten)
+dashboard/public/screenshots/*.png
+dashboard/public/screenshots/*.jpg
+dashboard/public/screenshots/*.jpeg
+dashboard/public/screenshots/*.svg
+dashboard/public/screenshots/*.html
+!dashboard/public/screenshots/.gitkeep
+
 # Logs
 logs/*.log
 logs/*/

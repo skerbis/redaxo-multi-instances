@@ -1,0 +1,2 @@
+# Diese Datei sorgt dafür, dass der screenshots/ Ordner in Git verfolgt wird,
+# aber die Screenshots selbst werden durch .gitignore ausgeschlossen

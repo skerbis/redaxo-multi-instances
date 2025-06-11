@@ -1,0 +1,2 @@
+# Diese Datei sorgt dafür, dass der logs/ Ordner in Git verfolgt wird,
+# aber die Log-Dateien selbst werden durch .gitignore ausgeschlossen

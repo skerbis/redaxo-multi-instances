@@ -68,26 +68,56 @@ app.post('/api/instances/:name/stop', async (req, res) => {
 // API: Neue Instanz erstellen
 app.post('/api/instances', async (req, res) => {
     try {
-        const { name, phpVersion, mariadbVersion, autoInstall } = req.body;
+        const { name, phpVersion, mariadbVersion, autoInstall, importDump, dumpFile } = req.body;
         
         if (!name || !name.match(/^[a-zA-Z0-9_-]+$/)) {
             return res.status(400).json({ error: 'Ungültiger Instanzname' });
         }
+
+        // Prüfe ob Instanz bereits existiert
+        const instanceDir = path.join(INSTANCES_DIR, name);
+        if (fs.existsSync(instanceDir)) {
+            return res.status(400).json({ error: `Instanz '${name}' existiert bereits. Bitte wählen Sie einen anderen Namen.` });
+        }
         
-        let command = `./redaxo create ${name}`;
-        if (phpVersion) command += ` --php-version ${phpVersion}`;
-        if (mariadbVersion) command += ` --mariadb-version ${mariadbVersion}`;
-        if (autoInstall) command += ` --auto`;
+        // Prüfe ob Import-Dump gewählt wurde
+        if (importDump && dumpFile) {
+            // Verwende import-dump Script (absoluter Pfad)
+            let command = `./import-dump ${name} "${dumpFile}"`;
+            if (phpVersion) command += ` --php-version ${phpVersion}`;
+            if (mariadbVersion) command += ` --mariadb-version ${mariadbVersion}`;
+            
+            // Führe Befehl im PROJECT_ROOT aus
+            await executeCommand(command, '', PROJECT_ROOT);
+            
+            res.json({ 
+                success: true, 
+                message: `Instanz ${name} wird mit Dump "${dumpFile}" erstellt...`,
+                type: 'import'
+            });
+        } else {
+            // Normale Instanz-Erstellung
+            let command = `./redaxo create ${name}`;
+            if (phpVersion) command += ` --php-version ${phpVersion}`;
+            if (mariadbVersion) command += ` --mariadb-version ${mariadbVersion}`;
+            if (autoInstall) command += ` --auto`;
+            
+            await executeCommand(command);
+            
+            res.json({ 
+                success: true, 
+                message: `Instanz ${name} wird erstellt...`,
+                type: 'create'
+            });
+        }
         
-        await executeCommand(command);
-        
-        // Neue Instanz laden
+        // Neue Instanz laden (etwas länger warten bei Import)
+        const delay = importDump ? 5000 : 3000;
         setTimeout(async () => {
             const instances = await getInstances();
             io.emit('instancesUpdated', instances);
-        }, 3000);
+        }, delay);
         
-        res.json({ success: true, message: `Instanz ${name} wird erstellt...` });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -141,16 +171,34 @@ app.post('/api/instances/:name/screenshot', async (req, res) => {
             const puppeteer = require('puppeteer');
             const browser = await puppeteer.launch({ 
                 headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+                args: [
+                    '--no-sandbox', 
+                    '--disable-setuid-sandbox', 
+                    '--disable-dev-shm-usage',
+                    '--ignore-certificate-errors',
+                    '--ignore-ssl-errors',
+                    '--ignore-certificate-errors-spki-list',
+                    '--disable-web-security'
+                ]
             });
             const page = await browser.newPage();
             await page.setViewport({ width: 1280, height: 720 });
             
-            // Frontend-URL verwenden
-            await page.goto(instance.frontendUrl, { 
-                waitUntil: 'networkidle2',
-                timeout: 30000
-            });
+            // Frontend-URL verwenden - erst HTTPS probieren, dann HTTP fallback
+            let targetUrl = instance.frontendUrlHttps;
+            try {
+                await page.goto(targetUrl, { 
+                    waitUntil: 'networkidle2',
+                    timeout: 30000
+                });
+            } catch (httpsError) {
+                console.warn('HTTPS fehlgeschlagen, versuche HTTP:', httpsError.message);
+                targetUrl = instance.frontendUrl;
+                await page.goto(targetUrl, { 
+                    waitUntil: 'networkidle2',
+                    timeout: 30000
+                });
+            }
             
             // Screenshot als Datei speichern
             await page.screenshot({ 
@@ -205,6 +253,48 @@ app.get('/api/instances/:name/screenshot', (req, res) => {
         });
     }
 });
+
+// API: Verfügbare Dumps auflisten
+app.get('/api/dumps', async (req, res) => {
+    try {
+        const dumpDir = path.join(__dirname, '..', 'dump');
+        
+        // Prüfe ob dump-Verzeichnis existiert
+        if (!fs.existsSync(dumpDir)) {
+            fs.mkdirSync(dumpDir, { recursive: true });
+        }
+        
+        const files = await fs.promises.readdir(dumpDir);
+        const dumps = files
+            .filter(file => file.endsWith('.zip'))
+            .map(file => {
+                const filePath = path.join(dumpDir, file);
+                const stats = fs.statSync(filePath);
+                return {
+                    name: file,
+                    basename: path.basename(file, '.zip'),
+                    size: formatFileSize(stats.size),
+                    modified: stats.mtime.toISOString(),
+                    path: file
+                };
+            })
+            .sort((a, b) => new Date(b.modified) - new Date(a.modified));
+        
+        res.json(dumps);
+    } catch (error) {
+        console.error('Fehler beim Laden der Dumps:', error);
+        res.status(500).json({ error: 'Fehler beim Laden der Dumps' });
+    }
+});
+
+// Hilfsfunktion für Dateigröße
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
 
 // Hilfsfunktionen
 async function getInstances() {
@@ -276,9 +366,9 @@ async function checkInstanceStatus(name) {
     });
 }
 
-async function executeCommand(command, input = '') {
+async function executeCommand(command, input = '', workingDir = PROJECT_ROOT) {
     return new Promise((resolve, reject) => {
-        const childProcess = exec(command, { cwd: PROJECT_ROOT }, (error, stdout, stderr) => {
+        const childProcess = exec(command, { cwd: workingDir }, (error, stdout, stderr) => {
             if (error) {
                 reject(new Error(stderr || error.message));
             } else {

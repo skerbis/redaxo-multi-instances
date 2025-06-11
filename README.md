@@ -1,87 +1,286 @@
 # 🚀 REDAXO Multi-Instance Manager
 
-> Automatisierte REDAXO-Instanzen mit schönem Dashboard für macOS-Entwickler - MAMP war gestern
+**Das moderne Dashboard für REDAXO-Entwickler** - Erstellen und verwalten Sie beliebig viele REDAXO-Instanzen mit einem Klick!
 
-**Ein Setup-Script → Komplette REDAXO-Entwicklungsumgebung mit beliebigen PHP/MariaDB-Versionen**
+![REDAXO Multi-Instance Dashboard](https://img.shields.io/badge/REDAXO-Multi--Instance-4f7df3?style=for-the-badge&logo=docker)
+![Version](https://img.shields.io/badge/Version-2.0-success?style=for-the-badge)
 
-## 📋 Inhaltsverzeichnis
+> 🎯 **Perfekt für:** Lokale Entwicklung, Client-Projekte, Testing verschiedener REDAXO-Versionen, Dump-Import
 
-- [⚡ Quick Start](#-quick-start)
-- [🔧 Installation](#-installation)
-- [🎛️ Dashboard](#️-dashboard)
-- [🆚 Warum besser als MAMP?](#-warum-besser-als-mamp)
-- [📋 Systemvoraussetzungen](#-systemvoraussetzungen)
-- [🎯 Features](#-features)
-- [📚 Befehlsreferenz](#-befehlsreferenz)
-- [🚨 Troubleshooting](#-troubleshooting)
+## ✨ Was macht dieses Tool besonders?
 
-## ⚡ Quick Start
+### 🎛️ **Elegantes Web-Dashboard**
+- **Glass-Design UI** mit Live-Updates
+- **Ein-Klick Instanz-Erstellung** mit Auto-Installation
+- **Screenshot-Vorschau** aller laufenden Websites
+- **Dump-Import** für bestehende REDAXO-Projekte
+- **Real-time Status** aller Instanzen
 
-```bash
-# 1. Repository klonen
-git clone https://github.com/skerbis/redaxo-multi-instances.git
-cd redaxo-multi-instances
+### 🐳 **Docker-powered**
+- **Isolierte Container** - keine Konflikte zwischen Projekten
+- **Automatische SSL-Zertifikate** für alle Instanzen
+- **Beliebige PHP/MariaDB-Versionen** parallel
+- **Integrierte Tools:** phpMyAdmin, Mailpit für E-Mail-Testing
 
-# 2. Automatisches Setup ausführen (installiert alles)
-./setup.sh
+### ⚡ **Entwicklerfreundlich**
+- **VS Code Integration** - öffnet Projekte direkt
+- **Automatische Port-Verwaltung** - keine Konfiguration nötig
+- **Backup/Restore System** für Projekte
+- **CLI + Web-Interface** - wie Sie möchten
 
-# 3. Dashboard öffnen
-open http://localhost:3000
+## 🚀 Quick Start (3 Minuten)
 
-# ✅ Fertig! Dashboard läuft mit schönem Glass-Design
-```
-
-## 🔧 Installation
-
-### Automatische Installation (empfohlen)
-
-Das Setup-Script installiert und konfiguriert automatisch alle Abhängigkeiten:
-
+### 1. Installation
 ```bash
 # Repository klonen
 git clone https://github.com/skerbis/redaxo-multi-instances.git
 cd redaxo-multi-instances
 
-# Setup ausführen
+# Automatisches Setup (installiert Docker, Node.js, etc.)
 ./setup.sh
 ```
 
-**Das Setup-Script installiert automatisch:**
-- ✅ Homebrew (macOS Paketmanager)
-- ✅ Docker Desktop (für Container)
+### 2. Dashboard starten
+```bash
+./dashboard-start
+```
+**Dashboard öffnet sich automatisch:** http://localhost:3000
+
+### 3. Erste REDAXO-Instanz erstellen
+
+#### 🎯 **Option A: Web-Dashboard (empfohlen)**
+1. Klick auf **"Neue Instanz"**
+2. Name eingeben (z.B. "mein-projekt")  
+3. **"Auto-Install"** aktivieren
+4. **"Instanz erstellen"** → Fertig!
+
+#### 🎯 **Option B: Kommandozeile**
+```bash
+./redaxo create mein-projekt --auto
+```
+
+### 4. Ihre REDAXO-Instanz ist bereit! 🎉
+- **Frontend:** https://localhost:8440
+- **Backend:** https://localhost:8440/redaxo  
+- **phpMyAdmin:** http://localhost:8180
+- **Mailpit:** http://localhost:8120
+
+> **💡 Alle URLs werden live im Dashboard angezeigt!**
 - ✅ Node.js & npm (für Dashboard)
 - ✅ Git & jq (Entwicklungstools)
-- ✅ Dashboard-Abhängigkeiten
-- ✅ Docker-Netzwerk Konfiguration
-- ✅ Alle Berechtigungen und Scripts
+## 📦 Dump-Import (Bestehende REDAXO-Projekte)
 
-### Manuelle Installation
+### Ihr Client-Projekt schnell importieren
 
-Falls Sie die Installation manuell durchführen möchten:
-
+#### Schritt 1: Dump-Datei vorbereiten
 ```bash
-# 1. Homebrew installieren
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# Kopieren Sie Ihre REDAXO-Backups in den dump/ Ordner
+cp /Downloads/client-projekt.zip dump/
+```
 
-# 2. Docker Desktop installieren
-# Besuchen Sie: https://www.docker.com/products/docker-desktop/
+#### Schritt 2: Import starten
 
-# 3. Node.js installieren
-brew install node git jq
+**🎯 Web-Dashboard (einfach):**
+1. **"Neue Instanz"** klicken
+2. **"Dump importieren"** aktivieren
+3. Dump-Datei aus Dropdown wählen
+4. **"Instanz erstellen"** → Import läuft automatisch!
 
-# 4. Projekt einrichten
-git clone https://github.com/skerbis/redaxo-multi-instances.git
-cd redaxo-multi-instances
-chmod +x *.sh redaxo manager dashboard-start import-dump
+**🎯 Kommandozeile:**
+```bash
+./import-dump client-projekt client-projekt.zip
+```
 
-# 5. Docker-Netzwerk erstellen
-docker network create redaxo-network
+### 📋 Dump-Format (wichtig!)
+```
+projekt-backup.zip
+├── app/                    # Komplette REDAXO-Installation
+│   ├── index.php          
+│   ├── redaxo/            # Backend-Ordner
+│   ├── assets/            # Frontend-Assets
+│   └── media/             # Medienpool
+└── database.sql.zip       # ⚠️ MUSS als .sql.zip vorliegen!
+```
 
-# 6. Dashboard-Abhängigkeiten installieren
-cd dashboard && npm install && cd ..
+**⚠️ Wichtig:** Die Datenbank-Datei muss als `.sql.zip` (nicht `.sql`) im Dump enthalten sein!
 
-# 7. Dashboard starten
+## 🎛️ Dashboard Features
+
+### **Live-Übersicht aller Instanzen**
+- 📊 **Echtzeit-Status:** Läuft/Gestoppt/Wird erstellt
+- 🖼️ **Screenshot-Vorschau** der Websites  
+- 🔗 **Ein-Klick Zugriff** auf alle URLs
+- ⚡ **Sofort-Aktionen:** Start/Stop/Löschen
+
+### **Intelligente Instanz-Erstellung**
+- ✅ **Auto-Installation:** Komplettes REDAXO in 2 Minuten
+- 📦 **Dump-Import:** Bestehende Projekte in 3-5 Minuten
+- 🔧 **Version wählen:** PHP 7.4-8.4, MariaDB 10.4-11.0
+- 🚀 **VS Code Button:** Öffnet Projekt direkt im Editor
+
+### **Status-Anzeigen**
+- 🟢 **Grün:** Instanz läuft perfekt
+- 🟡 **Gelb:** Instanz gestoppt
+- 🔵 **Blau (pulsierend):** Wird gerade erstellt...
+- ⚙️ **Spinner:** REDAXO wird automatisch installiert
+
+## 🛠️ Die wichtigsten Befehle
+
+### **Schnellstart**
+```bash
+./redaxo create projekt --auto              # Neue Instanz mit REDAXO
+./redaxo list                               # Alle Instanzen anzeigen
+./redaxo urls projekt                       # URLs einer Instanz
+```
+
+### **Instanz-Management**
+```bash
+./redaxo start projekt                      # Instanz starten
+./redaxo stop projekt                       # Instanz stoppen
+./redaxo remove projekt                     # Instanz löschen
+```
+
+### **Erweitert**
+```bash
+# Mit spezifischen Versionen
+./redaxo create projekt --php-version 8.3 --mariadb-version 11.0 --auto
+
+# Dump importieren
+./import-dump projekt backup.zip
+
+# Backup/Restore
+./redaxo backup projekt
+./redaxo restore projekt backup.tar.gz
+```
+
+## 🏗️ Was brauche ich?
+
+### **System-Anforderungen**
+- **macOS 10.15+** (oder Windows/Linux mit Docker)
+- **8 GB RAM** (empfohlen: 16 GB für mehrere Instanzen)
+- **Docker Desktop** (wird automatisch installiert)
+- **5 GB freier Speicher** pro Instanz
+
+### **Automatisch zugewiesene Ports**
+- **HTTP:** ab 8080 (8080, 8081, 8082...)
+- **HTTPS:** ab 8440 (8440, 8441, 8442...)
+- **phpMyAdmin:** ab 8180 (8180, 8181...)
+- **Mailpit:** ab 8120 (8120, 8121...)
+
+## 🚨 Problemlösung
+
+### **Dashboard startet nicht**
+```bash
+# Port prüfen
+lsof -i :3000
+
+# Docker neu starten
+docker system prune
 ./dashboard-start
+```
+
+### **Instanz startet nicht**  
+```bash
+# Logs anzeigen
+docker logs redaxo-projektname-apache
+
+# Reparatur versuchen
+./redaxo repair projektname
+```
+
+### **"Wird erstellt..." bleibt hängen**
+```bash
+# Docker-Status prüfen
+docker ps -a
+
+# System bereinigen  
+./redaxo cleanup
+```
+
+### **SSL-Warnung im Browser**
+Das ist normal! Wir verwenden selbstsignierte Zertifikate für lokale Entwicklung.
+→ **"Erweitert" → "Trotzdem fortfahren"** klicken
+
+## 🎯 Häufige Use Cases
+
+### **🔬 Lokale REDAXO-Entwicklung**
+```bash
+./redaxo create dev-projekt --php-version 8.4 --auto
+# → Perfekte Entwicklungsumgebung in 2 Minuten
+```
+
+### **🧪 Verschiedene PHP-Versionen testen**
+```bash
+./redaxo create test-php83 --php-version 8.3 --auto
+./redaxo create test-php84 --php-version 8.4 --auto
+# → Beide laufen parallel!
+```
+
+### **📦 Client-Projekt importieren**
+```bash
+# Dump ins Verzeichnis
+cp ~/Downloads/client-backup.zip dump/
+
+# Import via Dashboard oder:
+./import-dump client-projekt client-backup.zip
+```
+
+### **🚀 Demo für Kunden**
+```bash
+./redaxo create demo --auto
+# → Sofort bereite Demo-Instanz
+```
+
+## 💡 Pro-Tipps
+
+### **⚡ Performance**
+- **16+ GB RAM** für viele parallele Instanzen
+- **SSD** für bessere Docker-Performance
+- **`./redaxo cleanup`** regelmäßig ausführen
+
+### **🔧 Entwicklung**
+- **VS Code Button** im Dashboard nutzen
+- **Screenshot-Feature** für Client-Präsentationen
+- **Mailpit** für E-Mail-Testing
+
+### **🗂️ Organisation**
+- **Sprechende Namen** verwenden: `client-website`, `test-php84`
+- **Backup vor größeren Änderungen:** `./redaxo backup projektname`
+- **Dashboard immer offen** lassen für Live-Updates
+
+## 🔐 Sicherheit & Hinweise
+
+- ⚠️ **Nur für lokale Entwicklung** - nicht für Produktion!
+- 🔒 **Selbstsignierte SSL-Zertifikate** (Browser-Warnung normal)
+- 🐳 **Isolierte Container** - keine Konflikte zwischen Projekten  
+- 🌐 **Keine Exposition** nach außen - alles läuft lokal
+
+## 🤝 Contributing & Support
+
+### **Hilfe benötigt?**
+- 🐛 **Bug melden:** [GitHub Issues](https://github.com/skerbis/redaxo-multi-instances/issues)
+- 💬 **Fragen stellen:** [GitHub Discussions](https://github.com/skerbis/redaxo-multi-instances/discussions)
+
+### **Mithelfen?**
+1. Repository forken
+2. Feature-Branch erstellen
+3. Pull Request senden
+
+## 📄 Lizenz
+
+MIT-Lizenz - siehe [LICENSE.md](LICENSE.md)
+
+---
+
+<div align="center">
+
+**⭐ Gefällt Ihnen das Projekt? Geben Sie uns einen Stern!**
+
+**Made with ❤️ for the REDAXO Community**
+
+[🚀 Dashboard starten](./dashboard-start) • [📖 Vollständige Docs](./QUICKSTART.md) • [🆘 Support](https://github.com/skerbis/redaxo-multi-instances/issues)
+
+</div>
 ```
 
 ## 🎛️ Dashboard

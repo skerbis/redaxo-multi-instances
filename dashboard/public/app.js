@@ -4,6 +4,7 @@ class RedaxoDashboard {
         this.socket = io();
         this.instances = [];
         this.deleteTarget = null;
+        this.creatingInstances = new Set(); // Tracking für erstellende Instanzen
         this.init();
     }
 
@@ -17,6 +18,15 @@ class RedaxoDashboard {
         this.socket.on('instancesUpdated', (instances) => {
             this.instances = instances;
             this.renderInstances();
+            
+            // Prüfe ob erstellende Instanzen jetzt verfügbar sind
+            this.creatingInstances.forEach(name => {
+                const instance = instances.find(i => i.name === name);
+                if (instance) {
+                    this.creatingInstances.delete(name);
+                    this.showToast(`Instanz ${name} wurde erfolgreich erstellt`, 'success');
+                }
+            });
         });
 
         this.socket.on('instanceUpdated', (instance) => {
@@ -56,6 +66,11 @@ class RedaxoDashboard {
                 });
             }
         });
+
+        // Dump-Auswahl Toggle
+        document.getElementById('importDump').addEventListener('change', () => {
+            this.toggleDumpSelection();
+        });
     }
 
     async loadInstances() {
@@ -73,7 +88,22 @@ class RedaxoDashboard {
     renderInstances() {
         const grid = document.getElementById('instancesGrid');
         
-        if (this.instances.length === 0) {
+        // Erstelle Gesamt-Liste aus echten Instanzen + erstellenden Instanzen
+        const allInstances = [...this.instances];
+        
+        // Füge erstellende Instanzen hinzu (falls sie noch nicht in der echten Liste sind)
+        this.creatingInstances.forEach(name => {
+            if (!this.instances.find(i => i.name === name)) {
+                allInstances.push({
+                    name: name,
+                    running: false,
+                    creating: true,
+                    status: 'creating'
+                });
+            }
+        });
+        
+        if (allInstances.length === 0) {
             grid.innerHTML = `
                 <div class="empty-state glass-card">
                     <h2><i class="fas fa-rocket"></i> Noch keine Instanzen vorhanden</h2>
@@ -87,9 +117,9 @@ class RedaxoDashboard {
             return;
         }
 
-        grid.innerHTML = this.instances.map(instance => this.renderInstanceCard(instance)).join('');
+        grid.innerHTML = allInstances.map(instance => this.renderInstanceCard(instance)).join('');
         
-        // Für alle Instanzen prüfen, ob Screenshots vorhanden sind und diese laden
+        // Für alle echten Instanzen prüfen, ob Screenshots vorhanden sind und diese laden
         this.instances.forEach(instance => {
             this.loadExistingScreenshot(instance.name);
         });
@@ -126,9 +156,24 @@ class RedaxoDashboard {
     }
 
     renderInstanceCard(instance) {
-        const statusClass = instance.running ? 'running' : 'stopped';
-        const statusText = instance.running ? 'Läuft' : 'Gestoppt';
-        const statusIcon = instance.running ? '<i class="fas fa-circle text-success"></i>' : '<i class="fas fa-circle text-warning"></i>';
+        // Unterscheide zwischen echten Instanzen und erstellenden
+        const isCreating = this.creatingInstances.has(instance.name);
+        
+        let statusClass, statusText, statusIcon;
+        
+        if (isCreating) {
+            statusClass = 'creating';
+            statusText = 'Wird erstellt...';
+            statusIcon = '<i class="fas fa-spinner fa-spin text-primary"></i>';
+        } else if (instance.running) {
+            statusClass = 'running';
+            statusText = 'Läuft';
+            statusIcon = '<i class="fas fa-circle text-success"></i>';
+        } else {
+            statusClass = 'stopped';
+            statusText = 'Gestoppt';
+            statusIcon = '<i class="fas fa-circle text-warning"></i>';
+        }
 
         return `
             <div class="instance-card glass-card ${statusClass}">
@@ -141,6 +186,7 @@ class RedaxoDashboard {
                                 ${statusIcon} ${statusText}
                             </div>
                         </div>
+                        ${!isCreating ? `
                         <div class="instance-menu">
                             <div class="url-popover" id="popover-${instance.name}">
                                 <button class="url-menu-trigger" onclick="dashboard.toggleUrlPopover('${instance.name}')" title="URLs & Services">
@@ -175,8 +221,10 @@ class RedaxoDashboard {
                                 </div>
                             </div>
                         </div>
+                        ` : ''}
                     </div>
                     
+                    ${!isCreating ? `
                     <div class="instance-info">
                         <div class="instance-details">
                             <div class="detail-item">
@@ -229,8 +277,22 @@ class RedaxoDashboard {
                             `}
                         </div>
                     </div>
+                    ` : `
+                    <div class="instance-info">
+                        <div style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.7);">
+                            <div style="margin-bottom: 1rem;">
+                                <i class="fas fa-cogs fa-2x fa-spin" style="color: var(--primary-color);"></i>
+                            </div>
+                            <div style="font-size: 0.9rem;">Die Instanz wird erstellt...</div>
+                            <div style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.6;">
+                                Dies kann je nach Art 1-5 Minuten dauern
+                            </div>
+                        </div>
+                    </div>
+                    `}
                 </div>
                 
+                ${!isCreating ? `
                 <div class="instance-controls">
                     ${instance.running ? `
                         <button class="control-button glass-button warning" onclick="dashboard.stopInstance('${instance.name}')">
@@ -248,6 +310,14 @@ class RedaxoDashboard {
                         Löschen
                     </button>
                 </div>
+                ` : `
+                <div class="instance-controls">
+                    <button class="control-button glass-button secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
+                        <i class="fas fa-clock"></i>
+                        Wird erstellt...
+                    </button>
+                </div>
+                `}
             </div>
         `;
     }
@@ -302,12 +372,28 @@ class RedaxoDashboard {
             name: formData.get('name'),
             phpVersion: formData.get('phpVersion'),
             mariadbVersion: formData.get('mariadbVersion'),
-            autoInstall: formData.get('autoInstall') === 'on'
+            autoInstall: formData.get('autoInstall') === 'on',
+            importDump: formData.get('importDump') === 'on',
+            dumpFile: formData.get('dumpFile')
         };
 
         try {
-            this.showToast(`Erstelle Instanz ${instanceData.name}...`, 'success');
+            // Validierung
+            if (instanceData.importDump && !instanceData.dumpFile) {
+                this.showToast('Bitte wählen Sie eine Dump-Datei aus', 'error');
+                return;
+            }
+
+            const message = instanceData.importDump 
+                ? `Erstelle Instanz ${instanceData.name} mit Dump-Import...`
+                : `Erstelle Instanz ${instanceData.name}...`;
+                
+            this.showToast(message, 'success');
             this.hideCreateModal();
+            
+            // Instanz zu "erstellenden" Liste hinzufügen
+            this.creatingInstances.add(instanceData.name);
+            this.renderInstances(); // Sofort neu rendern um "wird erstellt" anzuzeigen
             
             const response = await fetch('/api/instances', {
                 method: 'POST',
@@ -320,13 +406,26 @@ class RedaxoDashboard {
             const result = await response.json();
             
             if (response.ok) {
-                this.showToast(result.message, 'success');
+                const successMessage = result.type === 'import'
+                    ? `${result.message} (Import kann 3-5 Minuten dauern)`
+                    : result.message;
+                this.showToast(successMessage, 'success');
                 form.reset();
+                
+                // Reset dump selection
+                document.getElementById('dumpSelection').classList.remove('show');
+                document.getElementById('autoInstall').disabled = false;
+                document.getElementById('autoInstall').checked = true;
             } else {
+                // Fehler: Aus "erstellenden" Liste entfernen
+                this.creatingInstances.delete(instanceData.name);
+                this.renderInstances();
                 throw new Error(result.error);
             }
         } catch (error) {
             console.error('Fehler beim Erstellen der Instanz:', error);
+            this.creatingInstances.delete(instanceData.name);
+            this.renderInstances();
             this.showToast(`Fehler beim Erstellen: ${error.message}`, 'error');
         }
     }
@@ -441,7 +540,18 @@ class RedaxoDashboard {
     }
 
     showCreateModal() {
-        document.getElementById('createModal').classList.add('show');
+        const modal = document.getElementById('createModal');
+        modal.classList.add('show');
+        
+        // Reset form und dump selection
+        const form = document.getElementById('createInstanceForm');
+        form.reset();
+        document.getElementById('dumpSelection').classList.remove('show');
+        document.getElementById('autoInstall').disabled = false;
+        document.getElementById('autoInstall').checked = true;
+        
+        // Lade verfügbare Dumps
+        this.loadAvailableDumps();
     }
 
     hideCreateModal() {
@@ -487,6 +597,51 @@ class RedaxoDashboard {
                 toast.parentNode.removeChild(toast);
             }
         });
+    }
+
+    // Dump-Auswahl Toggle
+    toggleDumpSelection() {
+        const importDumpCheckbox = document.getElementById('importDump');
+        const dumpSelection = document.getElementById('dumpSelection');
+        const autoInstallCheckbox = document.getElementById('autoInstall');
+        
+        if (importDumpCheckbox.checked) {
+            dumpSelection.classList.add('show');
+            autoInstallCheckbox.checked = false;
+            autoInstallCheckbox.disabled = true;
+            this.loadAvailableDumps();
+        } else {
+            dumpSelection.classList.remove('show');
+            autoInstallCheckbox.disabled = false;
+            autoInstallCheckbox.checked = true;
+        }
+    }
+
+    // Verfügbare Dumps laden
+    async loadAvailableDumps() {
+        try {
+            const response = await fetch('/api/dumps');
+            const dumps = await response.json();
+            
+            const dumpSelect = document.getElementById('dumpFile');
+            dumpSelect.innerHTML = '';
+            
+            if (dumps.length === 0) {
+                dumpSelect.innerHTML = '<option value="">Keine Dumps gefunden</option>';
+            } else {
+                dumpSelect.innerHTML = '<option value="">Dump auswählen...</option>';
+                dumps.forEach(dump => {
+                    const option = document.createElement('option');
+                    option.value = dump.path;
+                    option.textContent = `${dump.basename} (${dump.size})`;
+                    dumpSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Fehler beim Laden der Dumps:', error);
+            const dumpSelect = document.getElementById('dumpFile');
+            dumpSelect.innerHTML = '<option value="">Fehler beim Laden der Dumps</option>';
+        }
     }
 }
 
