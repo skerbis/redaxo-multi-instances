@@ -1,0 +1,25 @@
+{
+  "name": "redaxo-dashboard",
+  "version": "1.0.0",
+  "description": "REDAXO Multi-Instance Dashboard mit Morphing Glass Design",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "puppeteer": "^24.10.0",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "redaxo",
+    "dashboard",
+    "docker",
+    "glass-morphism"
+  ]
+}

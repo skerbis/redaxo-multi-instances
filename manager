@@ -1,0 +1,39 @@
+#!/bin/zsh
+
+# REDAXO Multi-Instance Manager - Quick Launcher
+# Direkte Ausführung des macOS Shortcuts über Terminal
+# Autor: GitHub Copilot
+# Datum: 10. Juni 2025
+
+# Farben für bessere Darstellung
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo -e "${BLUE}🚀 REDAXO Multi-Instance Manager${NC}"
+echo -e "${YELLOW}Starte macOS Shortcut...${NC}"
+echo ""
+
+# Prüfe ob AppleScript-Datei existiert
+if [ ! -f "$PROJECT_DIR/redaxo-manager.scpt" ]; then
+    echo -e "${RED}❌ AppleScript-Datei nicht gefunden: redaxo-manager.scpt${NC}"
+    echo -e "${YELLOW}💡 Stellen Sie sicher, dass die Datei im Projektverzeichnis liegt.${NC}"
+    exit 1
+fi
+
+# Starte AppleScript
+osascript "$PROJECT_DIR/redaxo-manager.scpt"
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ Shortcut erfolgreich ausgeführt${NC}"
+else
+    echo -e "${RED}❌ Fehler beim Ausführen des Shortcuts${NC}"
+    echo -e "${YELLOW}💡 Tipps zur Fehlerbehebung:${NC}"
+    echo "  1. Prüfen Sie die Berechtigungen in Systemeinstellungen → Sicherheit & Datenschutz"
+    echo "  2. Stellen Sie sicher, dass Docker läuft"
+    echo "  3. Überprüfen Sie den Projektpfad in der AppleScript-Datei"
+fi

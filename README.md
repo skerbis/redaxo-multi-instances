@@ -7,6 +7,7 @@
 ## 📋 Inhaltsverzeichnis
 
 - [⚡ Quick Start](#-quick-start)
+- [🎛️ Dashboard](#️-dashboard)
 - [🆚 Warum besser als MAMP?](#-warum-besser-als-mamp)
 - [📋 Systemvoraussetzungen](#-systemvoraussetzungen)
 - [🎯 Features](#-features)
@@ -37,6 +38,30 @@ chmod +x redaxo import-dump penpot
 
 # ✅ Fertig: https://localhost:8080/redaxo/ (admin/admin123)
 ```
+
+## 🎛️ Dashboard
+
+**Grafische Benutzeroberfläche mit Morphing Glass Design**
+
+```bash
+# Dashboard starten
+./dashboard-start
+
+# Oder manuell:
+cd dashboard && npm install && npm start
+```
+
+**Dashboard-Features:**
+- 🎨 **Morphing Glass Design** - Modernes glasmorphisches UI
+- 📋 **Instanzen-Übersicht** - Alle REDAXO-Instanzen auf einen Blick  
+- 🚀 **Start/Stop-Kontrolle** - Instanzen direkt über das Dashboard steuern
+- ➕ **Neue Instanzen erstellen** - Einfache Erstellung mit Formular
+- 🗑️ **Instanzen löschen** - Sichere Löschung mit Bestätigung
+- 🔗 **Direkte Links** - Frontend, Backend, phpMyAdmin und Mailpit
+- 📱 **Responsive Design** - Funktioniert auf Desktop und Mobile
+- 🔄 **Live-Updates** - Automatische Aktualisierung des Status
+
+**Dashboard-URL:** http://localhost:3000
 
 ## 🆚 Warum besser als MAMP?
 
@@ -77,6 +102,7 @@ brew install mkcert git
 
 ## 🎯 Features
 
+- **🎛️ Dashboard** - Morphing Glass UI für einfache Verwaltung
 - **🤖 Auto-Install** - Sofort einsatzbereit (`--auto`)
 - **🐘 Multi-Version** - PHP 7.4-8.4, MariaDB 10.4-11.0
 - **🔒 SSL/HTTPS** - Integriert via mkcert
