@@ -289,8 +289,6 @@ MIT-Lizenz - siehe [LICENSE.md](LICENSE.md)
 
 **Modernes Web-Dashboard mit Morphing Glass Design**
 
-![Dashboard Screenshot](dashboard-preview.png)
-
 ### Features:
 - 🎨 **Morphing Glass Design** - Moderne, glasartige Benutzeroberfläche
 - 📱 **Responsive Layout** - Funktioniert auf Desktop und Mobile
