@@ -1,55 +1,139 @@
 # 🚀 REDAXO Multi-Instance Manager
 
-> Automatisierte REDAXO-Instanzen + Penpot Design Tool für macOS-Entwickler - MAMP war gestern
+> Automatisierte REDAXO-Instanzen mit schönem Dashboard für macOS-Entwickler - MAMP war gestern
 
-**Ein Befehl → Komplette REDAXO-Installation mit beliebigen PHP/MariaDB-Versionen + Penpot Design-Umgebung**
+**Ein Setup-Script → Komplette REDAXO-Entwicklungsumgebung mit beliebigen PHP/MariaDB-Versionen**
 
 ## 📋 Inhaltsverzeichnis
 
 - [⚡ Quick Start](#-quick-start)
+- [🔧 Installation](#-installation)
 - [🎛️ Dashboard](#️-dashboard)
 - [🆚 Warum besser als MAMP?](#-warum-besser-als-mamp)
 - [📋 Systemvoraussetzungen](#-systemvoraussetzungen)
 - [🎯 Features](#-features)
 - [📚 Befehlsreferenz](#-befehlsreferenz)
-  - [Instanz-Management](#instanz-management)
-  - [Backup & Restore](#backup--restore)
-  - [System-Wartung](#system-wartung)
-  - [Import von Dumps](#import-von-dumps)
-- [📦 REDAXO-Import aus Dumps](#-redaxo-import-aus-dumps)
-- [🎨 Penpot Design Tool](#-penpot-design-tool)
-- [🔧 Beispiele & Workflows](#-beispiele--workflows)
-- [⚙️ PHP-Konfiguration](#️-php-konfiguration)
 - [🚨 Troubleshooting](#-troubleshooting)
 
 ## ⚡ Quick Start
 
 ```bash
-# 1. Voraussetzungen installieren
-brew install mkcert git
+# 1. Repository klonen
+git clone https://github.com/skerbis/redaxo-multi-instances.git
+cd redaxo-multi-instances
 
-# 2. Projekt einrichten
-git clone https://github.com/skerbis/redaxo-multi-instances.git && cd redaxo-multi-instances
-chmod +x redaxo import-dump penpot
-./redaxo ssl-setup
+# 2. Automatisches Setup ausführen (installiert alles)
+./setup.sh
 
-# 3. Erste REDAXO-Instanz erstellen
-./redaxo create myproject --auto
+# 3. Dashboard öffnen
+open http://localhost:3000
 
-# ✅ Fertig: https://localhost:8080/redaxo/ (admin/admin123)
+# ✅ Fertig! Dashboard läuft mit schönem Glass-Design
+```
+
+## 🔧 Installation
+
+### Automatische Installation (empfohlen)
+
+Das Setup-Script installiert und konfiguriert automatisch alle Abhängigkeiten:
+
+```bash
+# Repository klonen
+git clone https://github.com/skerbis/redaxo-multi-instances.git
+cd redaxo-multi-instances
+
+# Setup ausführen
+./setup.sh
+```
+
+**Das Setup-Script installiert automatisch:**
+- ✅ Homebrew (macOS Paketmanager)
+- ✅ Docker Desktop (für Container)
+- ✅ Node.js & npm (für Dashboard)
+- ✅ Git & jq (Entwicklungstools)
+- ✅ Dashboard-Abhängigkeiten
+- ✅ Docker-Netzwerk Konfiguration
+- ✅ Alle Berechtigungen und Scripts
+
+### Manuelle Installation
+
+Falls Sie die Installation manuell durchführen möchten:
+
+```bash
+# 1. Homebrew installieren
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. Docker Desktop installieren
+# Besuchen Sie: https://www.docker.com/products/docker-desktop/
+
+# 3. Node.js installieren
+brew install node git jq
+
+# 4. Projekt einrichten
+git clone https://github.com/skerbis/redaxo-multi-instances.git
+cd redaxo-multi-instances
+chmod +x *.sh redaxo manager dashboard-start import-dump
+
+# 5. Docker-Netzwerk erstellen
+docker network create redaxo-network
+
+# 6. Dashboard-Abhängigkeiten installieren
+cd dashboard && npm install && cd ..
+
+# 7. Dashboard starten
+./dashboard-start
 ```
 
 ## 🎛️ Dashboard
 
-**Grafische Benutzeroberfläche mit Morphing Glass Design**
+**Modernes Web-Dashboard mit Morphing Glass Design**
+
+![Dashboard Screenshot](dashboard-preview.png)
+
+### Features:
+- 🎨 **Morphing Glass Design** - Moderne, glasartige Benutzeroberfläche
+- 📱 **Responsive Layout** - Funktioniert auf Desktop und Mobile
+- 🔄 **Real-time Updates** - Live-Status aller Instanzen
+- 📊 **Container-Informationen** - PHP/MariaDB Versionen, Port-Info
+- 📸 **Screenshots** - Automatische Website-Vorschau mit Puppeteer
+- 🔗 **Smart URL-Menü** - Direktlinks + VS Code Integration
+- ⚡ **Ein-Klick-Management** - Start/Stop/Create/Delete Instanzen
+
+### Dashboard verwenden:
 
 ```bash
 # Dashboard starten
 ./dashboard-start
 
-# Oder manuell:
-cd dashboard && npm install && npm start
+# Dashboard öffnen
+open http://localhost:3000
+
+# Dashboard stoppen
+# Ctrl+C im Terminal
 ```
+
+### Dashboard-Features:
+
+1. **Instanzen verwalten:**
+   - ✅ Neue Instanzen erstellen (mit PHP/MariaDB Auswahl)
+   - ▶️ Instanzen starten/stoppen
+   - 🗑️ Instanzen löschen
+   - 📊 Container-Status und Informationen
+
+2. **Smart URL-Menü:**
+   - 🌐 REDAXO Frontend
+   - ⚙️ REDAXO Backend
+   - 📊 Adminer (Datenbank)
+   - 💻 VS Code Integration (`vscode://file//pfad/zur/instanz`)
+
+3. **Screenshots:**
+   - 📸 Automatische Website-Vorschau
+   - 💾 Persistente Speicherung
+   - 🔄 Bleibt sichtbar auch wenn Instanz gestoppt
+
+4. **Real-time Updates:**
+   - 🔄 Live-Status ohne Seiten-Reload
+   - ⚡ Socket.IO für Echtzeit-Kommunikation
 
 **Dashboard-Features:**
 - 🎨 **Morphing Glass Design** - Modernes glasmorphisches UI
@@ -352,6 +436,293 @@ tail -f /var/log/php_errors.log
 ```
 
 ## 🚨 Troubleshooting
+
+### Automatische Diagnose
+
+```bash
+# Vollständige System-Diagnose ausführen
+./diagnose.sh
+
+# Zeigt Status von:
+# - Docker Desktop
+# - Node.js & npm
+# - Dashboard
+# - REDAXO-Instanzen
+# - Ports und Netzwerk
+# - Log-Dateien
+```
+
+### Häufige Probleme
+
+#### 1. Setup-Script schlägt fehl
+
+**Problem:** `./setup.sh` bricht mit Fehlern ab
+
+**Lösung:**
+```bash
+# Prüfen Sie die Berechtigung
+chmod +x setup.sh
+
+# Homebrew manuell installieren
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Setup erneut versuchen
+./setup.sh
+```
+
+#### 2. Docker Desktop startet nicht
+
+**Problem:** Docker Desktop läuft nicht oder ist nicht installiert
+
+**Lösung:**
+```bash
+# Docker Desktop Status prüfen
+docker info
+
+# Falls nicht installiert:
+# 1. Besuchen Sie: https://www.docker.com/products/docker-desktop/
+# 2. Laden Sie Docker Desktop für Mac herunter
+# 3. Installieren und starten Sie es
+# 4. Setup erneut ausführen: ./setup.sh
+```
+
+#### 3. Dashboard startet nicht
+
+**Problem:** Dashboard ist nicht erreichbar unter http://localhost:3000
+
+**Diagnose:**
+```bash
+# Port-Konflikt prüfen
+lsof -i :3000
+
+# Dashboard-Logs prüfen
+cat dashboard.log
+
+# Dependencies prüfen
+cd dashboard && npm list
+```
+
+**Lösung:**
+```bash
+# Dependencies neu installieren
+cd dashboard
+rm -rf node_modules package-lock.json
+npm install
+
+# Dashboard manuell starten
+npm start
+
+# Oder anderen Port verwenden
+PORT=3001 npm start
+```
+
+#### 4. REDAXO-Instanz startet nicht
+
+**Problem:** Container startet nicht oder ist nicht erreichbar
+
+**Diagnose:**
+```bash
+# Container-Status prüfen
+docker ps -a
+
+# Container-Logs prüfen
+docker logs redaxo-INSTANZNAME
+
+# Docker-Netzwerk prüfen
+docker network ls | grep redaxo
+```
+
+**Lösung:**
+```bash
+# Container stoppen und neu starten
+./redaxo stop INSTANZNAME
+./redaxo start INSTANZNAME
+
+# Bei Port-Konflikten anderen Port verwenden
+./redaxo create INSTANZNAME --port 8081
+
+# Docker-Netzwerk neu erstellen
+docker network rm redaxo-network
+docker network create redaxo-network
+```
+
+#### 5. Node.js Version zu alt
+
+**Problem:** Node.js Version < 16 wird verwendet
+
+**Lösung:**
+```bash
+# Node.js über Homebrew aktualisieren
+brew upgrade node
+
+# Version prüfen
+node --version  # Sollte >= v16 sein
+
+# Dashboard-Dependencies neu installieren
+cd dashboard && npm install
+```
+
+#### 6. Puppeteer/Screenshot-Probleme
+
+**Problem:** Screenshots werden nicht erstellt oder zeigen Fehler
+
+**Lösung:**
+```bash
+# Puppeteer neu installieren
+cd dashboard
+npm uninstall puppeteer
+npm install puppeteer
+
+# Chromium manuell installieren
+npx puppeteer browsers install chrome
+
+# Dashboard neu starten
+npm start
+```
+
+#### 7. Port bereits belegt
+
+**Problem:** Port 3000 oder andere Ports sind bereits in Verwendung
+
+**Diagnose:**
+```bash
+# Alle belegten Ports anzeigen
+./diagnose.sh | grep -A 20 "Port-Status"
+
+# Spezifischen Port prüfen
+lsof -i :3000
+```
+
+**Lösung:**
+```bash
+# Dashboard auf anderem Port starten
+cd dashboard
+PORT=3001 npm start
+
+# Oder belegenden Prozess beenden
+kill $(lsof -t -i:3000)
+```
+
+#### 8. Fehlende Berechtigungen
+
+**Problem:** Scripts sind nicht ausführbar
+
+**Lösung:**
+```bash
+# Alle Berechtigungen setzen
+chmod +x *.sh redaxo manager dashboard-start import-dump diagnose.sh
+
+# Oder Setup erneut ausführen
+./setup.sh
+```
+
+#### 9. Docker-Netzwerk Probleme
+
+**Problem:** Container können nicht miteinander kommunizieren
+
+**Lösung:**
+```bash
+# Docker-Netzwerk neu erstellen
+docker network rm redaxo-network
+docker network create redaxo-network
+
+# Alle Container stoppen und neu starten
+./redaxo stop-all
+./redaxo start-all
+```
+
+#### 10. Homebrew nicht im PATH
+
+**Problem:** `brew: command not found` nach Installation
+
+**Lösung:**
+```bash
+# Homebrew zu PATH hinzufügen
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Terminal neu starten
+source ~/.zprofile
+
+# Homebrew testen
+brew --version
+```
+
+### Komplette Neuinstallation
+
+Wenn alle anderen Lösungen fehlschlagen:
+
+```bash
+# 1. Alle Container stoppen und löschen
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+
+# 2. Docker-Netzwerk entfernen
+docker network rm redaxo-network
+
+# 3. Dashboard-Dependencies löschen
+rm -rf dashboard/node_modules dashboard/package-lock.json
+
+# 4. Setup komplett neu ausführen
+./setup.sh
+```
+
+### Logs und Debugging
+
+**Dashboard-Logs:**
+```bash
+# Live-Logs anzeigen
+tail -f dashboard.log
+
+# Fehler-Logs filtern
+grep -i error dashboard.log
+```
+
+**Docker-Logs:**
+```bash
+# Container-Logs anzeigen
+docker logs redaxo-INSTANZNAME
+
+# Live-Logs verfolgen
+docker logs -f redaxo-INSTANZNAME
+```
+
+**System-Status:**
+```bash
+# Vollständige Diagnose
+./diagnose.sh
+
+# Docker-Status
+docker system info
+
+# Node.js und npm Status
+node --version && npm --version
+```
+
+### Support und Community
+
+**Bei weiterhin bestehenden Problemen:**
+
+1. **GitHub Issues:** Erstellen Sie ein Issue mit:
+   - Ausgabe von `./diagnose.sh`
+   - Fehlermeldungen und Logs
+   - Ihre macOS-Version und Hardware
+
+2. **REDAXO Community:** 
+   - REDAXO Slack
+   - REDAXO Forum
+
+3. **Debug-Informationen sammeln:**
+```bash
+# Debug-Informationen sammeln
+./diagnose.sh > debug-info.txt
+echo "=== Dashboard Log ===" >> debug-info.txt
+tail -n 50 dashboard.log >> debug-info.txt
+echo "=== Docker Info ===" >> debug-info.txt
+docker system info >> debug-info.txt 2>&1
+
+# debug-info.txt mit Issue anhängen
+```
 
 ### Häufige Probleme
 
