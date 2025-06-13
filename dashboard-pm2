@@ -1,6 +1,87 @@
 #!/bin/bash
 
 # REDAXO Dashboard mit PM2 (Persistent)
+
+# Hilfe-Funktion
+show_help() {
+    echo "REDAXO Dashboard PM2 Manager"
+    echo ""
+    echo "Verwendung:"
+    echo "  $0                 Dashboard starten"
+    echo "  $0 --restart       Dashboard neustarten"
+    echo "  $0 --delete        Dashboard stoppen und aus PM2 entfernen"
+    echo "  $0 --uninstall     Dashboard entfernen und PM2 komplett deinstallieren"
+    echo "  $0 --status        PM2 Status anzeigen"
+    echo "  $0 --help          Diese Hilfe anzeigen"
+    echo ""
+}
+
+# Parameter prüfen
+case "$1" in
+    --restart)
+        echo "🔄 Dashboard wird neugestartet..."
+        if command -v pm2 >/dev/null 2>&1; then
+            pm2 restart redaxo-dashboard 2>/dev/null || {
+                echo "❌ Dashboard läuft nicht oder ist nicht konfiguriert"
+                echo "💡 Versuche: $0 (um es zu starten)"
+                exit 1
+            }
+            echo "✅ Dashboard wurde neugestartet"
+            echo "📊 PM2 Status:"
+            pm2 status
+        else
+            echo "❌ PM2 ist nicht installiert"
+        fi
+        exit 0
+        ;;
+    --delete)
+        echo "🗑️  Dashboard wird aus PM2 entfernt..."
+        if command -v pm2 >/dev/null 2>&1; then
+            pm2 delete redaxo-dashboard 2>/dev/null || echo "Dashboard war bereits gestoppt"
+            echo "✅ Dashboard wurde aus PM2 entfernt"
+            echo "📊 Verbleibende PM2 Prozesse:"
+            pm2 status
+        else
+            echo "❌ PM2 ist nicht installiert"
+        fi
+        exit 0
+        ;;
+    --uninstall)
+        echo "🗑️  Dashboard und PM2 werden komplett deinstalliert..."
+        if command -v pm2 >/dev/null 2>&1; then
+            pm2 delete redaxo-dashboard 2>/dev/null || true
+            pm2 kill
+            pm2 unstartup 2>/dev/null || true
+            npm uninstall -g pm2
+            echo "✅ PM2 und Dashboard wurden komplett deinstalliert"
+        else
+            echo "❌ PM2 ist bereits deinstalliert"
+        fi
+        exit 0
+        ;;
+    --status)
+        if command -v pm2 >/dev/null 2>&1; then
+            echo "📊 PM2 Status:"
+            pm2 status
+        else
+            echo "❌ PM2 ist nicht installiert"
+        fi
+        exit 0
+        ;;
+    --help)
+        show_help
+        exit 0
+        ;;
+    "")
+        # Standard-Verhalten: Dashboard starten
+        ;;
+    *)
+        echo "❌ Unbekannter Parameter: $1"
+        show_help
+        exit 1
+        ;;
+esac
+
 cd "$(dirname "$0")/dashboard"
 
 echo "🚀 REDAXO Dashboard wird persistent gestartet (PM2)..."
@@ -58,10 +139,11 @@ echo ""
 echo "✅ Dashboard läuft persistent unter: http://localhost:3000"
 echo ""
 echo "📋 PM2 Befehle:"
-echo "   • Status prüfen:    pm2 status"
+echo "   • Status prüfen:    pm2 status oder $0 --status"
 echo "   • Logs anzeigen:    pm2 logs redaxo-dashboard"
-echo "   • Neustart:         pm2 restart redaxo-dashboard"
+echo "   • Neustart:         pm2 restart redaxo-dashboard oder $0 --restart"
 echo "   • Stoppen:          pm2 stop redaxo-dashboard"
-echo "   • Entfernen:        pm2 delete redaxo-dashboard"
+echo "   • Entfernen:        pm2 delete redaxo-dashboard oder $0 --delete"
+echo "   • PM2 deinstall.:   $0 --uninstall"
 echo "   • Startup Setup:    pm2 startup"
 echo ""
