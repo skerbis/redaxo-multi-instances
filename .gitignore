@@ -43,6 +43,11 @@ logs/*.log
 logs/*/
 !logs/.gitkeep
 
+# Dashboard Logs (PM2 und Node.js Logs)
+dashboard/logs/*.log
+dashboard/logs/*/
+!dashboard/logs/.gitkeep
+
 # Temporary files
 temp/*/
 !temp/.gitkeep

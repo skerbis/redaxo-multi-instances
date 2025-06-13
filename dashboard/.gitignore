@@ -1,0 +1,29 @@
+# Dashboard-spezifische GitIgnore
+
+# Logs
+logs/*.log
+logs/*.out
+logs/*.err
+logs/*-*.log
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# PM2
+ecosystem.config.js
+
+# Environment
+.env
+
+# Screenshots (werden dynamisch generiert)
+public/screenshots/*.png
+public/screenshots/*.jpg
+public/screenshots/*.jpeg
+public/screenshots/*.svg
+public/screenshots/*.html
+
+# Temp files
+.docker-terminal.sh

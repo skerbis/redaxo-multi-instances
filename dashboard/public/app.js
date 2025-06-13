@@ -5,13 +5,30 @@ class RedaxoDashboard {
         this.instances = [];
         this.deleteTarget = null;
         this.creatingInstances = new Set(); // Tracking für erstellende Instanzen
+        this.config = null; // Konfiguration vom Server
         this.init();
     }
 
-    init() {
+    async init() {
+        await this.loadConfig();
         this.loadInstances();
         this.setupSocketListeners();
         this.setupEventListeners();
+    }
+
+    async loadConfig() {
+        try {
+            const response = await fetch('/api/config');
+            if (response.ok) {
+                this.config = await response.json();
+            } else {
+                console.warn('Konfiguration konnte nicht geladen werden');
+                this.config = { projectRoot: '', instancesDir: '', features: {} };
+            }
+        } catch (error) {
+            console.error('Fehler beim Laden der Konfiguration:', error);
+            this.config = { projectRoot: '', instancesDir: '', features: {} };
+        }
     }
 
     setupSocketListeners() {
@@ -215,9 +232,16 @@ class RedaxoDashboard {
                                             <i class="fas fa-envelope"></i> Mailpit
                                         </a>
                                     ` : ''}
-                                    <a href="vscode://file//Users/thomas/Documents/GitHub/redaxo-multi-instances/instances/${instance.name}/app" class="url-link">
-                                        <i class="fab fa-microsoft"></i> VS Code öffnen
-                                    </a>
+                                    ${this.config && this.config.features.vscodeIntegration !== false && this.config.instancesDir ? `
+                                        <a href="vscode://file/${this.config.instancesDir}/${instance.name}/app" class="url-link">
+                                            <i class="fab fa-microsoft"></i> VS Code öffnen
+                                        </a>
+                                    ` : ''}
+                                    ${this.config && this.config.features.terminalIntegration !== false ? `
+                                        <button class="url-link" onclick="window.dashboard.openTerminal('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                            <i class="fas fa-terminal"></i> Docker Terminal
+                                        </button>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
@@ -448,6 +472,34 @@ class RedaxoDashboard {
         } catch (error) {
             console.error('Fehler beim Löschen der Instanz:', error);
             this.showToast(`Fehler beim Löschen: ${error.message}`, 'error');
+        }
+    }
+
+    async openTerminal(instanceName) {
+        try {
+            const response = await fetch('/api/terminal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    instanceName: instanceName 
+                }),
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.showToast(`Docker Terminal für ${instanceName} geöffnet`, 'success');
+                } else {
+                    throw new Error(result.error || 'Terminal konnte nicht geöffnet werden');
+                }
+            } else {
+                throw new Error('Terminal konnte nicht geöffnet werden');
+            }
+        } catch (error) {
+            console.error('Fehler beim Öffnen des Terminals:', error);
+            this.showToast(`Fehler beim Terminal: ${error.message}`, 'error');
         }
     }
 

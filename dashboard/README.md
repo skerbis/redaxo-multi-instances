@@ -27,15 +27,51 @@ cd dashboard
 npm install
 ```
 
-3. Dashboard starten:
+3. Konfiguration anpassen (optional):
+```bash
+cp .env.example .env
+# Bearbeite .env für projektspezifische Einstellungen
+```
+
+4. Dashboard starten:
 ```bash
 npm start
 ```
 
-4. Im Browser öffnen:
+5. Im Browser öffnen:
 ```
 http://localhost:3000
 ```
+
+## Konfiguration
+
+Das Dashboard erkennt automatisch die Projekt-Pfade und ist vollständig portierbar. Optionale Konfiguration über `.env`:
+
+```bash
+# Projekt-Pfade (automatisch erkannt)
+PROJECT_ROOT=/pfad/zu/redaxo-multi-instances
+INSTANCES_DIR=/pfad/zu/redaxo-multi-instances/instances
+
+# Dashboard-Features
+ENABLE_SCREENSHOTS=true
+ENABLE_VSCODE_INTEGRATION=true
+ENABLE_REALTIME_UPDATES=true
+ENABLE_TERMINAL_INTEGRATION=true
+
+# Server-Einstellungen
+PORT=3000
+NODE_ENV=development
+```
+
+### Portierbarkeit
+
+Das Dashboard ist vollständig portierbar und funktioniert auf jedem System:
+
+- ✅ **Automatische Pfad-Erkennung** - Keine hardcodierten Pfade
+- ✅ **Umgebungsvariablen** - Alle Einstellungen konfigurierbar
+- ✅ **Cross-Platform** - Funktioniert auf macOS, Linux und Windows
+- ✅ **VS Code Integration** - Dynamische Links zum Code-Editor
+- ✅ **Terminal Integration** - Plattformspezifische Terminal-Öffnung
 
 ## Entwicklung
 

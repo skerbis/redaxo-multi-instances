@@ -1,0 +1,3 @@
+# Dashboard Logs
+# Dieser Ordner enthält PM2 und Node.js Logs
+# Die Log-Dateien werden von Git ignoriert, aber der Ordner bleibt bestehen

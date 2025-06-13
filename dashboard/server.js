@@ -287,6 +287,94 @@ app.get('/api/dumps', async (req, res) => {
     }
 });
 
+// API: Terminal öffnen
+app.post('/api/terminal', async (req, res) => {
+    try {
+        const { instanceName } = req.body;
+        
+        if (!instanceName) {
+            return res.status(400).json({ error: 'Instanz-Name fehlt' });
+        }
+        
+        // Pfad zur Instanz
+        const instancePath = path.join(INSTANCES_DIR, instanceName);
+        
+        // Prüfe ob Instanz existiert
+        if (!fs.existsSync(instancePath)) {
+            return res.status(404).json({ error: 'Instanz nicht gefunden' });
+        }
+        
+        // Erstelle ein Bash-Script für Docker Terminal
+        const bashScript = `#!/bin/bash
+cd "${instancePath}"
+clear
+echo "🐳 REDAXO Docker Terminal - Instanz: ${instanceName}"
+echo "────────────────────────────────────────────────"
+echo ""
+
+# Prüfe ob Container läuft
+if docker compose ps apache 2>/dev/null | grep -q "Up"; then
+    echo "✅ Apache Container läuft - Verbinde mit PHP/Apache Container..."
+    echo "📁 Arbeitsverzeichnis: /var/www/html"
+    echo ""
+    # Direkt in den Apache/PHP Container
+    docker compose exec apache bash 2>/dev/null || docker compose exec apache sh
+else
+    echo "❌ Apache Container läuft nicht"
+    echo ""
+    echo "💡 Verfügbare Befehle:"
+    echo "  docker compose up -d         # Container starten"
+    echo "  docker compose down          # Container stoppen"  
+    echo "  docker compose logs -f       # Logs anzeigen"
+    echo "  docker compose exec apache bash  # In Apache Container einloggen"
+    echo ""
+    echo "Starte Container automatisch? (j/n)"
+    read -n 1 answer
+    if [[ \\$answer == "j" || \\$answer == "J" ]]; then
+        echo ""
+        echo "🚀 Starte Container..."
+        docker compose up -d
+        sleep 3
+        echo "✅ Container gestartet - Verbinde mit Apache..."
+        docker compose exec apache bash 2>/dev/null || docker compose exec apache sh
+    fi
+fi
+
+# Lass Terminal offen
+exec bash
+`;
+        
+        // Schreibe das Script in eine temporäre Datei
+        const scriptPath = path.join(instancePath, '.docker-terminal.sh');
+        fs.writeFileSync(scriptPath, bashScript, { mode: 0o755 });
+        
+        // AppleScript für macOS Terminal
+        const appleScript = `tell application "Terminal"
+            do script "cd '${instancePath}' && ./.docker-terminal.sh"
+            activate
+        end tell`;
+        
+        // AppleScript ausführen
+        const command = `osascript -e '${appleScript}'`;
+        
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error('Terminal-Fehler:', error);
+                return res.status(500).json({ error: 'Fehler beim Öffnen des Terminals' });
+            }
+            
+            res.json({ 
+                success: true, 
+                message: `Docker Terminal für ${instanceName} geöffnet`,
+                path: instancePath
+            });
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Hilfsfunktion für Dateigröße
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
