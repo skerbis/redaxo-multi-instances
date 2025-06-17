@@ -305,12 +305,13 @@ create_instance() {
     fi
     
     if [ "$instance_type" = "webserver" ]; then
-        local phpmyadmin_port=""
+        local phpmyadmin_port=$(find_available_port 8180)
         local mailpit_port=""
         
         echo -e "${BLUE}📋 Konfiguration:${NC}"
-        echo "  • HTTP:  http://localhost:$http_port"
-        echo "  • HTTPS: https://localhost:$https_port"
+        echo "  • HTTP:       http://localhost:$http_port"
+        echo "  • HTTPS:      https://localhost:$https_port"
+        echo "  • phpMyAdmin: http://localhost:$phpmyadmin_port"
         echo ""
     else
         local phpmyadmin_port=$(find_available_port 8180)
@@ -383,14 +384,14 @@ create_instance() {
     
     # Erstelle docker-compose.yml mit gewählten Versionen
     if [ "$instance_type" = "webserver" ]; then
-        create_webserver_docker_compose "$name" "$http_port" "$https_port" "$php_version"
+        create_webserver_docker_compose "$name" "$http_port" "$https_port" "$php_version" "$phpmyadmin_port"
     else
         create_docker_compose_with_versions "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailpit_port" "$php_version" "$mariadb_version"
     fi
     
     # Erstelle .env-Datei
     if [ "$instance_type" = "webserver" ]; then
-        create_webserver_env_file "$name" "$http_port" "$https_port"
+        create_webserver_env_file "$name" "$http_port" "$https_port" "$phpmyadmin_port"
     else
         create_env_file "$name" "$http_port" "$https_port" "$phpmyadmin_port" "$mailpit_port" "$smtp_port"
     fi
@@ -476,8 +477,9 @@ services:
     container_name: redaxo-${name}-phpmyadmin
     environment:
       PMA_HOST: mariadb
-      PMA_USER: \${MYSQL_USER}
-      PMA_PASSWORD: \${MYSQL_PASSWORD}
+      PMA_USER: root
+      PMA_PASSWORD: \${MYSQL_ROOT_PASSWORD}
+      PMA_ARBITRARY: 1
     ports:
       - "\${PHPMYADMIN_PORT}:80"
     depends_on:
@@ -734,7 +736,40 @@ create_webserver_index() {
             </div>
             
             <div class="info-card">
-                <h3><span class="icon">📁</span>Dateisystem</h3>
+                <h3><span class="icon">�️</span>Datenbank</h3>
+                <div class="info-item">
+                    <span class="info-label">Host:</span>
+                    <span class="info-value">mariadb (intern) / localhost (extern)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Datenbank:</span>
+                    <span class="info-value"><?php echo getenv('MYSQL_DATABASE') ?: 'N/A'; ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Benutzer:</span>
+                    <span class="info-value"><?php echo getenv('MYSQL_USER') ?: 'N/A'; ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Passwort:</span>
+                    <span class="info-value"><?php echo getenv('MYSQL_PASSWORD') ?: 'N/A'; ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Root-Passwort:</span>
+                    <span class="info-value"><?php echo getenv('MYSQL_ROOT_PASSWORD') ?: 'N/A'; ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">phpMyAdmin:</span>
+                    <span class="info-value">
+                        <a href="http://localhost:<?php echo getenv('PHPMYADMIN_PORT') ?: '8080'; ?>" target="_blank">
+                            http://localhost:<?php echo getenv('PHPMYADMIN_PORT') ?: '8080'; ?>
+                        </a>
+                        <br><small style="color: #888; font-size: 0.8em;">💡 Läuft mit Root-Berechtigung (root/<?php echo getenv('MYSQL_ROOT_PASSWORD') ?: 'N/A'; ?>)</small>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3><span class="icon">�📁</span>Dateisystem</h3>
                 <div class="info-item">
                     <span class="info-label">Document Root:</span>
                     <span class="info-value"><?php echo $_SERVER['DOCUMENT_ROOT']; ?></span>
@@ -771,6 +806,7 @@ create_webserver_docker_compose() {
     local http_port=$2
     local https_port=$3
     local php_version=$4
+    local phpmyadmin_port=$5
     
     cat > "$INSTANCES_DIR/$name/docker-compose.yml" << EOF
 version: '3.8'
@@ -790,15 +826,49 @@ services:
       - ./app:/var/www/html
       - ../../ssl/${name}/cert.crt:/etc/ssl/certs/cert.crt:ro
       - ../../ssl/${name}/private.key:/etc/ssl/private/private.key:ro
+    depends_on:
+      - mariadb
     networks:
       - webserver-network
     environment:
       - INSTANCE_NAME=${name}
       - HTTP_PORT=${http_port}
       - HTTPS_PORT=${https_port}
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+
+  mariadb:
+    image: mariadb:\${MARIADB_VERSION}
+    container_name: webserver-${name}-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: \${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: \${MYSQL_DATABASE}
+      MYSQL_USER: \${MYSQL_USER}
+      MYSQL_PASSWORD: \${MYSQL_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - webserver-network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: webserver-${name}-phpmyadmin
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: root
+      PMA_PASSWORD: \${MYSQL_ROOT_PASSWORD}
+      PMA_ARBITRARY: 1
+    ports:
+      - "\${PHPMYADMIN_PORT}:80"
+    depends_on:
+      - mariadb
+    networks:
+      - webserver-network
 
 networks:
   webserver-network:
+
+volumes:
+  mariadb_data:
 EOF
 }
 
@@ -806,14 +876,27 @@ create_webserver_env_file() {
     local name=$1
     local http_port=$2
     local https_port=$3
+    local phpmyadmin_port=$4
     
     cat > "$INSTANCES_DIR/$name/.env" << EOF
 # Webserver Instance: $name
 INSTANCE_NAME=$name
+INSTANCE_TYPE=webserver
 
 # Ports
 HTTP_PORT=$http_port
 HTTPS_PORT=$https_port
+PHPMYADMIN_PORT=$phpmyadmin_port
+
+# Database Configuration
+MYSQL_ROOT_PASSWORD=root123
+MYSQL_DATABASE=${name}_db
+MYSQL_USER=${name}_user
+MYSQL_PASSWORD=password123
+
+# Versions
+PHP_VERSION=8.4
+MARIADB_VERSION=latest
 EOF
 }
 
@@ -1047,11 +1130,14 @@ show_urls() {
     echo -e "${GREEN}🌐 URLs für '$name'${NC}"
     echo ""
     
-    # Prüfe ob es eine Webserver-Instanz ist (keine MariaDB-Variablen)
-    if [ -z "$MYSQL_DATABASE" ]; then
+    # Prüfe ob es eine Webserver-Instanz ist
+    if [ "$INSTANCE_TYPE" = "webserver" ]; then
         echo -e "${BLUE}Webserver:${NC}"
         echo "  🌐 HTTP:  http://localhost:$HTTP_PORT"
         echo "  🔒 HTTPS: https://localhost:$HTTPS_PORT"
+        echo ""
+        echo -e "${BLUE}Tools:${NC}"
+        echo "  🗄️  phpMyAdmin: http://localhost:$PHPMYADMIN_PORT"
         echo ""
         
         # Status prüfen für Webserver

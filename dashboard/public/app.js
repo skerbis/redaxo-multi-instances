@@ -88,6 +88,11 @@ class RedaxoDashboard {
         document.getElementById('importDump').addEventListener('change', () => {
             this.toggleDumpSelection();
         });
+
+        // Webserver-only Toggle
+        document.getElementById('webserverOnly').addEventListener('change', () => {
+            this.toggleWebserverOnly();
+        });
     }
 
     async loadInstances() {
@@ -227,6 +232,9 @@ class RedaxoDashboard {
                                             <i class="fas fa-database"></i> phpMyAdmin
                                         </a>
                                     ` : ''}
+                                    <button class="url-link" onclick="console.log('DB Info clicked for:', '${instance.name}'); window.dashboard.showDatabaseInfo('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                        <i class="fas fa-key"></i> DB-Zugangsdaten
+                                    </button>
                                     ${instance.mailpitUrl ? `
                                         <a href="${instance.mailpitUrl}" target="_blank" class="url-link">
                                             <i class="fas fa-envelope"></i> Mailpit
@@ -396,6 +404,7 @@ class RedaxoDashboard {
             mariadbVersion: formData.get('mariadbVersion'),
             autoInstall: formData.get('autoInstall') === 'on',
             importDump: formData.get('importDump') === 'on',
+            webserverOnly: formData.get('webserverOnly') === 'on',
             dumpFile: formData.get('dumpFile')
         };
 
@@ -408,7 +417,9 @@ class RedaxoDashboard {
 
             const message = instanceData.importDump 
                 ? `Erstelle Instanz ${instanceData.name} mit Dump-Import...`
-                : `Erstelle Instanz ${instanceData.name}...`;
+                : instanceData.webserverOnly
+                    ? `Erstelle Webserver-Instanz ${instanceData.name}...`
+                    : `Erstelle REDAXO-Instanz ${instanceData.name}...`;
                 
             this.showToast(message, 'success');
             this.hideCreateModal();
@@ -434,10 +445,14 @@ class RedaxoDashboard {
                 this.showToast(successMessage, 'success');
                 form.reset();
                 
-                // Reset dump selection
+                // Reset alle Optionen
                 document.getElementById('dumpSelection').classList.remove('show');
                 document.getElementById('autoInstall').disabled = false;
                 document.getElementById('autoInstall').checked = true;
+                document.getElementById('webserverOnly').disabled = false;
+                document.getElementById('webserverOnly').checked = false;
+                document.getElementById('importDump').disabled = false;
+                document.getElementById('importDump').checked = false;
             } else {
                 // Fehler: Aus "erstellenden" Liste entfernen
                 this.creatingInstances.delete(instanceData.name);
@@ -527,6 +542,109 @@ class RedaxoDashboard {
         } catch (error) {
             console.error('Fehler beim Öffnen von VS Code:', error);
             this.showToast(`Fehler beim Öffnen von VS Code: ${error.message}`, 'error');
+        }
+    }
+
+    async showDatabaseInfo(instanceName) {
+        console.log('showDatabaseInfo called with:', instanceName);
+        try {
+            console.log('Fetching database info...');
+            const response = await fetch(`/api/instances/${instanceName}/database`);
+            console.log('Response status:', response.status);
+            
+            if (response.ok) {
+                const dbInfo = await response.json();
+                
+                // Modal für DB-Info erstellen
+                const modal = document.createElement('div');
+                modal.className = 'modal-backdrop';
+                modal.innerHTML = `
+                    <div class="modal glass-card">
+                        <div class="modal-header">
+                            <h2><i class="fas fa-database"></i> Datenbankzugangsdaten - ${instanceName}</h2>
+                            <button class="close-button" onclick="this.closest('.modal-backdrop').classList.remove('show'); setTimeout(() => this.closest('.modal-backdrop').remove(), 300);">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="db-info-grid">
+                                <div class="db-info-item">
+                                    <label>Host:</label>
+                                    <div class="db-value">${dbInfo.host} <button onclick="navigator.clipboard.writeText('${dbInfo.host}')" title="Kopieren"><i class="fas fa-copy"></i></button></div>
+                                </div>
+                                <div class="db-info-item">
+                                    <label>Datenbank:</label>
+                                    <div class="db-value">${dbInfo.database} <button onclick="navigator.clipboard.writeText('${dbInfo.database}')" title="Kopieren"><i class="fas fa-copy"></i></button></div>
+                                </div>
+                                <div class="db-info-item">
+                                    <label>Benutzer:</label>
+                                    <div class="db-value">${dbInfo.user} <button onclick="navigator.clipboard.writeText('${dbInfo.user}')" title="Kopieren"><i class="fas fa-copy"></i></button></div>
+                                </div>
+                                <div class="db-info-item">
+                                    <label>Passwort:</label>
+                                    <div class="db-value">${dbInfo.password} <button onclick="navigator.clipboard.writeText('${dbInfo.password}')" title="Kopieren"><i class="fas fa-copy"></i></button></div>
+                                </div>
+                                <div class="db-info-item">
+                                    <label>Root-Passwort:</label>
+                                    <div class="db-value">${dbInfo.rootPassword} <button onclick="navigator.clipboard.writeText('${dbInfo.rootPassword}')" title="Kopieren"><i class="fas fa-copy"></i></button></div>
+                                </div>
+                                ${dbInfo.phpmyadminUrl ? `
+                                <div class="db-info-item">
+                                    <label>phpMyAdmin:</label>
+                                    <div class="db-value">
+                                        <button onclick="window.open('${dbInfo.phpmyadminUrl}', '_blank')" class="glass-button secondary" style="margin: 0; padding: 0.5rem 1rem; font-size: 0.9rem;">
+                                            <i class="fas fa-external-link-alt"></i>
+                                            ${dbInfo.phpmyadminUrl}
+                                        </button>
+                                        <small style="display: block; color: rgba(255,255,255,0.7); margin-top: 4px;">
+                                            <i class="fas fa-info-circle"></i> Läuft mit Root-Berechtigung
+                                        </small>
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="glass-button secondary" onclick="this.closest('.modal-backdrop').classList.remove('show'); setTimeout(() => this.closest('.modal-backdrop').remove(), 300);">
+                                    Schließen
+                                </button>
+                                ${dbInfo.phpmyadminUrl ? `
+                                <button onclick="window.open('${dbInfo.phpmyadminUrl}', '_blank')" class="glass-button primary">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    phpMyAdmin öffnen
+                                </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Modal zum Body hinzufügen
+                console.log('Adding modal to body...');
+                document.body.appendChild(modal);
+                
+                // Show-Klasse hinzufügen für Animation
+                setTimeout(() => {
+                    modal.classList.add('show');
+                }, 10);
+                console.log('Modal added successfully');
+                
+                // Click outside to close
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                        setTimeout(() => modal.remove(), 300);
+                    }
+                });
+                
+            } else {
+                console.error('Response not ok:', response.status, response.statusText);
+                const errorData = await response.json();
+                console.error('Error data:', errorData);
+                throw new Error(errorData.error || 'DB-Info konnte nicht geladen werden');
+            }
+        } catch (error) {
+            console.error('Fehler beim Laden der DB-Info:', error);
+            this.showToast(`Fehler beim Laden der DB-Info: ${error.message}`, 'error');
         }
     }
 
@@ -683,15 +801,41 @@ class RedaxoDashboard {
         const importDumpCheckbox = document.getElementById('importDump');
         const dumpSelection = document.getElementById('dumpSelection');
         const autoInstallCheckbox = document.getElementById('autoInstall');
+        const webserverOnlyCheckbox = document.getElementById('webserverOnly');
         
         if (importDumpCheckbox.checked) {
             dumpSelection.classList.add('show');
             autoInstallCheckbox.checked = false;
             autoInstallCheckbox.disabled = true;
+            webserverOnlyCheckbox.checked = false;
+            webserverOnlyCheckbox.disabled = true;
             this.loadAvailableDumps();
         } else {
             dumpSelection.classList.remove('show');
             autoInstallCheckbox.disabled = false;
+            webserverOnlyCheckbox.disabled = false;
+            if (!webserverOnlyCheckbox.checked) {
+                autoInstallCheckbox.checked = true;
+            }
+        }
+    }
+
+    // Webserver-only Toggle
+    toggleWebserverOnly() {
+        const webserverOnlyCheckbox = document.getElementById('webserverOnly');
+        const autoInstallCheckbox = document.getElementById('autoInstall');
+        const importDumpCheckbox = document.getElementById('importDump');
+        
+        if (webserverOnlyCheckbox.checked) {
+            autoInstallCheckbox.checked = false;
+            autoInstallCheckbox.disabled = true;
+            importDumpCheckbox.checked = false;
+            importDumpCheckbox.disabled = true;
+            // Verstecke Dump-Auswahl falls sichtbar
+            document.getElementById('dumpSelection').classList.remove('show');
+        } else {
+            autoInstallCheckbox.disabled = false;
+            importDumpCheckbox.disabled = false;
             autoInstallCheckbox.checked = true;
         }
     }

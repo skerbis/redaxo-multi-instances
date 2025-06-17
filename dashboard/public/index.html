@@ -88,6 +88,14 @@
                     
                     <div class="form-group">
                         <label class="checkbox-label">
+                            <input type="checkbox" id="webserverOnly" name="webserverOnly" onchange="dashboard.toggleWebserverOnly()">
+                            <span class="checkmark"></span>
+                            Nur Webserver (Apache + PHP + MariaDB, ohne REDAXO)
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
                             <input type="checkbox" id="importDump" name="importDump" onchange="dashboard.toggleDumpSelection()">
                             <span class="checkmark"></span>
                             Dump importieren (überschreibt Auto-Installation)

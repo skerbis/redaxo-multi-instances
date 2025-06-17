@@ -17,6 +17,19 @@ const INSTANCES_DIR = path.join(PROJECT_ROOT, 'instances');
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// API: Konfiguration abrufen
+app.get('/api/config', (req, res) => {
+    res.json({
+        projectRoot: PROJECT_ROOT,
+        instancesDir: INSTANCES_DIR,
+        features: {
+            terminalIntegration: true,
+            vscodeIntegration: true,
+            databaseInfo: true
+        }
+    });
+});
+
 // API: Alle Instanzen abrufen
 app.get('/api/instances', async (req, res) => {
     try {
@@ -68,7 +81,7 @@ app.post('/api/instances/:name/stop', async (req, res) => {
 // API: Neue Instanz erstellen
 app.post('/api/instances', async (req, res) => {
     try {
-        const { name, phpVersion, mariadbVersion, autoInstall, importDump, dumpFile } = req.body;
+        const { name, phpVersion, mariadbVersion, autoInstall, importDump, webserverOnly, dumpFile } = req.body;
         
         if (!name || !name.match(/^[a-zA-Z0-9_-]+$/)) {
             return res.status(400).json({ error: 'Ungültiger Instanzname' });
@@ -95,8 +108,21 @@ app.post('/api/instances', async (req, res) => {
                 message: `Instanz ${name} wird mit Dump "${dumpFile}" erstellt...`,
                 type: 'import'
             });
+        } else if (webserverOnly) {
+            // Webserver-only Instanz (ohne REDAXO)
+            let command = `./redaxo create ${name} --type webserver`;
+            if (phpVersion) command += ` --php-version ${phpVersion}`;
+            if (mariadbVersion) command += ` --mariadb-version ${mariadbVersion}`;
+            
+            await executeCommand(command);
+            
+            res.json({ 
+                success: true, 
+                message: `Webserver-Instanz ${name} wird erstellt...`,
+                type: 'webserver'
+            });
         } else {
-            // Normale Instanz-Erstellung
+            // Normale REDAXO-Instanz-Erstellung
             let command = `./redaxo create ${name}`;
             if (phpVersion) command += ` --php-version ${phpVersion}`;
             if (mariadbVersion) command += ` --mariadb-version ${mariadbVersion}`;
@@ -106,7 +132,7 @@ app.post('/api/instances', async (req, res) => {
             
             res.json({ 
                 success: true, 
-                message: `Instanz ${name} wird erstellt...`,
+                message: `REDAXO-Instanz ${name} wird erstellt...`,
                 type: 'create'
             });
         }
@@ -440,6 +466,35 @@ app.post('/api/vscode', async (req, res) => {
     }
 });
 
+// API: Datenbankzugangsdaten abrufen
+app.get('/api/instances/:name/database', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const instancePath = path.join(INSTANCES_DIR, name);
+        const envPath = path.join(instancePath, '.env');
+        
+        if (!fs.existsSync(envPath)) {
+            return res.status(404).json({ error: 'Instanz nicht gefunden' });
+        }
+        
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const envVars = parseEnvFile(envContent);
+        
+        res.json({
+            host: 'localhost',
+            database: envVars.MYSQL_DATABASE || 'N/A',
+            user: envVars.MYSQL_USER || 'N/A',
+            password: envVars.MYSQL_PASSWORD || 'N/A',
+            rootPassword: envVars.MYSQL_ROOT_PASSWORD || 'N/A',
+            phpmyadminPort: envVars.PHPMYADMIN_PORT || null,
+            phpmyadminUrl: envVars.PHPMYADMIN_PORT ? `http://localhost:${envVars.PHPMYADMIN_PORT}` : null
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Hilfsfunktion für Dateigröße
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
@@ -503,9 +558,16 @@ async function getInstances() {
 function parseEnvFile(content) {
     const vars = {};
     content.split('\n').forEach(line => {
-        const match = line.match(/^([^#=]+)=(.*)$/);
-        if (match) {
-            vars[match[1].trim()] = match[2].trim();
+        // Ignoriere Kommentare und leere Zeilen
+        line = line.trim();
+        if (line && !line.startsWith('#')) {
+            const equalIndex = line.indexOf('=');
+            if (equalIndex > 0) {
+                const key = line.substring(0, equalIndex).trim();
+                const value = line.substring(equalIndex + 1).trim();
+                // Entferne Anführungszeichen falls vorhanden
+                vars[key] = value.replace(/^["']|["']$/g, '');
+            }
         }
     });
     return vars;
@@ -513,8 +575,20 @@ function parseEnvFile(content) {
 
 async function checkInstanceStatus(name) {
     return new Promise((resolve) => {
-        exec(`docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"`, (error) => {
-            resolve(error === null);
+        // Prüfe sowohl REDAXO- als auch Webserver-Container
+        const checkRedaxo = `docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"`;
+        const checkWebserver = `docker ps --format "table {{.Names}}" | grep -q "webserver-${name}-apache"`;
+        
+        exec(checkRedaxo, (error1) => {
+            if (error1 === null) {
+                // REDAXO-Container läuft
+                resolve(true);
+            } else {
+                // Prüfe Webserver-Container
+                exec(checkWebserver, (error2) => {
+                    resolve(error2 === null);
+                });
+            }
         });
     });
 }
@@ -538,9 +612,17 @@ async function executeCommand(command, input = '', workingDir = PROJECT_ROOT) {
 
 async function getContainerInfo(instanceName) {
     try {
+        // Erkenne Container-Typ (REDAXO oder Webserver)
+        const checkRedaxo = `docker ps --format "table {{.Names}}" | grep -q "redaxo-${instanceName}-apache"`;
+        const isRedaxo = await new Promise((resolve) => {
+            exec(checkRedaxo, (error) => resolve(error === null));
+        });
+        
+        const containerPrefix = isRedaxo ? 'redaxo' : 'webserver';
+        
         // PHP Version aus Container abfragen
-        const phpVersionCmd = `docker exec redaxo-${instanceName}-apache php -v 2>/dev/null | head -n1 | cut -d' ' -f2 || echo 'Unknown'`;
-        const mariadbVersionCmd = `docker exec redaxo-${instanceName}-mariadb mariadb --version 2>/dev/null | cut -d' ' -f5 | cut -d'-' -f1 || echo 'Unknown'`;
+        const phpVersionCmd = `docker exec ${containerPrefix}-${instanceName}-apache php -v 2>/dev/null | head -n1 | cut -d' ' -f2 || echo 'Unknown'`;
+        const mariadbVersionCmd = `docker exec ${containerPrefix}-${instanceName}-mariadb mariadb --version 2>/dev/null | cut -d' ' -f5 | cut -d'-' -f1 || echo 'Unknown'`;
         
         const [phpVersion, mariadbVersion] = await Promise.allSettled([
             executeCommand(phpVersionCmd),
