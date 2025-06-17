@@ -243,6 +243,9 @@ class RedaxoDashboard {
                                     <button class="url-link" onclick="window.dashboard.openVSCode('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
                                         <i class="fab fa-microsoft"></i> VS Code öffnen
                                     </button>
+                                    <button class="url-link" onclick="window.dashboard.openInFinder('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                        <i class="fas fa-folder-open"></i> Im Finder öffnen
+                                    </button>
                                     ${this.config && this.config.features.terminalIntegration !== false ? `
                                         <button class="url-link" onclick="window.dashboard.openTerminal('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
                                             <i class="fas fa-terminal"></i> Docker Terminal
@@ -542,6 +545,35 @@ class RedaxoDashboard {
         } catch (error) {
             console.error('Fehler beim Öffnen von VS Code:', error);
             this.showToast(`Fehler beim Öffnen von VS Code: ${error.message}`, 'error');
+        }
+    }
+
+    async openInFinder(instanceName) {
+        try {
+            const response = await fetch('/api/finder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    instanceName: instanceName 
+                }),
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.showToast(`Finder für ${instanceName} geöffnet`, 'success');
+                } else {
+                    throw new Error(result.error || 'Finder konnte nicht geöffnet werden');
+                }
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Finder konnte nicht geöffnet werden');
+            }
+        } catch (error) {
+            console.error('Fehler beim Öffnen des Finders:', error);
+            this.showToast(`Fehler beim Öffnen des Finders: ${error.message}`, 'error');
         }
     }
 

@@ -466,6 +466,46 @@ app.post('/api/vscode', async (req, res) => {
     }
 });
 
+// API: Im Finder öffnen
+app.post('/api/finder', async (req, res) => {
+    try {
+        const { instanceName } = req.body;
+        
+        if (!instanceName) {
+            return res.status(400).json({ error: 'Instanz-Name fehlt' });
+        }
+        
+        // Pfad zur Instanz (app-Verzeichnis)
+        const instancePath = path.join(INSTANCES_DIR, instanceName, 'app');
+        
+        // Prüfe ob Instanz existiert
+        if (!fs.existsSync(instancePath)) {
+            return res.status(404).json({ error: 'Instanz nicht gefunden' });
+        }
+        
+        // Finder mit dem app-Verzeichnis öffnen
+        const command = `open "${instancePath}"`;
+        
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error('Finder-Fehler:', error);
+                return res.status(500).json({ 
+                    error: 'Fehler beim Öffnen des Finders' 
+                });
+            }
+            
+            res.json({ 
+                success: true, 
+                message: `Finder geöffnet für ${instanceName}`,
+                path: instancePath
+            });
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // API: Datenbankzugangsdaten abrufen
 app.get('/api/instances/:name/database', async (req, res) => {
     try {
