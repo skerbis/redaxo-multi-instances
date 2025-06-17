@@ -252,17 +252,111 @@ install_nodejs() {
     print_info "npm: $npm_version"
 }
 
-# Git installieren/prüfen
+# Prüfe Git
 check_git() {
     print_section "Git prüfen"
     
     if command -v git >/dev/null 2>&1; then
-        git_version=$(git --version | cut -d' ' -f3)
-        print_success "Git ist installiert: $git_version"
+        git_version=$(git --version)
+        print_success "Git ist verfügbar: $git_version"
     else
-        print_step "Git wird installiert..."
-        brew install git
-        print_success "Git wurde erfolgreich installiert"
+        print_warning "Git ist nicht installiert!"
+        print_step "Git wird über Xcode Command Line Tools installiert..."
+        xcode-select --install 2>/dev/null || true
+        print_info "Xcode Command Line Tools Installation gestartet"
+        print_info "Bitte folgen Sie den Anweisungen und starten Sie das Setup danach erneut"
+        exit 0
+    fi
+}
+
+# Prüfe Visual Studio Code
+check_vscode() {
+    print_section "Visual Studio Code prüfen"
+    
+    if [ -d "/Applications/Visual Studio Code.app" ]; then
+        print_success "Visual Studio Code ist installiert"
+        
+        # Prüfe ob 'code' Befehl verfügbar ist
+        if command -v code >/dev/null 2>&1; then
+            print_success "VS Code 'code' Befehl ist bereits verfügbar"
+        else
+            print_step "VS Code 'code' Befehl wird zum PATH hinzugefügt..."
+            
+            # Füge VS Code zum PATH hinzu
+            VSCODE_PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+            
+            # Für zsh (Standard auf macOS Catalina+)
+            if [ -f ~/.zshrc ]; then
+                if ! grep -q "Visual Studio Code" ~/.zshrc 2>/dev/null; then
+                    echo "" >> ~/.zshrc
+                    echo "# Visual Studio Code" >> ~/.zshrc
+                    echo "export PATH=\"\$PATH:$VSCODE_PATH\"" >> ~/.zshrc
+                    print_success "VS Code zum zsh PATH hinzugefügt"
+                fi
+            fi
+            
+            # Für bash (Fallback)
+            if [ -f ~/.bash_profile ]; then
+                if ! grep -q "Visual Studio Code" ~/.bash_profile 2>/dev/null; then
+                    echo "" >> ~/.bash_profile
+                    echo "# Visual Studio Code" >> ~/.bash_profile
+                    echo "export PATH=\"\$PATH:$VSCODE_PATH\"" >> ~/.bash_profile
+                    print_success "VS Code zum bash PATH hinzugefügt"
+                fi
+            fi
+            
+            print_info "Der 'code' Befehl wird nach einem Terminal-Neustart verfügbar sein"
+        fi
+    else
+        print_warning "Visual Studio Code ist nicht installiert!"
+        echo ""
+        print_info "VS Code wird für die Dashboard-Integration empfohlen."
+        print_info "Bitte wählen Sie eine der folgenden Optionen:"
+        echo ""
+        echo -e "${YELLOW}1)${NC} VS Code automatisch installieren (empfohlen)"
+        echo -e "${YELLOW}2)${NC} VS Code manuell installieren"
+        echo -e "${YELLOW}3)${NC} Ohne VS Code fortfahren"
+        echo ""
+        
+        read -p "Ihre Wahl (1-3): " choice
+        
+        case $choice in
+            1)
+                install_vscode
+                ;;
+            2)
+                print_info "Bitte installieren Sie VS Code von: https://code.visualstudio.com/"
+                print_info "Starten Sie das Setup danach erneut für die vollständige Integration."
+                ;;
+            3)
+                print_info "Setup wird ohne VS Code fortgesetzt"
+                ;;
+            *)
+                print_error "Ungültige Auswahl. Setup wird ohne VS Code fortgesetzt."
+                ;;
+        esac
+    fi
+}
+
+# VS Code automatisch installieren
+install_vscode() {
+    print_step "Visual Studio Code wird installiert..."
+    
+    if command -v brew >/dev/null 2>&1; then
+        print_info "Installation über Homebrew..."
+        brew install --cask visual-studio-code
+        
+        if [ $? -eq 0 ]; then
+            print_success "VS Code wurde erfolgreich installiert"
+            # Rekursive Prüfung für PATH-Setup
+            check_vscode
+        else
+            print_error "Fehler bei der VS Code Installation über Homebrew"
+            print_info "Bitte installieren Sie VS Code manuell von: https://code.visualstudio.com/"
+        fi
+    else
+        print_warning "Homebrew nicht verfügbar"
+        print_info "Bitte installieren Sie VS Code manuell von: https://code.visualstudio.com/"
     fi
 }
 
@@ -598,8 +692,11 @@ main() {
     
     # Abhängigkeiten installieren
     check_homebrew
+    check_git
+    check_vscode
     check_docker
     check_git
+    check_vscode
     install_nodejs
     install_jq
     

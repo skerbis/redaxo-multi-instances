@@ -375,6 +375,71 @@ exec bash
     }
 });
 
+// API: VS Code öffnen
+app.post('/api/vscode', async (req, res) => {
+    try {
+        const { instanceName } = req.body;
+        
+        if (!instanceName) {
+            return res.status(400).json({ error: 'Instanz-Name fehlt' });
+        }
+        
+        // Pfad zur Instanz
+        const instancePath = path.join(INSTANCES_DIR, instanceName, 'app');
+        
+        // Prüfe ob Instanz existiert
+        if (!fs.existsSync(instancePath)) {
+            return res.status(404).json({ error: 'Instanz nicht gefunden' });
+        }
+        
+        // VS Code öffnen - verwende verschiedene Methoden
+        let command;
+        
+        // Methode 1: Über macOS open-Befehl (funktioniert immer wenn VS Code installiert ist)
+        if (fs.existsSync('/Applications/Visual Studio Code.app')) {
+            command = `open -a "Visual Studio Code" "${instancePath}"`;
+        }
+        // Methode 2: Über code-Befehl (falls verfügbar)
+        else if (fs.existsSync('/usr/local/bin/code')) {
+            command = `/usr/local/bin/code "${instancePath}"`;
+        }
+        // Methode 3: Direkter Pfad zur VS Code Binary
+        else if (fs.existsSync('/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code')) {
+            command = `"/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" "${instancePath}"`;
+        }
+        // Fallback: Versuche normalen code-Befehl
+        else {
+            command = `code "${instancePath}"`;
+        }
+        
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error('VS Code-Fehler:', error);
+                
+                // Prüfe ob VS Code installiert ist
+                if (!fs.existsSync('/Applications/Visual Studio Code.app')) {
+                    return res.status(500).json({ 
+                        error: 'Visual Studio Code ist nicht installiert. Bitte installieren Sie VS Code von https://code.visualstudio.com' 
+                    });
+                } else {
+                    return res.status(500).json({ 
+                        error: 'Fehler beim Öffnen von VS Code. Versuchen Sie das Setup-Script auszuführen: ./setup.sh' 
+                    });
+                }
+            }
+            
+            res.json({ 
+                success: true, 
+                message: `VS Code geöffnet für ${instanceName}`,
+                path: instancePath
+            });
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Hilfsfunktion für Dateigröße
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
