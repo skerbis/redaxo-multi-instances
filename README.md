@@ -5,7 +5,7 @@
 **Das moderne Dashboard für REDAXO-Entwickler** - Erstellen und verwalten Sie beliebig viele REDAXO-Instanzen mit einem Klick!
 
 ![REDAXO Multi-Instance Dashboard](https://img.shields.io/badge/REDAXO-Multi--Instance-4f7df3?style=for-the-badge&logo=docker)
-![Version](https://img.shields.io/badge/Version-2.0-success?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-2.1-success?style=for-the-badge)
 
 > 🎯 **Perfekt für:** Lokale Entwicklung, Client-Projekte, Testing verschiedener REDAXO-Versionen, Dump-Import
 
@@ -23,9 +23,11 @@
 - [Features](#-features)
 - [Dashboard Features](#️-dashboard-features)
 - [Dump-Import (Bestehende REDAXO-Projekte)](#-dump-import-bestehende-redaxo-projekte)
+- [Webserver-Only-Instanzen](#-webserver-only-instanzen)
 - [Penpot Design Tool](#-penpot-design-tool)
 
 ### 🛠️ Praktische Anwendung
+- [Entwickler-Integration](#-entwickler-integration)
 - [Befehlsreferenz](#-befehlsreferenz)
 - [Beispiele & Workflows](#-beispiele--workflows)
 - [Häufige Use Cases](#-häufige-use-cases)
@@ -177,6 +179,11 @@ brew install mkcert git
 - **📦 Import-System** - REDAXO-Dumps importieren
 - **🎨 Penpot Integration** - Lokales Design & Prototyping Tool
 - **🧹 Smart-Cleanup** - Intelligente Bereinigung
+- **🌐 Webserver-Only** - Reine PHP/Apache/MariaDB-Instanzen ohne REDAXO
+- **🗄️ DB-Zugangsdaten** - Vollständige Datenbankinfo mit phpMyAdmin-Integration
+- **💻 VS Code Integration** - Projekte direkt im Editor öffnen
+- **📁 Finder Integration** - Direkter Zugriff auf Projektordner
+- **🔐 Root-Berechtigung** - phpMyAdmin mit Admin-Rechten für Datenbank-Management
 
 ---
 
@@ -194,7 +201,15 @@ brew install mkcert git
 - ✅ **Auto-Installation:** Komplettes REDAXO in 2 Minuten
 - 📦 **Dump-Import:** Bestehende Projekte in 3-5 Minuten
 - 🔧 **Version wählen:** PHP 7.4-8.4, MariaDB 10.4-11.0
+- 🌐 **Webserver-Only:** Reine PHP/Apache/MariaDB-Instanzen
 - 🚀 **VS Code Button:** Öffnet Projekt direkt im Editor
+
+### **Entwickler-Integration**
+- 💻 **VS Code Integration:** Projekte mit einem Klick im Editor öffnen
+- 📁 **Finder Integration:** Direkter Zugriff auf den Projektordner
+- 🗄️ **DB-Zugangsdaten:** Vollständige Datenbankinfo mit Kopier-Buttons
+- 🔐 **phpMyAdmin Root:** Vollständige Datenbank-Verwaltung mit Admin-Rechten
+- 🐳 **Docker Terminal:** Direkter Container-Zugriff für Debugging
 
 ### **Status-Anzeigen**
 - 🟢 **Grün:** Instanz läuft perfekt
@@ -316,16 +331,82 @@ Zusätzlich zu REDAXO bietet das System auch **Penpot** - ein Open-Source Design
 
 ---
 
+## 🌐 Webserver-Only-Instanzen
+
+**Reine PHP/Apache/MariaDB-Umgebungen ohne REDAXO** - Perfekt für eigene PHP-Projekte oder als Basis für andere CMS.
+
+### **🎯 Wann Webserver-Only verwenden?**
+- 🏗️ **Eigene PHP-Projekte** entwickeln
+- 🎯 **Laravel, Symfony, CodeIgniter** und andere Frameworks
+- 📊 **WordPress, Drupal** oder andere CMS installieren
+- 🧪 **API-Entwicklung** mit reinem PHP
+- 📚 **PHP-Learning** und Experimente
+
+### **🚀 Webserver-Instanz erstellen**
+
+#### **Web-Dashboard:**
+1. **"Neue Instanz"** klicken
+2. **"Nur Webserver"** aktivieren
+3. PHP-Version wählen (7.4-8.4)
+4. **"Instanz erstellen"** → Fertig!
+
+#### **Kommandozeile:**
+```bash
+# Einfache Webserver-Instanz
+./redaxo create mein-webserver --type webserver
+
+# Mit spezifischer PHP-Version
+./redaxo create api-projekt --type webserver --php-version 8.1
+
+# Mit eigenen Ports
+./redaxo create test-server --type webserver --http-port 8090 --https-port 8490
+```
+
+### **🔧 Was ist enthalten?**
+- ✅ **Apache 2.4** mit mod_rewrite, SSL
+- ✅ **PHP** (7.4-8.4) mit allen Standard-Extensions
+- ✅ **MariaDB** mit vollem Admin-Zugriff
+- ✅ **phpMyAdmin** mit Root-Berechtigung
+- ✅ **SSL-Zertifikate** via mkcert
+- ✅ **Informative index.php** mit allen Zugangsdaten
+
+### **🗄️ Datenbankzugangsd Daten**
+Webserver-Instanzen erhalten automatisch:
+- **Host:** `mariadb` (Container-intern) / `localhost` (extern)
+- **Database:** `{instanz-name}_db`
+- **User:** `{instanz-name}_user`
+- **Password:** `password123`
+- **Root-Password:** `root123`
+
+> 💡 **Im Dashboard:** Klick auf **"DB-Zugangsdaten"** zeigt alle Informationen mit Kopier-Buttons
+
+### **📁 Projektstruktur**
+```
+instances/mein-webserver/
+├── app/                    # Ihr Projektverzeichnis
+│   └── index.php          # Informationsseite (überschreibbar)
+├── docker-compose.yml     # Container-Konfiguration
+└── .env                   # Umgebungsvariablen
+```
+
+> 🚀 **Direkt loslegen:** Ersetzen Sie `app/index.php` mit Ihrem PHP-Projekt!
+
+---
+
 ## 📚 Befehlsreferenz
 
 ### **Instanz-Management**
 
 ```bash
-# Erstellen
+# REDAXO-Instanzen erstellen
 ./redaxo create <name>                    # Manuelles Setup
 ./redaxo create <name> --auto             # Automatisches Setup mit admin/admin123
 ./redaxo create <name> --php-version 8.3  # Spezifische PHP-Version
 ./redaxo create <name> --repo redaxo/redaxo --auto  # Klassische REDAXO-Struktur
+
+# Webserver-Only-Instanzen (ohne REDAXO)
+./redaxo create <name> --type webserver                  # Nur Apache, PHP, MariaDB
+./redaxo create <name> --type webserver --php-version 8.1  # Mit spezifischer PHP-Version
 
 # Lebenszyklus
 ./redaxo start <name>                     # Instanz starten
@@ -336,6 +417,7 @@ Zusätzlich zu REDAXO bietet das System auch **Penpot** - ein Open-Source Design
 # Information
 ./redaxo list                             # Alle Instanzen anzeigen
 ./redaxo urls <name>                      # URLs der Instanz anzeigen
+./redaxo db <name>                        # Datenbankzugangsdaten anzeigen
 ./redaxo shell <name>                     # Shell in Container öffnen
 ```
 
@@ -435,35 +517,55 @@ Zusätzlich zu REDAXO bietet das System auch **Penpot** - ein Open-Source Design
 
 ---
 
-## 🎯 Häufige Use Cases
+## 💻 Entwickler-Integration
 
-### **🔬 Lokale REDAXO-Entwicklung**
-```bash
-./redaxo create dev-projekt --php-version 8.4 --auto
-# → Perfekte Entwicklungsumgebung in 2 Minuten
-```
+**Nahtlose Integration in Ihren Entwicklungs-Workflow** - Das Dashboard bietet direkte Verbindungen zu Ihren bevorzugten Tools.
 
-### **🧪 Verschiedene PHP-Versionen testen**
-```bash
-./redaxo create test-php83 --php-version 8.3 --auto
-./redaxo create test-php84 --php-version 8.4 --auto
-# → Beide laufen parallel!
-```
+### **🚀 VS Code Integration**
+- **Ein-Klick-Öffnung:** Projekt direkt im VS Code öffnen
+- **Automatische Installation:** Setup-Script installiert VS Code und fügt `code`-Befehl hinzu
+- **Fallback-Unterstützung:** Funktioniert auch ohne `code`-Befehl im PATH
 
-### **📦 Client-Projekt importieren**
-```bash
-# Dump ins Verzeichnis
-cp ~/Downloads/client-backup.zip dump/
+**Verwendung:**
+1. Im Dashboard: **3-Punkte-Menü → "VS Code öffnen"**
+2. VS Code öffnet das `app/`-Verzeichnis der Instanz
+3. Sofort entwicklungsbereit!
 
-# Import via Dashboard oder:
-./import-dump client-projekt client-backup.zip
-```
+### **📁 Finder Integration**
+- **Direkter Dateizugriff:** Projektordner im macOS Finder öffnen
+- **Drag & Drop:** Einfaches Hochladen von Dateien und Assets
+- **Datei-Management:** Schnelle Übersicht über Projektstruktur
 
-### **🚀 Demo für Kunden**
-```bash
-./redaxo create demo --auto
-# → Sofort bereite Demo-Instanz
-```
+**Verwendung:**
+1. Im Dashboard: **3-Punkte-Menü → "Im Finder öffnen"**
+2. Finder öffnet das `app/`-Verzeichnis
+3. Direkter Zugriff auf alle Projektdateien
+
+### **🗄️ Datenbank-Management**
+- **Vollständige DB-Info:** Alle Zugangsdaten übersichtlich angezeigt
+- **Kopier-Buttons:** Einfaches Kopieren von Credentials
+- **phpMyAdmin-Integration:** Ein-Klick-Zugriff mit Root-Berechtigung
+- **Neue Datenbanken erstellen:** Volle Admin-Rechte
+
+**Verwendung:**
+1. Im Dashboard: **3-Punkte-Menü → "DB-Zugangsdaten"**
+2. Modal zeigt alle Informationen:
+   - Host, Database, User, Password
+   - Root-Password für Admin-Zugriff
+   - Direkter phpMyAdmin-Link
+3. **"phpMyAdmin öffnen"** für Datenbank-Verwaltung
+
+### **🐳 Docker Terminal**
+- **Container-Zugriff:** Direkt in den Apache-Container einsteigen
+- **Debugging:** Log-Dateien, Konfigurationen prüfen
+- **Package-Installation:** Zusätzliche PHP-Extensions installieren
+
+**Verwendung:**
+1. Im Dashboard: **3-Punkte-Menü → "Docker Terminal"**
+2. Terminal öffnet sich im Container
+3. Voller Root-Zugriff auf Container-Umgebung
+
+> 💡 **Pro-Tipp:** Alle Integrations-Features sind sowohl für REDAXO- als auch Webserver-Only-Instanzen verfügbar!
 
 ---
 
