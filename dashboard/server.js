@@ -506,6 +506,128 @@ app.post('/api/finder', async (req, res) => {
     }
 });
 
+// API: PHP/MariaDB-Versionen einer Instanz aktualisieren
+app.post('/api/instances/:name/update-versions', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const { phpVersion, mariadbVersion } = req.body;
+        
+        if (!name) {
+            return res.status(400).json({ error: 'Instanz-Name fehlt' });
+        }
+        
+        if (!phpVersion && !mariadbVersion) {
+            return res.status(400).json({ error: 'Mindestens eine Version muss angegeben werden' });
+        }
+        
+        // Prüfe ob Instanz existiert
+        const instancePath = path.join(INSTANCES_DIR, name);
+        if (!fs.existsSync(instancePath)) {
+            return res.status(404).json({ error: 'Instanz nicht gefunden' });
+        }
+        
+        // Baue den update-Befehl zusammen
+        let command = `./redaxo update "${name}"`;
+        
+        if (phpVersion) {
+            // Validiere PHP-Version
+            const validPhpVersions = ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4'];
+            if (!validPhpVersions.includes(phpVersion)) {
+                return res.status(400).json({ 
+                    error: `Ungültige PHP-Version: ${phpVersion}. Verfügbar: ${validPhpVersions.join(', ')}` 
+                });
+            }
+            command += ` --php-version ${phpVersion}`;
+        }
+        
+        if (mariadbVersion) {
+            // Validiere MariaDB-Version
+            const validMariadbVersions = ['10.4', '10.5', '10.6', '10.11', '11.0', 'latest'];
+            if (!validMariadbVersions.includes(mariadbVersion)) {
+                return res.status(400).json({ 
+                    error: `Ungültige MariaDB-Version: ${mariadbVersion}. Verfügbar: ${validMariadbVersions.join(', ')}` 
+                });
+            }
+            command += ` --mariadb-version ${mariadbVersion}`;
+        }
+        
+        console.log('Executing version update:', command);
+        
+        exec(command, { 
+            cwd: PROJECT_ROOT, 
+            timeout: 300000 // 5 Minuten Timeout
+        }, (error, stdout, stderr) => {
+            console.log('Version update completed');
+            console.log('STDOUT:', stdout);
+            console.log('STDERR:', stderr);
+            console.log('ERROR:', error);
+            
+            if (error) {
+                console.error('Version-Update-Fehler:', error);
+                return res.status(500).json({ 
+                    error: 'Fehler beim Aktualisieren der Versionen: ' + (stderr || error.message),
+                    details: {
+                        stdout: stdout,
+                        stderr: stderr,
+                        code: error.code
+                    }
+                });
+            }
+            
+            res.json({ 
+                success: true, 
+                message: `Versionen für ${name} erfolgreich aktualisiert`,
+                phpVersion: phpVersion || 'unverändert',
+                mariadbVersion: mariadbVersion || 'unverändert',
+                output: stdout
+            });
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// API: Im Finder öffnen
+app.post('/api/finder', async (req, res) => {
+    try {
+        const { instanceName } = req.body;
+        
+        if (!instanceName) {
+            return res.status(400).json({ error: 'Instanz-Name fehlt' });
+        }
+        
+        // Pfad zur Instanz (app-Verzeichnis)
+        const instancePath = path.join(INSTANCES_DIR, instanceName, 'app');
+        
+        // Prüfe ob Instanz existiert
+        if (!fs.existsSync(instancePath)) {
+            return res.status(404).json({ error: 'Instanz nicht gefunden' });
+        }
+        
+        // Finder mit dem app-Verzeichnis öffnen
+        const command = `open "${instancePath}"`;
+        
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error('Finder-Fehler:', error);
+                return res.status(500).json({ 
+                    error: 'Fehler beim Öffnen des Finders' 
+                });
+            }
+            
+            res.json({ 
+                success: true, 
+                message: `Finder geöffnet für ${instanceName}`,
+                path: instancePath
+            });
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // API: Datenbankzugangsdaten abrufen
 app.get('/api/instances/:name/database', async (req, res) => {
     try {

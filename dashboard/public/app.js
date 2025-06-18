@@ -128,7 +128,7 @@ class RedaxoDashboard {
         if (allInstances.length === 0) {
             grid.innerHTML = `
                 <div class="empty-state glass-card">
-                    <h2><i class="fas fa-rocket"></i> Noch keine Instanzen vorhanden</h2>
+                    <h2><i class="fas fa-server"></i> Noch keine Instanzen vorhanden</h2>
                     <p>Erstellen Sie Ihre erste REDAXO-Instanz um zu beginnen</p>
                     <button class="glass-button primary" onclick="dashboard.showCreateModal()">
                         <i class="fas fa-plus"></i>
@@ -263,15 +263,21 @@ class RedaxoDashboard {
                             <div class="detail-item">
                                 <div class="detail-label">PHP Version</div>
                                 <div class="detail-value">
-                                    <i class="fab fa-php"></i>
-                                    ${instance.phpVersion || 'N/A'}
+                                    <button onclick="window.dashboard.showVersionUpdate('${instance.name}', 'php', '${instance.phpVersion || 'N/A'}')" class="version-button" title="PHP-Version ändern">
+                                        <i class="fab fa-php"></i>
+                                        ${instance.phpVersion || 'N/A'}
+                                        <i class="fas fa-edit version-edit-icon"></i>
+                                    </button>
                                 </div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">MariaDB</div>
                                 <div class="detail-value">
-                                    <i class="fas fa-database"></i>
-                                    ${instance.mariadbVersion || 'N/A'}
+                                    <button onclick="window.dashboard.showVersionUpdate('${instance.name}', 'mariadb', '${instance.mariadbVersion || 'N/A'}')" class="version-button" title="MariaDB-Version ändern">
+                                        <i class="fas fa-database"></i>
+                                        ${instance.mariadbVersion || 'N/A'}
+                                        <i class="fas fa-edit version-edit-icon"></i>
+                                    </button>
                                 </div>
                             </div>
                             <div class="detail-item">
@@ -896,6 +902,168 @@ class RedaxoDashboard {
             console.error('Fehler beim Laden der Dumps:', error);
             const dumpSelect = document.getElementById('dumpFile');
             dumpSelect.innerHTML = '<option value="">Fehler beim Laden der Dumps</option>';
+        }
+    }
+
+    async showVersionUpdate(instanceName, type, currentVersion) {
+        try {
+            const versions = {
+                php: [
+                    { version: '7.4', label: 'PHP 7.4 (Legacy)' },
+                    { version: '8.0', label: 'PHP 8.0' },
+                    { version: '8.1', label: 'PHP 8.1 (LTS)' },
+                    { version: '8.2', label: 'PHP 8.2' },
+                    { version: '8.3', label: 'PHP 8.3 (Current)' },
+                    { version: '8.4', label: 'PHP 8.4 (Latest)' }
+                ],
+                mariadb: [
+                    { version: '10.4', label: 'MariaDB 10.4' },
+                    { version: '10.5', label: 'MariaDB 10.5' },
+                    { version: '10.6', label: 'MariaDB 10.6 (LTS)' },
+                    { version: '10.11', label: 'MariaDB 10.11 (LTS)' },
+                    { version: '11.0', label: 'MariaDB 11.0' },
+                    { version: 'latest', label: 'MariaDB Latest' }
+                ]
+            };
+
+            const typeLabel = type === 'php' ? 'PHP' : 'MariaDB';
+            const availableVersions = versions[type];
+            
+            // Modal für Version-Update erstellen
+            const modal = document.createElement('div');
+            modal.className = 'modal-backdrop';
+            modal.innerHTML = `
+                <div class="modal version-modal">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-${type === 'php' ? 'code' : 'database'}"></i> ${typeLabel}-Version ändern - ${instanceName}</h2>
+                        <button class="close-button" onclick="this.closest('.modal-backdrop').classList.remove('show'); setTimeout(() => this.closest('.modal-backdrop').remove(), 300);">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Wählen Sie eine neue ${typeLabel}-Version für die Instanz <strong>${instanceName}</strong>:</p>
+                        <div class="version-grid">
+                            ${availableVersions.map(v => `
+                                <div class="version-option ${v.version === currentVersion ? 'current' : ''}" 
+                                     data-version="${v.version}" 
+                                     onclick="this.parentElement.querySelectorAll('.version-option').forEach(el => el.classList.remove('selected')); this.classList.add('selected');">
+                                    <div class="version-number">${v.version}</div>
+                                    <div class="version-label">${v.label.replace(/^(PHP|MariaDB) /, '')}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="glass-button secondary" onclick="this.closest('.modal-backdrop').classList.remove('show'); setTimeout(() => this.closest('.modal-backdrop').remove(), 300);">
+                                Abbrechen
+                            </button>
+                            <button type="button" class="glass-button primary" onclick="window.dashboard.updateVersion('${instanceName}', '${type}', this)">
+                                <i class="fas fa-sync"></i>
+                                Version aktualisieren
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Modal zum Body hinzufügen
+            document.body.appendChild(modal);
+            
+            // Show-Klasse hinzufügen für Animation
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+            
+            // Click outside to close
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                    setTimeout(() => modal.remove(), 300);
+                }
+            });
+            
+        } catch (error) {
+            console.error('Fehler beim Anzeigen des Version-Updates:', error);
+            this.showToast(`Fehler: ${error.message}`, 'error');
+        }
+    }
+
+    async updateVersion(instanceName, type, button) {
+        let originalText = ''; // Definiere außerhalb des try-blocks
+        
+        try {
+            // Finde die ausgewählte Version
+            const modal = button.closest('.modal');
+            const selectedOption = modal.querySelector('.version-option.selected');
+            
+            if (!selectedOption) {
+                this.showToast('Bitte wählen Sie eine Version aus', 'warning');
+                return;
+            }
+            
+            const newVersion = selectedOption.dataset.version;
+            
+            // Button in Loading-Zustand
+            originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Wird aktualisiert...';
+            button.disabled = true;
+            
+            // API-Call für Version-Update (mit längerem Timeout)
+            const requestBody = {};
+            if (type === 'php') {
+                requestBody.phpVersion = newVersion;
+            } else {
+                requestBody.mariadbVersion = newVersion;
+            }
+            
+            // AbortController für Timeout-Handling
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 360000); // 6 Minuten
+            
+            const response = await fetch(`/api/instances/${instanceName}/update-versions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (response.ok) {
+                const result = await response.json();
+                this.showToast(`${type === 'php' ? 'PHP' : 'MariaDB'}-Version erfolgreich auf ${newVersion} aktualisiert`, 'success');
+                
+                // Modal schließen
+                const modalBackdrop = button.closest('.modal-backdrop');
+                modalBackdrop.classList.remove('show');
+                setTimeout(() => modalBackdrop.remove(), 300);
+                
+                // Instanzen neu laden um aktuelle Versionen anzuzeigen
+                setTimeout(() => {
+                    this.loadInstances();
+                }, 1000);
+                
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Version konnte nicht aktualisiert werden');
+            }
+            
+        } catch (error) {
+            console.error('Fehler beim Aktualisieren der Version:', error);
+            
+            let errorMessage = error.message;
+            if (error.name === 'AbortError') {
+                errorMessage = 'Timeout: Version-Update dauert länger als erwartet. Bitte prüfen Sie den Status der Instanz.';
+            }
+            
+            this.showToast(`Fehler beim Aktualisieren: ${errorMessage}`, 'error');
+            
+            // Button zurücksetzen
+            if (button) {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
         }
     }
 }

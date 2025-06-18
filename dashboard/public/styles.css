@@ -96,6 +96,17 @@ body {
     filter: drop-shadow(0 0 10px rgba(79, 125, 243, 0.5));
 }
 
+.redaxo-logo {
+    height: 3.5rem;
+    width: auto;
+    filter: drop-shadow(0 0 10px rgba(79, 125, 243, 0.5));
+    transition: transform 0.3s ease;
+}
+
+.logo:hover .redaxo-logo {
+    transform: scale(1.1);
+}
+
 @keyframes pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.1); }
@@ -997,4 +1008,105 @@ body {
 
 .form-hint i {
     color: var(--primary-color);
+}
+
+/* Version Update Buttons */
+.version-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+.version-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.version-edit-icon {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    font-size: 0.8rem;
+}
+
+.version-button:hover .version-edit-icon {
+    opacity: 0.7;
+}
+
+/* Version Update Modal */
+.version-modal {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    width: 100%;
+    max-width: 500px;
+}
+
+.version-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.version-option {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+}
+
+.version-option:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.version-option.selected {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.version-option.current {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.version-option.current::after {
+    content: "Aktuell";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ffd700;
+    color: #000;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.version-number {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.version-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
 }
