@@ -49,6 +49,23 @@
 
 ---
 
+## 🆕 Neueste Updates (Juni 2025)
+
+### **🚀 Erweiterte Entwickler-Integration**
+- ✨ **VS Code Integration:** Ein-Klick-Öffnung von Projekten im Editor
+- ✨ **Finder Integration:** Direkter Zugriff auf Projektordner im macOS Finder  
+- ✨ **DB-Management-UI:** Vollständige Datenbankinfo mit Kopier-Buttons und phpMyAdmin-Integration
+- ✨ **Version-Updates:** PHP/MariaDB-Versionen direkt im Dashboard ändern
+- ✨ **REDAXO-Branding:** Professionelles Logo und UI-Verbesserungen
+
+### **⚙️ Verbesserungen**
+- 🔧 **Live-Versionsanzeige:** Aktuelle PHP/MariaDB-Versionen werden dynamisch erkannt
+- 🔧 **Robuste Update-Prozesse:** Timeout-Handling und bessere Fehlerbehandlung
+- 🔧 **Webserver-Only-Support:** Vollständige Integration in alle neuen Features
+- 🔧 **UI/UX-Polish:** Bessere Button-Designs, Modal-Verbesserungen, responsives Layout
+
+---
+
 ## ✨ Was macht dieses Tool besonders?
 
 ### 🎛️ **Elegantes Web-Dashboard**
@@ -65,7 +82,10 @@
 - **Integrierte Tools:** phpMyAdmin, Mailpit für E-Mail-Testing
 
 ### ⚡ **Entwicklerfreundlich**
-- **VS Code Integration** - öffnet Projekte direkt
+- **VS Code Integration** - öffnet Projekte direkt im Editor
+- **Finder Integration** - Dateien per Drag & Drop verwalten
+- **DB-Management** - phpMyAdmin mit Root-Rechten, Kopier-Buttons für Credentials
+- **Version-Updates** - PHP/MariaDB-Versionen per Klick ändern
 - **Automatische Port-Verwaltung** - keine Konfiguration nötig
 - **Backup/Restore System** für Projekte
 - **CLI + Web-Interface** - wie Sie möchten
@@ -184,6 +204,8 @@ brew install mkcert git
 - **💻 VS Code Integration** - Projekte direkt im Editor öffnen
 - **📁 Finder Integration** - Direkter Zugriff auf Projektordner
 - **🔐 Root-Berechtigung** - phpMyAdmin mit Admin-Rechten für Datenbank-Management
+- **⚙️ Version-Updates** - PHP/MariaDB-Versionen direkt im Dashboard ändern
+- **🎨 REDAXO-Logo** - Professionelles Branding im Dashboard-Header
 
 ---
 
@@ -196,6 +218,8 @@ brew install mkcert git
 - 🖼️ **Screenshot-Vorschau** der Websites  
 - 🔗 **Ein-Klick Zugriff** auf alle URLs
 - ⚡ **Sofort-Aktionen:** Start/Stop/Löschen
+- 🎨 **REDAXO-Logo:** Professionelles Branding im Header
+- ⚙️ **Live-Versionsanzeige:** Aktuelle PHP/MariaDB-Versionen bei jeder Instanz
 
 ### **Intelligente Instanz-Erstellung**
 - ✅ **Auto-Installation:** Komplettes REDAXO in 2 Minuten
@@ -210,6 +234,7 @@ brew install mkcert git
 - 🗄️ **DB-Zugangsdaten:** Vollständige Datenbankinfo mit Kopier-Buttons
 - 🔐 **phpMyAdmin Root:** Vollständige Datenbank-Verwaltung mit Admin-Rechten
 - 🐳 **Docker Terminal:** Direkter Container-Zugriff für Debugging
+- ⚙️ **Version-Updates:** PHP/MariaDB-Versionen direkt im Dashboard ändern
 
 ### **Status-Anzeigen**
 - 🟢 **Grün:** Instanz läuft perfekt
@@ -555,7 +580,24 @@ instances/mein-webserver/
    - Direkter phpMyAdmin-Link
 3. **"phpMyAdmin öffnen"** für Datenbank-Verwaltung
 
-### **🐳 Docker Terminal**
+### **⚙️ Version-Management**
+- **PHP/MariaDB Updates:** Versionen direkt im Dashboard ändern
+- **Live-Anzeige:** Aktuelle Versionen werden dynamisch erkannt
+- **Ein-Klick-Update:** Keine Terminal-Befehle nötig
+- **Timeout-Handling:** Robuste Update-Prozesse mit Fehlerbehandlung
+
+**Verwendung:**
+1. Im Dashboard: Bei jeder Instanz werden **aktuelle Versionen** angezeigt
+2. **"PHP X.X" oder "MariaDB X.X"** Button klicken
+3. Neue Version aus Dropdown wählen
+4. **"Version aktualisieren"** → Update läuft automatisch
+5. **Progress-Feedback** mit Timeout-Schutz
+
+**Verfügbare Versionen:**
+- **PHP:** 7.4, 8.0, 8.1, 8.2, 8.3, 8.4
+- **MariaDB:** 10.4, 10.5, 10.6, 10.11, 11.0
+
+### **�🐳 Docker Terminal**
 - **Container-Zugriff:** Direkt in den Apache-Container einsteigen
 - **Debugging:** Log-Dateien, Konfigurationen prüfen
 - **Package-Installation:** Zusätzliche PHP-Extensions installieren
