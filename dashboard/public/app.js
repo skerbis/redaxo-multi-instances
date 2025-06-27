@@ -246,6 +246,9 @@ class RedaxoDashboard {
                                     <button class="url-link" onclick="window.dashboard.openInFinder('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
                                         <i class="fas fa-folder-open"></i> Im Finder öffnen
                                     </button>
+                                    <button class="url-link" onclick="window.dashboard.backupInstance('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                        <i class="fas fa-save"></i> Backup erstellen
+                                    </button>
                                     ${this.config && this.config.features.terminalIntegration !== false ? `
                                         <button class="url-link" onclick="window.dashboard.openTerminal('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
                                             <i class="fas fa-terminal"></i> Docker Terminal
@@ -683,6 +686,24 @@ class RedaxoDashboard {
         } catch (error) {
             console.error('Fehler beim Laden der DB-Info:', error);
             this.showToast(`Fehler beim Laden der DB-Info: ${error.message}`, 'error');
+        }
+    }
+
+    async backupInstance(instanceName) {
+        try {
+            this.showToast(`Erstelle Backup für Instanz ${instanceName}...`, 'info');
+            const response = await fetch(`/api/instances/${instanceName}/backup`, {
+                method: 'POST',
+            });
+            const result = await response.json();
+            if (response.ok) {
+                this.showToast(result.message, 'success');
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Fehler beim Erstellen des Backups:', error);
+            this.showToast(`Fehler beim Backup: ${error.message}`, 'error');
         }
     }
 
