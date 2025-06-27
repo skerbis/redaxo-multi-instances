@@ -690,8 +690,14 @@ class RedaxoDashboard {
     }
 
     async backupInstance(instanceName) {
+        const button = document.querySelector(`#popover-${instanceName} button i.fa-save`).closest('button');
+        const originalButtonHtml = button.innerHTML;
+
         try {
-            this.showToast(`Erstelle Backup für Instanz ${instanceName}...`, 'info');
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Backup läuft...';
+            this.showToast(`Erstelle Backup für Instanz ${instanceName}...`, 'warning');
+
             const response = await fetch(`/api/instances/${instanceName}/backup`, {
                 method: 'POST',
                 headers: {
@@ -708,6 +714,9 @@ class RedaxoDashboard {
         } catch (error) {
             console.error('Fehler beim Erstellen des Backups:', error);
             this.showToast(`Fehler beim Backup: ${error.message}`, 'error');
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalButtonHtml;
         }
     }
 
