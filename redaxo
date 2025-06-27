@@ -43,7 +43,6 @@ show_help() {
     echo "  ${YELLOW}create <name>${NC}     - Neue REDAXO- oder Webserver-Instanz erstellen"
     echo "  ${YELLOW}create <name> --auto${NC} - Mit automatischer REDAXO-Installation"
     echo "  ${YELLOW}import-dump <name> <dump-file.zip>${NC} - REDAXO-Instanz aus Dump-Datei erstellen"
-    echo "  ${YELLOW}penpot <name>${NC}     - Neue Penpot Design-Instanz erstellen"
     echo "  ${YELLOW}start <name>${NC}      - Instanz starten"
     echo "  ${YELLOW}stop <name>${NC}       - Instanz stoppen"
     echo "  ${YELLOW}remove <name>${NC}     - Instanz löschen"
@@ -56,9 +55,6 @@ show_help() {
     echo "  ${YELLOW}update <name>${NC}     - PHP/MariaDB-Versionen einer Instanz aktualisieren"
     echo "  ${YELLOW}shell <name>${NC}      - Shell in Instanz öffnen"
     echo "  ${YELLOW}repair <name>${NC}     - Docker-Probleme einer Instanz reparieren"
-    echo "  ${YELLOW}backup <name>${NC}     - Backup einer Instanz erstellen"
-    echo "  ${YELLOW}restore <name> <backup>${NC} - Backup wiederherstellen"
-    echo "  ${YELLOW}backups${NC}           - Alle Backups anzeigen"
     echo "  ${YELLOW}cleanup${NC}           - Docker-System und verwaiste Dateien bereinigen"
     echo "  ${YELLOW}help${NC}              - Diese Hilfe anzeigen"
     echo ""
@@ -75,7 +71,6 @@ show_help() {
     echo "  ./redaxo create mein-projekt"
     echo "  ./redaxo create mein-projekt --auto"
     echo "  ./redaxo create mein-webserver --type webserver"
-    echo "  ./redaxo penpot design-tool"
     echo "  ./redaxo create mein-projekt --php-version 8.1 --mariadb-version 10.6"
     echo "  ./redaxo create mein-projekt --php-version 8.3"
     echo "  ./redaxo create standard-redaxo --repo redaxo/redaxo"
@@ -900,6 +895,8 @@ MARIADB_VERSION=latest
 EOF
 }
 
+# === INSTANCE MANAGEMENT ===
+
 start_instance() {
     local name=$1
     
@@ -1504,260 +1501,6 @@ shell_instance() {
     docker exec -it "redaxo-${name}-apache" /bin/bash
 }
 
-# === BACKUP FUNCTIONS ===
-
-backup_instance() {
-    local name=$1
-    
-    if [ -z "$name" ]; then
-        echo -e "${RED}❌ Instanzname erforderlich${NC}"
-        exit 1
-    fi
-    
-    if ! instance_exists "$name"; then
-        echo -e "${RED}❌ Instanz '$name' existiert nicht${NC}"
-        exit 1
-    fi
-    
-    # Backup-Ordner für Instanz erstellen
-    local backup_dir="$PROJECT_DIR/backups/$name"
-    mkdir -p "$backup_dir"
-    
-    # Zeitstempel für Backup
-    local timestamp=$(date "+%Y%m%d_%H%M%S")
-    local backup_name="${name}_${timestamp}"
-    local backup_path="$backup_dir/$backup_name"
-    
-    echo -e "${YELLOW}💾 Erstelle Backup für '$name'...${NC}"
-    echo -e "${BLUE}📁 Backup-Name: $backup_name${NC}"
-    
-    # Prüfen ob Instanz läuft
-    local was_running=false
-    if docker ps --format "table {{.Names}}" | grep -q "redaxo-${name}-apache"; then
-        was_running=true
-    else
-        echo -e "${BLUE}💡 Starte Instanz für Backup...${NC}"
-        cd "$INSTANCES_DIR/$name"
-        docker-compose up -d >/dev/null 2>&1
-        sleep 3
-    fi
-    
-    # Backup-Ordner erstellen
-    mkdir -p "$backup_path"
-    
-    echo -e "${BLUE}  📁 Sichere Dateien...${NC}"
-    # App-Dateien sichern (ohne var/cache)
-    tar -czf "$backup_path/files.tar.gz" -C "$INSTANCES_DIR/$name" \
-        --exclude="app/var/cache/*" \
-        --exclude="app/var/log/*" \
-        app/ docker/ .env 2>/dev/null
-    
-    # Prüfen ob es eine REDAXO-Instanz ist (hat Datenbank)
-    if [ -f "$INSTANCES_DIR/$name/.env" ]; then
-        source "$INSTANCES_DIR/$name/.env"
-        
-        # Nur Datenbank-Backup bei REDAXO-Instanzen
-        if [[ "$INSTANCE_TYPE" != "webserver" ]]; then
-            echo -e "${BLUE}  🗄️  Sichere Datenbank...${NC}"
-            
-            # Datenbank-Backup mit verbesserter Fehlerbehandlung
-            docker exec "redaxo-${name}-mariadb" mysqldump \
-                --single-transaction \
-                --routines \
-                --triggers \
-                -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD" \
-                "$MYSQL_DATABASE" > "$backup_path/database.sql" 2>/dev/null
-            
-            if [ $? -eq 0 ] && [ -s "$backup_path/database.sql" ]; then
-                gzip "$backup_path/database.sql"
-                echo -e "${GREEN}    ✅ Datenbank gesichert${NC}"
-            else
-                echo -e "${YELLOW}    ⚠️  Datenbank-Backup übersprungen (leer oder Fehler)${NC}"
-                rm -f "$backup_path/database.sql" 2>/dev/null
-            fi
-        fi
-    fi
-    
-    # Backup-Info erstellen
-    cat > "$backup_path/backup_info.txt" << EOF
-Backup Information
-==================
-Instance: $name
-Created: $(date)
-EOF
-
-    # Umgebungsvariablen hinzufügen wenn verfügbar
-    if [ -f "$INSTANCES_DIR/$name/.env" ]; then
-        echo "Type: $(grep '^INSTANCE_TYPE=' "$INSTANCES_DIR/$name/.env" 2>/dev/null | cut -d'=' -f2)" >> "$backup_path/backup_info.txt"
-        echo "PHP Version: $(grep '^PHP_VERSION=' "$INSTANCES_DIR/$name/.env" 2>/dev/null | cut -d'=' -f2)" >> "$backup_path/backup_info.txt"
-        echo "MariaDB Version: $(grep '^MARIADB_VERSION=' "$INSTANCES_DIR/$name/.env" 2>/dev/null | cut -d'=' -f2)" >> "$backup_path/backup_info.txt"
-    fi
-
-    cat >> "$backup_path/backup_info.txt" << EOF
-
-Files:
-- files.tar.gz (App-Dateien, Docker-Config, .env)
-$([ -f "$backup_path/database.sql.gz" ] && echo "- database.sql.gz (Datenbank-Dump)")
-
-Restore Command:
-./redaxo restore $name $backup_name
-EOF
-    
-    # Instanz wieder stoppen falls sie nicht lief
-    if [ "$was_running" = false ]; then
-        echo -e "${BLUE}💡 Stoppe Instanz wieder...${NC}"
-        cd "$INSTANCES_DIR/$name"
-        docker-compose down >/dev/null 2>&1
-    fi
-    
-    # Backup-Größe ermitteln
-    local backup_size=$(du -sh "$backup_path" | cut -f1)
-    
-    echo -e "${GREEN}✅ Backup erfolgreich erstellt!${NC}"
-    echo -e "${BLUE}📁 Pfad: backups/$name/$backup_name${NC}"
-    echo -e "${BLUE}📦 Größe: $backup_size${NC}"
-    echo ""
-    echo -e "${YELLOW}💡 Wiederherstellen mit:${NC}"
-    echo -e "   ./redaxo restore $name $backup_name"
-}
-
-restore_instance() {
-    local name=$1
-    local backup_name=$2
-    
-    if [ -z "$name" ] || [ -z "$backup_name" ]; then
-        echo -e "${RED}❌ Instanzname und Backup-Name erforderlich${NC}"
-        echo -e "${BLUE}Verwendung: ./redaxo restore <instance> <backup>${NC}"
-        exit 1
-    fi
-    
-    local backup_path="$PROJECT_DIR/backups/$name/$backup_name"
-    
-    if [ ! -d "$backup_path" ]; then
-        echo -e "${RED}❌ Backup '$backup_name' für Instanz '$name' nicht gefunden${NC}"
-        echo -e "${BLUE}💡 Verfügbare Backups anzeigen: ./redaxo backups${NC}"
-        exit 1
-    fi
-    
-    if ! instance_exists "$name"; then
-        echo -e "${RED}❌ Ziel-Instanz '$name' existiert nicht${NC}"
-        echo -e "${BLUE}💡 Erstelle zuerst eine Instanz: ./redaxo create $name${NC}"
-        exit 1
-    fi
-    
-    echo -e "${YELLOW}🔄 Stelle Backup wieder her...${NC}"
-    echo -e "${BLUE}📁 Backup: $backup_name${NC}"
-    echo -e "${RED}⚠️  WARNUNG: Aktuelle Daten werden überschrieben!${NC}"
-    echo ""
-    read -p "Fortfahren? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "${YELLOW}Abgebrochen${NC}"
-        exit 0
-    fi
-    
-    # Instanz stoppen
-    echo -e "${BLUE}⏹️  Stoppe Instanz...${NC}"
-    cd "$INSTANCES_DIR/$name"
-    docker-compose down >/dev/null 2>&1
-    
-    # Backup-Info anzeigen
-    if [ -f "$backup_path/backup_info.txt" ]; then
-        echo -e "${BLUE}📋 Backup-Info:${NC}"
-        grep -E "(Created|Type|PHP|MariaDB)" "$backup_path/backup_info.txt" | sed 's/^/   /'
-        echo ""
-    fi
-    
-    # Dateien wiederherstellen
-    echo -e "${BLUE}  📁 Stelle Dateien wieder her...${NC}"
-    if [ -f "$backup_path/files.tar.gz" ]; then
-        # Aktuelles app-Verzeichnis sichern
-        if [ -d "$INSTANCES_DIR/$name/app" ]; then
-            mv "$INSTANCES_DIR/$name/app" "$INSTANCES_DIR/$name/app.backup.$(date +%Y%m%d_%H%M%S)"
-        fi
-        
-        # Backup extrahieren
-        tar -xzf "$backup_path/files.tar.gz" -C "$INSTANCES_DIR/$name" 2>/dev/null
-        echo -e "${GREEN}    ✅ Dateien wiederhergestellt${NC}"
-    else
-        echo -e "${RED}    ❌ Datei-Backup nicht gefunden${NC}"
-    fi
-    
-    # Datenbank wiederherstellen
-    if [ -f "$backup_path/database.sql.gz" ]; then
-        echo -e "${BLUE}  🗄️  Stelle Datenbank wieder her...${NC}"
-        
-        # Instanz starten für DB-Restore
-        docker-compose up -d >/dev/null 2>&1
-        sleep 5
-        
-        # Datenbank-Restore
-        source "$INSTANCES_DIR/$name/.env"
-        gunzip -c "$backup_path/database.sql.gz" | \
-            docker exec -i "redaxo-${name}-mariadb" mysql \
-            -u"$MYSQL_ROOT_USER" -p"$MYSQL_ROOT_PASSWORD" \
-            "$MYSQL_DATABASE" 2>/dev/null
-        
-        if [ $? -eq 0 ]; then
-            echo -e "${GREEN}    ✅ Datenbank wiederhergestellt${NC}"
-        else
-            echo -e "${RED}    ❌ Datenbank-Restore fehlgeschlagen${NC}"
-        fi
-    fi
-    
-    # Instanz neu starten
-    echo -e "${BLUE}🔄 Starte Instanz neu...${NC}"
-    docker-compose restart >/dev/null 2>&1
-    
-    echo -e "${GREEN}✅ Backup erfolgreich wiederhergestellt!${NC}"
-    echo ""
-    show_urls "$name"
-}
-
-list_backups() {
-    local backups_dir="$PROJECT_DIR/backups"
-    
-    if [ ! -d "$backups_dir" ] || [ -z "$(ls -A "$backups_dir" 2>/dev/null)" ]; then
-        echo -e "${YELLOW}📦 Keine Backups vorhanden${NC}"
-        echo ""
-        echo -e "${BLUE}💡 Backup erstellen: ./redaxo backup <instance>${NC}"
-        return
-    fi
-    
-    echo -e "${GREEN}📦 Verfügbare Backups${NC}"
-    echo ""
-    
-    for instance_dir in "$backups_dir"/*; do
-        if [ -d "$instance_dir" ]; then
-            local instance=$(basename "$instance_dir")
-            echo -e "${BLUE}🏗️  $instance${NC}"
-            
-            for backup_dir in "$instance_dir"/*; do
-                if [ -d "$backup_dir" ]; then
-                    local backup=$(basename "$backup_dir")
-                    local backup_size=$(du -sh "$backup_dir" 2>/dev/null | cut -f1)
-                    
-                    echo -e "    📁 ${YELLOW}$backup${NC} (${backup_size})"
-                    
-                    # Backup-Inhalt anzeigen
-                    local files=""
-                    [ -f "$backup_dir/files.tar.gz" ] && files="${files}📁Files "
-                    [ -f "$backup_dir/database.sql.gz" ] && files="${files}🗄️DB "
-                    
-                    if [ -n "$files" ]; then
-                        echo -e "       📦 $files"
-                    fi
-                    echo ""
-                fi
-            done
-        fi
-    done
-    
-    echo -e "${BLUE}💡 Befehle:${NC}"
-    echo "   ./redaxo backup <instance>           - Neues Backup erstellen"
-    echo "   ./redaxo restore <instance> <backup> - Backup wiederherstellen"
-}
-
 # === CLEANUP FUNCTIONS ===
 
 cleanup_docker() {
@@ -1779,6 +1522,7 @@ cleanup_docker() {
     echo -e "${RED}⚠️  REDAXO-Instanzen werden NICHT betroffen!${NC}"
     echo ""
     
+       
     read -p "Erweiterte Bereinigung durchführen? (y/N): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -1997,15 +1741,6 @@ case ${1:-help} in
         ;;
     shell)
         shell_instance "$2"
-        ;;
-    backup)
-        backup_instance "$2"
-        ;;
-    restore)
-        restore_instance "$2" "$3"
-        ;;
-    backups)
-        list_backups
         ;;
     cleanup)
         cleanup_docker

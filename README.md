@@ -24,7 +24,6 @@
 - [Dashboard Features](#️-dashboard-features)
 - [Dump-Import (Bestehende REDAXO-Projekte)](#-dump-import-bestehende-redaxo-projekte)
 - [Webserver-Only-Instanzen](#-webserver-only-instanzen)
-- [Penpot Design Tool](#-penpot-design-tool)
 
 ### 🛠️ Praktische Anwendung
 - [Entwickler-Integration](#-entwickler-integration)
@@ -197,7 +196,6 @@ brew install mkcert git
 - **🏗️ Container-Isolation** - Jede Instanz komplett isoliert
 - **🔧 Repair-System** - Automatische Docker-Problemlösung
 - **📦 Import-System** - REDAXO-Dumps importieren
-- **🎨 Penpot Integration** - Lokales Design & Prototyping Tool
 - **🧹 Smart-Cleanup** - Intelligente Bereinigung
 - **🌐 Webserver-Only** - Reine PHP/Apache/MariaDB-Instanzen ohne REDAXO
 - **🗄️ DB-Zugangsdaten** - Vollständige Datenbankinfo mit phpMyAdmin-Integration
@@ -304,58 +302,6 @@ projekt-backup.zip
 
 ---
 
-## 🎨 Penpot Design Tool
-
-Zusätzlich zu REDAXO bietet das System auch **Penpot** - ein Open-Source Design & Prototyping Tool als Alternative zu Figma.
-
-### **🎯 Penpot Features**
-
-- **🎨 Design & Prototyping** - Vollwertiges Design-Tool für UI/UX
-- **👥 Team-Collaboration** - Echtzeit-Zusammenarbeit wie bei Figma
-- **🔓 Open Source** - Keine Vendor Lock-ins, volle Kontrolle
-- **🚀 Lokale Instanzen** - Jedes Team/Projekt bekommt eigene Instanz
-- **💾 Backup-System** - Komplette Projektdaten sicherbar
-
-### **🚀 Penpot Commands**
-
-```bash
-# Neue Design-Instanz erstellen
-./penpot create design-team
-./penpot create kunde-a --port 9090
-
-# Instanz-Management
-./penpot start design-team           # Penpot-Instanz starten
-./penpot stop design-team            # Penpot-Instanz stoppen
-./penpot urls design-team            # URLs anzeigen
-./penpot list                        # Alle Penpot-Instanzen
-
-# Backup & Restore
-./penpot backup design-team          # Design-Daten sichern
-./penpot restore design-team backup_20250528_143022
-./penpot backups                     # Alle Penpot-Backups
-
-# Wartung
-./penpot shell design-team           # Container-Shell öffnen
-./penpot logs design-team            # Container-Logs
-./penpot repair design-team          # Probleme beheben
-./penpot cleanup                     # Docker bereinigen
-```
-
-**Automatisch verfügbar:**
-- **🎨 Design-Interface**: `https://localhost:9090` (oder custom Port)
-- **🔒 SSL-Verschlüsselung** mit mkcert-Zertifikaten
-- **🏗️ Isolierte Instanzen** - Jedes Team arbeitet in eigener Umgebung
-- **💾 PostgreSQL + Redis** - Vollständige Backend-Infrastruktur
-
-### **🎯 Anwendungsfälle**
-
-- **🏢 Agentur-Workflows**: Jeder Kunde bekommt eigene Penpot-Instanz
-- **👥 Team-Isolation**: Design-Teams arbeiten in separaten Umgebungen  
-- **🧪 Design-Testing**: Experimentelle Designs in Sandbox-Umgebung
-- **🔒 Datenschutz**: Sensible Designs bleiben auf eigenem Server
-
----
-
 ## 🌐 Webserver-Only-Instanzen
 
 **Reine PHP/Apache/MariaDB-Umgebungen ohne REDAXO** - Perfekt für eigene PHP-Projekte oder als Basis für andere CMS.
@@ -446,14 +392,6 @@ instances/mein-webserver/
 ./redaxo shell <name>                     # Shell in Container öffnen
 ```
 
-### **Backup & Restore**
-
-```bash
-./redaxo backup <name>                    # Backup erstellen
-./redaxo restore <name> <backup>          # Backup wiederherstellen
-./redaxo backups                          # Alle Backups anzeigen
-```
-
 ### **System-Wartung**
 
 ```bash
@@ -489,55 +427,28 @@ instances/mein-webserver/
 ./redaxo create klassisch --repo redaxo/redaxo --auto
 ```
 
-### **Backup-Workflow**
+### **Entwickler-Integration**
 
 ```bash
-# Vor wichtigen Änderungen
-./redaxo backup produktiv-site
+# Projekt im VS Code öffnen
+./redaxo shell mein-projekt
+code .
 
-# Entwickeln...
-./redaxo shell produktiv-site
-
-# Bei Problemen zurücksetzen
-./redaxo restore produktiv-site produktiv-site_20250528_143022
+# Im Finder öffnen
+open instances/mein-projekt/app
 ```
 
-### **Team-Collaboration**
+### **Testing mit Dump-Import**
 
 ```bash
-# Entwickler A: Backup erstellen
-./redaxo backup projekt-v1
-# → Teilt projekt-v1_20250528_143022.zip
+# Neue Instanz für Testing
+./redaxo create test-import --auto
 
-# Entwickler B: Import
-./import-dump projekt-copy projekt-v1_20250528_143022.zip
-```
+# Dump importieren
+./import-dump test-import mein-projekt.zip
 
-### **Mehrere Versionen parallel**
-
-```bash
-./redaxo create test-php74 --php-version 7.4 --auto
-./redaxo create test-php83 --php-version 8.3 --auto
-./redaxo create test-php84 --php-version 8.4 --auto
-./redaxo list  # Alle parallel verfügbar
-```
-
-### **Penpot Design-Workflow**
-
-```bash
-# Design-Umgebung für Agentur
-./penpot create kunde-xyz-design
-./penpot create interne-projekte --port 9100
-
-# Team-Backup vor großen Änderungen
-./penpot backup kunde-xyz-design
-
-# Design-Review
-./penpot urls kunde-xyz-design
-# → Öffnet: https://localhost:9090
-
-# Bei Problemen: Backup wiederherstellen
-./penpot restore kunde-xyz-design kunde-xyz-design_20250528_143022
+# URLs anzeigen
+./redaxo urls test-import
 ```
 
 ---
