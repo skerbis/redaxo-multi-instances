@@ -94,9 +94,10 @@ app.get('/api/instances/:name/backups', async (req, res) => {
     try {
         const { name } = req.params;
         const output = await executeCommand(`./redaxo backups ${name}`);
+        const cleanOutput = stripAnsiCodes(output);
         
         // Parse the output to extract backup names and details
-        const backups = output.split('\n')
+        const backups = cleanOutput.split('\n')
             .filter(line => line.includes('📁'))
             .map(line => {
                 const match = line.match(/📁\s*(\S+)\s*\(([^)]+)\)/);
@@ -709,6 +710,10 @@ app.get('/api/instances/:name/database', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+function stripAnsiCodes(str) {
+    return str.replace(/\u001b\[[0-9;]*m/g, '');
+}
 
 // Hilfsfunktion für Dateigröße
 function formatFileSize(bytes) {
