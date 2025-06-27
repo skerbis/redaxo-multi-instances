@@ -60,18 +60,7 @@ app.post('/api/instances/:name/start', async (req, res) => {
 });
 
 // API: Instanz stoppen
-
-
-// API: Instanz Backup erstellen
-app.post('/api/instances/:name/backup', async (req, res) => {
-    try {
-        const { name } = req.params;
-        await executeCommand(`./redaxo backup ${name}`);
-        res.json({ success: true, message: `Backup für Instanz ${name} erstellt.` });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+app.post('/api/instances/:name/stop', async (req, res) => {
     try {
         const { name } = req.params;
         await executeCommand(`./redaxo stop ${name}`);
@@ -84,6 +73,17 @@ app.post('/api/instances/:name/backup', async (req, res) => {
         }, 2000);
         
         res.json({ success: true, message: `Instanz ${name} wird gestoppt...` });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// API: Instanz Backup erstellen
+app.post('/api/instances/:name/backup', async (req, res) => {
+    try {
+        const { name } = req.params;
+        await executeCommand(`./redaxo backup ${name}`);
+        res.json({ success: true, message: `Backup für Instanz ${name} erstellt.` });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
