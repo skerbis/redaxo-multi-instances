@@ -75,6 +75,12 @@ class RedaxoDashboard {
             }
         });
 
+        document.getElementById('backupModal').addEventListener('click', (e) => {
+            if (e.target.id === 'backupModal') {
+                this.hideBackupModal();
+            }
+        });
+
         // Schließe Popovers beim Klicken außerhalb
         document.addEventListener('click', (event) => {
             if (!event.target.closest('.url-popover')) {
@@ -233,7 +239,7 @@ class RedaxoDashboard {
                                         </a>
                                     ` : ''}
                                     <button class="url-link" onclick="console.log('DB Info clicked for:', '${instance.name}'); window.dashboard.showDatabaseInfo('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
-                                        <i class="fas fa-key"></i> DB-Zugangsdaten
+                                        <i class="fas fa-key"></i> Zugangsdaten
                                     </button>
                                     ${instance.mailpitUrl ? `
                                         <a href="${instance.mailpitUrl}" target="_blank" class="url-link">
@@ -599,49 +605,46 @@ class RedaxoDashboard {
                 modal.innerHTML = `
                     <div class="modal glass-card">
                         <div class="modal-header">
-                            <h2><i class="fas fa-database"></i> Datenbankzugangsdaten - ${instanceName}</h2>
+                            <h2><i class="fas fa-key"></i> Zugangsdaten – ${instanceName}</h2>
                             <button class="close-button" onclick="this.closest('.modal-backdrop').classList.remove('show'); setTimeout(() => this.closest('.modal-backdrop').remove(), 300);">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         <div class="modal-body">
-                            <div class="db-info-grid">
-                                <div class="db-info-item">
-                                    <label>Host:</label>
-                                    <div class="db-value">${dbInfo.host} <button onclick="navigator.clipboard.writeText('${dbInfo.host}')" title="Kopieren"><i class="fas fa-copy"></i></button></div>
-                                </div>
-                                <div class="db-info-item">
-                                    <label>Datenbank:</label>
-                                    <div class="db-value">${dbInfo.database} <button onclick="navigator.clipboard.writeText('${dbInfo.database}')" title="Kopieren"><i class="fas fa-copy"></i></button></div>
-                                </div>
-                                <div class="db-info-item">
-                                    <label>Benutzer:</label>
-                                    <div class="db-value">${dbInfo.user} <button onclick="navigator.clipboard.writeText('${dbInfo.user}')" title="Kopieren"><i class="fas fa-copy"></i></button></div>
-                                </div>
-                                <div class="db-info-item">
-                                    <label>Passwort:</label>
-                                    <div class="db-value">${dbInfo.password} <button onclick="navigator.clipboard.writeText('${dbInfo.password}')" title="Kopieren"><i class="fas fa-copy"></i></button></div>
-                                </div>
-                                <div class="db-info-item">
-                                    <label>Root-Passwort:</label>
-                                    <div class="db-value">${dbInfo.rootPassword} <button onclick="navigator.clipboard.writeText('${dbInfo.rootPassword}')" title="Kopieren"><i class="fas fa-copy"></i></button></div>
-                                </div>
+                            <div class="info-text" style="margin-bottom:2rem;">
+                                <i class="fas fa-info-circle"></i> <b>Hinweis:</b> Im Docker-Container lautet der Host meist <code>mariadb</code>.<br>
+                                Für automatisch angelegte REDAXO-Instanzen lauten die Zugangsdaten:<br>
+                                <span style="display:inline-block;margin-top:0.25em;margin-bottom:0.5em;padding:0.25em 0.75em;background:rgba(79,125,243,0.08);border-radius:6px;font-size:1.05em;">
+                                  <b>Benutzer:</b> <code>admin</code> &nbsp; <b>Passwort:</b> <code>admin123</code>
+                                </span>
+                            </div>
+                            <div class="db-info-glass-list" style="display:grid;gap:1.2rem;">
+                                ${[
+                                  {label: "<i class='fas fa-server'></i> Host", value: dbInfo.host},
+                                  {label: "<i class='fas fa-database'></i> Datenbank", value: dbInfo.database},
+                                  {label: "<i class='fas fa-user'></i> Benutzer", value: dbInfo.user},
+                                  {label: "<i class='fas fa-lock'></i> Passwort", value: dbInfo.password},
+                                  {label: "<i class='fas fa-user-shield'></i> Root-Passwort", value: dbInfo.rootPassword}
+                                ].map(item => `
+                                  <div class='glass-list-item' style="display:flex;align-items:center;gap:1rem;background:rgba(255,255,255,0.07);border-radius:10px;padding:1rem 1.2rem;box-shadow:0 2px 8px 0 rgba(79,125,243,0.07);border:1px solid rgba(255,255,255,0.13);">
+                                    <span style="min-width:140px;font-weight:500;">${item.label}:</span>
+                                    <span style="flex:1;font-family:monospace;font-size:1.08em;word-break:break-all;">${item.value}</span>
+                                    <button onclick="navigator.clipboard.writeText('${item.value}')" title="Kopieren" style="margin-left:0.5rem;background:rgba(79,125,243,0.13);border:none;border-radius:6px;padding:0.4em 0.7em;cursor:pointer;transition:background 0.2s;"><i class="fas fa-copy"></i></button>
+                                  </div>
+                                `).join('')}
                                 ${dbInfo.phpmyadminUrl ? `
-                                <div class="db-info-item">
-                                    <label>phpMyAdmin:</label>
-                                    <div class="db-value">
-                                        <button onclick="window.open('${dbInfo.phpmyadminUrl}', '_blank')" class="glass-button secondary" style="margin: 0; padding: 0.5rem 1rem; font-size: 0.9rem;">
-                                            <i class="fas fa-external-link-alt"></i>
-                                            ${dbInfo.phpmyadminUrl}
-                                        </button>
-                                        <small style="display: block; color: rgba(255,255,255,0.7); margin-top: 4px;">
-                                            <i class="fas fa-info-circle"></i> Läuft mit Root-Berechtigung
-                                        </small>
-                                    </div>
-                                </div>
+                                  <div class='glass-list-item' style="display:flex;align-items:center;gap:1rem;background:rgba(255,255,255,0.07);border-radius:10px;padding:1rem 1.2rem;box-shadow:0 2px 8px 0 rgba(79,125,243,0.07);border:1px solid rgba(255,255,255,0.13);">
+                                    <span style="min-width:140px;font-weight:500;"><i class='fas fa-database'></i> phpMyAdmin:</span>
+                                    <span style="flex:1;overflow-wrap:anywhere;">
+                                      <button onclick="window.open('${dbInfo.phpmyadminUrl}', '_blank')" class="glass-button secondary" style="margin:0;padding:0.5rem 1rem;font-size:0.95em;">
+                                        <i class="fas fa-external-link-alt"></i> ${dbInfo.phpmyadminUrl}
+                                      </button>
+                                      <small style="display:block;color:rgba(255,255,255,0.7);margin-top:4px;"><i class="fas fa-info-circle"></i> Läuft mit Root-Berechtigung</small>
+                                    </span>
+                                  </div>
                                 ` : ''}
                             </div>
-                            <div class="modal-footer">
+                            <div class="modal-footer" style="margin-top:2.5rem;">
                                 <button type="button" class="glass-button secondary" onclick="this.closest('.modal-backdrop').classList.remove('show'); setTimeout(() => this.closest('.modal-backdrop').remove(), 300);">
                                     Schließen
                                 </button>
@@ -683,6 +686,37 @@ class RedaxoDashboard {
         } catch (error) {
             console.error('Fehler beim Laden der DB-Info:', error);
             this.showToast(`Fehler beim Laden der DB-Info: ${error.message}`, 'error');
+        }
+    }
+
+    async backupInstance(instanceName) {
+        const button = document.querySelector(`#popover-${instanceName} button i.fa-save`).closest('button');
+        const originalButtonHtml = button.innerHTML;
+
+        try {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Backup läuft...';
+            this.showToast(`Erstelle Backup für Instanz ${instanceName}...`, 'warning');
+
+            const response = await fetch(`/api/instances/${instanceName}/backup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({}),
+            });
+            const result = await response.json();
+            if (response.ok) {
+                this.showToast(result.message, 'success');
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Fehler beim Erstellen des Backups:', error);
+            this.showToast(`Fehler beim Backup: ${error.message}`, 'error');
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalButtonHtml;
         }
     }
 
@@ -811,7 +845,82 @@ class RedaxoDashboard {
         }
     }
 
-    // Toast-Benachrichtigungen
+    async showBackupModal(instanceName) {
+        this.currentInstanceForBackup = instanceName;
+        document.getElementById('backupInstanceName').textContent = instanceName;
+        const modal = document.getElementById('backupModal');
+        modal.classList.add('show');
+        await this.loadBackups(instanceName);
+    }
+
+    hideBackupModal() {
+        document.getElementById('backupModal').classList.remove('show');
+        document.getElementById('backupList').innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Lade Backups...</p>';
+    }
+
+    async loadBackups(instanceName) {
+        const backupListDiv = document.getElementById('backupList');
+        backupListDiv.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Lade Backups...</p>';
+        try {
+            const response = await fetch(`/api/instances/${instanceName}/backups`);
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                if (result.backups.length === 0) {
+                    backupListDiv.innerHTML = '<p class="info-text">Keine Backups für diese Instanz gefunden.</p>';
+                } else {
+                    backupListDiv.innerHTML = result.backups.map(backup => `
+                        <div class="backup-item glass-card">
+                            <span><i class="fas fa-archive"></i> ${backup.name} (${backup.size})</span>
+                            <button class="glass-button primary small" onclick="dashboard.restoreBackup('${instanceName}', '${backup.name}')">
+                                <i class="fas fa-undo"></i> Wiederherstellen
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                throw new Error(result.error || 'Fehler beim Laden der Backups');
+            }
+        } catch (error) {
+            console.error('Fehler beim Laden der Backups:', error);
+            backupListDiv.innerHTML = `<p class="error-text"><i class="fas fa-exclamation-triangle"></i> Fehler: ${error.message}</p>`;
+            this.showToast(`Fehler beim Laden der Backups: ${error.message}`, 'error');
+        }
+    }
+
+    async restoreBackup(instanceName, backupName) {
+        if (!confirm(`Möchten Sie das Backup '${backupName}' für Instanz '${instanceName}' wirklich wiederherstellen? Die aktuelle Instanz wird überschrieben!`)) {
+            return;
+        }
+
+        this.showToast(`Stelle Backup '${backupName}' für Instanz ${instanceName} wieder her...`, 'warning');
+        this.hideBackupModal();
+
+        try {
+            const response = await fetch(`/api/instances/${instanceName}/restore`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ backupName }),
+            });
+            const result = await response.json();
+
+            if (response.ok) {
+                this.showToast(result.message, 'success');
+                // Instanzen neu laden, um den aktualisierten Status anzuzeigen
+                setTimeout(() => {
+                    this.loadInstances();
+                }, 3000); // Etwas Verzögerung, damit der Server die Instanz neu starten kann
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Fehler beim Wiederherstellen des Backups:', error);
+            this.showToast(`Fehler beim Wiederherstellen: ${error.message}`, 'error');
+        }
+    }
+
     showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
@@ -1074,6 +1183,8 @@ window.showCreateModal = () => dashboard.showCreateModal();
 window.hideCreateModal = () => dashboard.hideCreateModal();
 window.hideDeleteModal = () => dashboard.hideDeleteModal();
 window.confirmDelete = () => dashboard.confirmDelete();
+window.showBackupModal = (name) => dashboard.showBackupModal(name);
+window.hideBackupModal = () => dashboard.hideBackupModal();
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
