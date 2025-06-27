@@ -694,6 +694,10 @@ class RedaxoDashboard {
             this.showToast(`Erstelle Backup für Instanz ${instanceName}...`, 'info');
             const response = await fetch(`/api/instances/${instanceName}/backup`, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({}),
             });
             const result = await response.json();
             if (response.ok) {

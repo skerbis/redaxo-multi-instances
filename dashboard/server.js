@@ -60,23 +60,7 @@ app.post('/api/instances/:name/start', async (req, res) => {
 });
 
 // API: Instanz stoppen
-app.post('/api/instances/:name/stop', async (req, res) => {
-    try {
-        const { name } = req.params;
-        await executeCommand(`./redaxo stop ${name}`);
-        
-        // Status nach dem Stop abrufen
-        setTimeout(async () => {
-            const instances = await getInstances();
-            const instance = instances.find(i => i.name === name);
-            io.emit('instanceUpdated', instance);
-        }, 2000);
-        
-        res.json({ success: true, message: `Instanz ${name} wird gestoppt...` });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+
 
 // API: Instanz Backup erstellen
 app.post('/api/instances/:name/backup', async (req, res) => {
