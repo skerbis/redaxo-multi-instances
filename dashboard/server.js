@@ -98,7 +98,7 @@ app.get('/api/instances/:name/backups', async (req, res) => {
         
         // Parse the output to extract backup names and details
         const backups = cleanOutput.split('\n')
-            .filter(line => line.includes('📁'))
+            .filter(line => line.includes('📁') && line.includes(name))
             .map(line => {
                 const match = line.match(/📁\s*(\S+)\s*\(([^)]+)\)/);
                 if (match) {
