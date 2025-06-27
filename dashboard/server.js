@@ -89,7 +89,49 @@ app.post('/api/instances/:name/backup', async (req, res) => {
     }
 });
 
+// API: Backups einer Instanz auflisten
+app.get('/api/instances/:name/backups', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const output = await executeCommand(`./redaxo backups ${name}`);
+        
+        // Parse the output to extract backup names and details
+        const backups = output.split('\n')
+            .filter(line => line.includes('📁'))
+            .map(line => {
+                const match = line.match(/📁\s*(\S+)\s*\(([^)]+)\)/);
+                if (match) {
+                    return { name: match[1], size: match[2] };
+                }
+                return null;
+            })
+            .filter(Boolean);
+
+        res.json({ success: true, backups });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// API: Backup einer Instanz wiederherstellen
+app.post('/api/instances/:name/restore', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const { backupName } = req.body;
+
+        if (!backupName) {
+            return res.status(400).json({ error: 'Backup-Name fehlt' });
+        }
+
+        await executeCommand(`./redaxo restore ${name} ${backupName}`);
+        res.json({ success: true, message: `Backup ${backupName} für Instanz ${name} wiederhergestellt.` });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // API: Neue Instanz erstellen
+
 app.post('/api/instances', async (req, res) => {
     try {
         const { name, phpVersion, mariadbVersion, autoInstall, importDump, webserverOnly, dumpFile } = req.body;

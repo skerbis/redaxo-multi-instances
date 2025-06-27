@@ -75,6 +75,12 @@ class RedaxoDashboard {
             }
         });
 
+        document.getElementById('backupModal').addEventListener('click', (e) => {
+            if (e.target.id === 'backupModal') {
+                this.hideBackupModal();
+            }
+        });
+
         // Schließe Popovers beim Klicken außerhalb
         document.addEventListener('click', (event) => {
             if (!event.target.closest('.url-popover')) {
@@ -248,6 +254,9 @@ class RedaxoDashboard {
                                     </button>
                                     <button class="url-link" onclick="window.dashboard.backupInstance('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
                                         <i class="fas fa-save"></i> Backup erstellen
+                                    </button>
+                                    <button class="url-link" onclick="window.dashboard.showBackupModal('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                        <i class="fas fa-history"></i> Backups verwalten
                                     </button>
                                     ${this.config && this.config.features.terminalIntegration !== false ? `
                                         <button class="url-link" onclick="window.dashboard.openTerminal('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
@@ -845,6 +854,82 @@ class RedaxoDashboard {
         }
     }
 
+    async showBackupModal(instanceName) {
+        this.currentInstanceForBackup = instanceName;
+        document.getElementById('backupInstanceName').textContent = instanceName;
+        const modal = document.getElementById('backupModal');
+        modal.classList.add('show');
+        await this.loadBackups(instanceName);
+    }
+
+    hideBackupModal() {
+        document.getElementById('backupModal').classList.remove('show');
+        document.getElementById('backupList').innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Lade Backups...</p>';
+    }
+
+    async loadBackups(instanceName) {
+        const backupListDiv = document.getElementById('backupList');
+        backupListDiv.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Lade Backups...</p>';
+        try {
+            const response = await fetch(`/api/instances/${instanceName}/backups`);
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                if (result.backups.length === 0) {
+                    backupListDiv.innerHTML = '<p class="info-text">Keine Backups für diese Instanz gefunden.</p>';
+                } else {
+                    backupListDiv.innerHTML = result.backups.map(backup => `
+                        <div class="backup-item glass-card">
+                            <span><i class="fas fa-archive"></i> ${backup.name} (${backup.size})</span>
+                            <button class="glass-button primary small" onclick="dashboard.restoreBackup('${instanceName}', '${backup.name}')">
+                                <i class="fas fa-undo"></i> Wiederherstellen
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                throw new Error(result.error || 'Fehler beim Laden der Backups');
+            }
+        } catch (error) {
+            console.error('Fehler beim Laden der Backups:', error);
+            backupListDiv.innerHTML = `<p class="error-text"><i class="fas fa-exclamation-triangle"></i> Fehler: ${error.message}</p>`;
+            this.showToast(`Fehler beim Laden der Backups: ${error.message}`, 'error');
+        }
+    }
+
+    async restoreBackup(instanceName, backupName) {
+        if (!confirm(`Möchten Sie das Backup '${backupName}' für Instanz '${instanceName}' wirklich wiederherstellen? Die aktuelle Instanz wird überschrieben!`)) {
+            return;
+        }
+
+        this.showToast(`Stelle Backup '${backupName}' für Instanz ${instanceName} wieder her...`, 'warning');
+        this.hideBackupModal();
+
+        try {
+            const response = await fetch(`/api/instances/${instanceName}/restore`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ backupName }),
+            });
+            const result = await response.json();
+
+            if (response.ok) {
+                this.showToast(result.message, 'success');
+                // Instanzen neu laden, um den aktualisierten Status anzuzeigen
+                setTimeout(() => {
+                    this.loadInstances();
+                }, 3000); // Etwas Verzögerung, damit der Server die Instanz neu starten kann
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Fehler beim Wiederherstellen des Backups:', error);
+            this.showToast(`Fehler beim Wiederherstellen: ${error.message}`, 'error');
+        }
+    }
+
     showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
@@ -1107,6 +1192,8 @@ window.showCreateModal = () => dashboard.showCreateModal();
 window.hideCreateModal = () => dashboard.hideCreateModal();
 window.hideDeleteModal = () => dashboard.hideDeleteModal();
 window.confirmDelete = () => dashboard.confirmDelete();
+window.showBackupModal = (name) => dashboard.showBackupModal(name);
+window.hideBackupModal = () => dashboard.hideBackupModal();
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {

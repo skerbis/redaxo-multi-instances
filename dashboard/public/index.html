@@ -149,6 +149,27 @@
             </div>
         </div>
 
+        <!-- Backup Modal -->
+        <div class="modal-backdrop" id="backupModal">
+            <div class="modal glass-card">
+                <div class="modal-header">
+                    <h2><i class="fas fa-history"></i> Backups für <span id="backupInstanceName"></span></h2>
+                    <button class="close-button" onclick="dashboard.hideBackupModal()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div id="backupList" class="backup-list">
+                        <p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Lade Backups...</p>
+                    </div>
+                    <p class="info-text"><i class="fas fa-info-circle"></i> Wiederherstellung überschreibt die aktuelle Instanz. Instanz wird gestoppt und neu gestartet.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="glass-button secondary" onclick="dashboard.hideBackupModal()">
+                        Schließen
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Toast Notifications -->
         <div class="toast-container" id="toastContainer"></div>
     </div>
