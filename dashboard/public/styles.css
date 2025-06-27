@@ -192,29 +192,56 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 320px;
-    /* Entfernt overflow hidden um das Menü nicht abzuschneiden */
+    border-radius: var(--border-radius);
+    border: 2.5px solid transparent;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 1.5px 8px 0 rgba(79,125,243,0.07);
+    z-index: 1;
+    overflow: hidden; /* Abrundung für Glow-Rahmen */
 }
 
-.instance-card::before {
+.instance-card.running,
+.instance-card.creating {
+    position: relative;
+}
+
+.instance-card::after,
+.instance-card.running::after,
+.instance-card.creating::after {
     content: '';
+    display: block;
     position: absolute;
-    top: 0;
     left: 0;
     right: 0;
+    top: 0;
     height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    border-radius: 16px 16px 0 0;
+    border-radius: 2px 2px 0 0;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 1;
+    background: none;
+    box-shadow: none;
+    border: none;
 }
 
-.instance-card.running::before {
-    background: linear-gradient(90deg, var(--success-color), #059669);
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+.instance-card.running::after {
+    background: linear-gradient(90deg, var(--success-color) 0%, #059669 100%);
 }
 
-.instance-card.creating::before {
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    box-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
-    animation: pulse 2s infinite;
+.instance-card.creating::after {
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    animation: top-line-pulse 1.6s infinite cubic-bezier(0.4,0,0.2,1);
+}
+
+@keyframes top-line-pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Ursprüngliche border-image aus den Statusklassen entfernen */
+.instance-card.running,
+.instance-card.creating {
+    border-image: none;
 }
 
 .instance-content {
@@ -1109,4 +1136,83 @@ body {
 .version-label {
     font-size: 0.8rem;
     opacity: 0.8;
+}
+
+/* Backup Modal Specific Styles */
+.backup-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.backup-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.backup-item:hover {
+    background: var(--glass-bg-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.backup-item span {
+    color: var(--text-white);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.backup-item span i {
+    color: var(--primary-color);
+}
+
+.backup-item button {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    border-radius: 8px;
+}
+
+.loading-text,
+.info-text,
+.error-text {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.error-text {
+    color: var(--danger-color);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+}
+
+.info-text {
+    color: var(--primary-color);
+    background: rgba(79, 125, 243, 0.1);
+    border: 1px solid rgba(79, 125, 243, 0.2);
+    border-radius: 8px;
+}
+
+.loading-text i {
+    animation: spin 1s linear infinite;
+}
+
+.modal-body .info-text {
+    margin-top: 1rem;
+    margin-bottom: 0;
 }
