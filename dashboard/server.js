@@ -658,6 +658,41 @@ app.get('/api/instances/:name/database', async (req, res) => {
     }
 });
 
+// API: Snapshot erstellen
+app.post('/api/instances/:name/snapshot', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const scriptPath = path.join(PROJECT_ROOT, 'snapshot.sh');
+        if (!fs.existsSync(scriptPath)) {
+            return res.status(500).json({ error: 'snapshot.sh nicht gefunden!' });
+        }
+        await executeCommand(`bash snapshot.sh make ${name}`, '', PROJECT_ROOT);
+        res.json({ success: true, message: `Snapshot für ${name} wurde erstellt.` });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// API: Snapshot wiederherstellen
+app.post('/api/instances/:name/snapshot-recover', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const scriptPath = path.join(PROJECT_ROOT, 'snapshot.sh');
+        if (!fs.existsSync(scriptPath)) {
+            return res.status(500).json({ error: 'snapshot.sh nicht gefunden!' });
+        }
+        // Prüfe, ob ein Backup existiert
+        const backupDir = path.join(PROJECT_ROOT, 'backups', name);
+        if (!fs.existsSync(path.join(backupDir, 'mariadb_data.tar.gz')) || !fs.existsSync(path.join(backupDir, 'app.tar.gz'))) {
+            return res.status(404).json({ error: 'Kein Snapshot vorhanden!' });
+        }
+        await executeCommand(`bash snapshot.sh recover ${name}`, '', PROJECT_ROOT);
+        res.json({ success: true, message: `Snapshot für ${name} wurde wiederhergestellt.` });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 function stripAnsiCodes(str) {
     return str.replace(/\u001b\[[0-9;]*m/g, '');
 }
@@ -677,25 +712,21 @@ async function getInstances() {
         if (!fs.existsSync(INSTANCES_DIR)) {
             return resolve([]);
         }
-        
         fs.readdir(INSTANCES_DIR, async (err, dirs) => {
             if (err) return reject(err);
-            
             const instances = [];
-            
             for (const dir of dirs) {
                 if (dir === '.gitkeep') continue;
-                
                 const instancePath = path.join(INSTANCES_DIR, dir);
                 const envPath = path.join(instancePath, '.env');
-                
                 if (fs.existsSync(envPath)) {
                     const envContent = fs.readFileSync(envPath, 'utf8');
                     const envVars = parseEnvFile(envContent);
-                    
                     const isRunning = await checkInstanceStatus(dir);
                     const containerInfo = await getContainerInfo(dir);
-                    
+                    // Prüfe ob ein Snapshot existiert
+                    const backupDir = path.join(PROJECT_ROOT, 'backups', dir);
+                    const hasSnapshot = fs.existsSync(path.join(backupDir, 'mariadb_data.tar.gz')) && fs.existsSync(path.join(backupDir, 'app.tar.gz'));
                     instances.push({
                         name: dir,
                         running: isRunning,
@@ -712,11 +743,11 @@ async function getInstances() {
                         backendUrl: `http://localhost:${envVars.HTTP_PORT}/redaxo/`,
                         backendUrlHttps: `https://localhost:${envVars.HTTPS_PORT}/redaxo/`,
                         phpmyadminUrl: envVars.PHPMYADMIN_PORT ? `http://localhost:${envVars.PHPMYADMIN_PORT}` : null,
-                        mailpitUrl: envVars.MAILPIT_PORT ? `http://localhost:${envVars.MAILPIT_PORT}` : null
+                        mailpitUrl: envVars.MAILPIT_PORT ? `http://localhost:${envVars.MAILPIT_PORT}` : null,
+                        hasSnapshot // <--- NEU
                     });
                 }
             }
-            
             resolve(instances);
         });
     });

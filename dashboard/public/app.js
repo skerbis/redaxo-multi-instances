@@ -204,167 +204,174 @@ class RedaxoDashboard {
         }
 
         return `
-            <div class="instance-card glass-card ${statusClass}">
-                <div class="instance-content">
-                    <div class="instance-header">
-                        <div>
-                            <h3 class="instance-name">${instance.name}</h3>
-                            <div class="instance-status ${statusClass}">
-                                <span class="status-dot"></span>
-                                ${statusIcon} ${statusText}
-                            </div>
+        <div class="instance-card glass-card ${statusClass}">
+            <div class="instance-content">
+                <div class="instance-header">
+                    <div>
+                        <h3 class="instance-name">${instance.name}</h3>
+                        <div class="instance-status ${statusClass}">
+                            <span class="status-dot"></span>
+                            ${statusIcon} ${statusText}
                         </div>
-                        ${!isCreating ? `
-                        <div class="instance-menu">
-                            <div class="url-popover" id="popover-${instance.name}">
-                                <button class="url-menu-trigger" onclick="dashboard.toggleUrlPopover('${instance.name}')" title="URLs & Services">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <div class="url-popover-menu">
-                                    <a href="${instance.frontendUrl}" target="_blank" class="url-link">
-                                        <i class="fas fa-home"></i> Frontend (HTTP)
-                                    </a>
-                                    <a href="${instance.frontendUrlHttps}" target="_blank" class="url-link">
-                                        <i class="fas fa-lock"></i> Frontend (HTTPS)
-                                    </a>
-                                    <a href="${instance.backendUrl}" target="_blank" class="url-link">
-                                        <i class="fas fa-cogs"></i> Backend (HTTP)
-                                    </a>
-                                    <a href="${instance.backendUrlHttps}" target="_blank" class="url-link">
-                                        <i class="fas fa-shield-alt"></i> Backend (HTTPS)
-                                    </a>
-                                    ${instance.phpmyadminUrl ? `
-                                        <a href="${instance.phpmyadminUrl}" target="_blank" class="url-link">
-                                            <i class="fas fa-database"></i> phpMyAdmin
-                                        </a>
-                                    ` : ''}
-                                    <button class="url-link" onclick="console.log('DB Info clicked for:', '${instance.name}'); window.dashboard.showDatabaseInfo('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
-                                        <i class="fas fa-key"></i> Zugangsdaten
-                                    </button>
-                                    ${instance.mailpitUrl ? `
-                                        <a href="${instance.mailpitUrl}" target="_blank" class="url-link">
-                                            <i class="fas fa-envelope"></i> Mailpit
-                                        </a>
-                                    ` : ''}
-                                    <button class="url-link" onclick="window.dashboard.openVSCode('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
-                                        <i class="fab fa-microsoft"></i> VS Code öffnen
-                                    </button>
-                                    <button class="url-link" onclick="window.dashboard.openInFinder('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
-                                        <i class="fas fa-folder-open"></i> Im Finder öffnen
-                                    </button>
-                                    ${this.config && this.config.features.terminalIntegration !== false ? `
-                                        <button class="url-link" onclick="window.dashboard.openTerminal('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
-                                            <i class="fas fa-terminal"></i> Docker Terminal
-                                        </button>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        </div>
-                        ` : ''}
                     </div>
-                    
                     ${!isCreating ? `
-                    <div class="instance-info">
-                        <div class="instance-details">
-                            <div class="detail-item">
-                                <div class="detail-label">PHP Version</div>
-                                <div class="detail-value">
-                                    <button onclick="window.dashboard.showVersionUpdate('${instance.name}', 'php', '${instance.phpVersion || 'N/A'}')" class="version-button" title="PHP-Version ändern">
-                                        <i class="fab fa-php"></i>
-                                        ${instance.phpVersion || 'N/A'}
-                                        <i class="fas fa-edit version-edit-icon"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">MariaDB</div>
-                                <div class="detail-value">
-                                    <button onclick="window.dashboard.showVersionUpdate('${instance.name}', 'mariadb', '${instance.mariadbVersion || 'N/A'}')" class="version-button" title="MariaDB-Version ändern">
-                                        <i class="fas fa-database"></i>
-                                        ${instance.mariadbVersion || 'N/A'}
-                                        <i class="fas fa-edit version-edit-icon"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Container Status</div>
-                                <div class="detail-value ${instance.running ? 'status-healthy' : 'status-unhealthy'}">
-                                    <i class="fas fa-${instance.running ? 'check-circle' : 'times-circle'}"></i>
-                                    ${instance.running ? 'Healthy' : 'Stopped'}
-                                </div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Port</div>
-                                <div class="detail-value">
-                                    <i class="fas fa-network-wired"></i>
-                                    ${instance.port || 'Auto'}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="screenshot-section">
-                            <div class="screenshot-preview show" id="screenshot-preview-${instance.name}" onclick="dashboard.takeScreenshot('${instance.name}')" style="cursor: pointer;">
-                                <div style="padding: 1rem; text-align: center; color: rgba(255,255,255,0.6); font-size: 0.8rem;">
-                                    <i class="fas fa-image" style="margin-bottom: 0.5rem; font-size: 1.5rem; opacity: 0.5;"></i>
-                                    <div>Klicken Sie hier für Screenshot</div>
-                                </div>
-                            </div>
-                            ${instance.running ? `
-                                <button class="screenshot-trigger" onclick="dashboard.takeScreenshot('${instance.name}')" id="screenshot-btn-${instance.name}">
-                                    <i class="fas fa-camera"></i>
-                                    Screenshot aktualisieren
+                    <div class="instance-menu">
+                        <div class="url-popover" id="popover-${instance.name}">
+                            <button class="url-menu-trigger" onclick="dashboard.toggleUrlPopover('${instance.name}')" title="URLs & Services">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="url-popover-menu">
+                                <a href="${instance.frontendUrl}" target="_blank" class="url-link">
+                                    <i class="fas fa-home"></i> Frontend (HTTP)
+                                </a>
+                                <a href="${instance.frontendUrlHttps}" target="_blank" class="url-link">
+                                    <i class="fas fa-lock"></i> Frontend (HTTPS)
+                                </a>
+                                <a href="${instance.backendUrl}" target="_blank" class="url-link">
+                                    <i class="fas fa-cogs"></i> Backend (HTTP)
+                                </a>
+                                <a href="${instance.backendUrlHttps}" target="_blank" class="url-link">
+                                    <i class="fas fa-shield-alt"></i> Backend (HTTPS)
+                                </a>
+                                ${instance.phpmyadminUrl ? `
+                                    <a href="${instance.phpmyadminUrl}" target="_blank" class="url-link">
+                                        <i class="fas fa-database"></i> phpMyAdmin
+                                    </a>
+                                ` : ''}
+                                <button class="url-link" onclick="console.log('DB Info clicked for:', '${instance.name}'); window.dashboard.showDatabaseInfo('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                    <i class="fas fa-key"></i> Zugangsdaten
                                 </button>
-                            ` : `
-                                <button class="screenshot-trigger" onclick="dashboard.showToast('Instanz muss laufen für neuen Screenshot', 'warning')" style="opacity: 0.5; cursor: not-allowed;">
-                                    <i class="fas fa-camera"></i>
-                                    Screenshot (nur bei laufender Instanz)
+                                ${instance.mailpitUrl ? `
+                                    <a href="${instance.mailpitUrl}" target="_blank" class="url-link">
+                                        <i class="fas fa-envelope"></i> Mailpit
+                                    </a>
+                                ` : ''}
+                                <button class="url-link" onclick="window.dashboard.openVSCode('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                    <i class="fab fa-microsoft"></i> VS Code öffnen
                                 </button>
-                            `}
-                        </div>
-                    </div>
-                    ` : `
-                    <div class="instance-info">
-                        <div style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.7);">
-                            <div style="margin-bottom: 1rem;">
-                                <i class="fas fa-cogs fa-2x fa-spin" style="color: var(--primary-color);"></i>
-                            </div>
-                            <div style="font-size: 0.9rem;">Die Instanz wird erstellt...</div>
-                            <div style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.6;">
-                                Dies kann je nach Art 1-5 Minuten dauern
+                                <button class="url-link" onclick="window.dashboard.openInFinder('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                    <i class="fas fa-folder-open"></i> Im Finder öffnen
+                                </button>
+                                ${this.config && this.config.features.terminalIntegration !== false ? `
+                                    <button class="url-link" onclick="window.dashboard.openTerminal('${instance.name}')" style="width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,0.9); padding: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                        <i class="fas fa-terminal"></i> Docker Terminal
+                                    </button>
+                                ` : ''}
                             </div>
                         </div>
                     </div>
-                    `}
+                    ` : ''}
                 </div>
                 
                 ${!isCreating ? `
-                <div class="instance-controls">
-                    ${instance.running ? `
-                        <button class="control-button glass-button warning" onclick="dashboard.stopInstance('${instance.name}')">
-                            <i class="fas fa-stop"></i>
-                            Stoppen
-                        </button>
-                    ` : `
-                        <button class="control-button glass-button success" onclick="dashboard.startInstance('${instance.name}')">
-                            <i class="fas fa-play"></i>
-                            Starten
-                        </button>
-                    `}
-                    <button class="control-button glass-button danger" onclick="dashboard.showDeleteModal('${instance.name}')">
-                        <i class="fas fa-trash"></i>
-                        Löschen
-                    </button>
+                <div class="instance-info">
+                    <div class="instance-details">
+                        <div class="detail-item">
+                            <div class="detail-label">PHP Version</div>
+                            <div class="detail-value">
+                                <button onclick="window.dashboard.showVersionUpdate('${instance.name}', 'php', '${instance.phpVersion || 'N/A'}')" class="version-button" title="PHP-Version ändern">
+                                    <i class="fab fa-php"></i>
+                                    ${instance.phpVersion || 'N/A'}
+                                    <i class="fas fa-edit version-edit-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">MariaDB</div>
+                            <div class="detail-value">
+                                <button onclick="window.dashboard.showVersionUpdate('${instance.name}', 'mariadb', '${instance.mariadbVersion || 'N/A'}')" class="version-button" title="MariaDB-Version ändern">
+                                    <i class="fas fa-database"></i>
+                                    ${instance.mariadbVersion || 'N/A'}
+                                    <i class="fas fa-edit version-edit-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Container Status</div>
+                            <div class="detail-value ${instance.running ? 'status-healthy' : 'status-unhealthy'}">
+                                <i class="fas fa-${instance.running ? 'check-circle' : 'times-circle'}"></i>
+                                ${instance.running ? 'Healthy' : 'Stopped'}
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Port</div>
+                            <div class="detail-value">
+                                <i class="fas fa-network-wired"></i>
+                                ${instance.port || 'Auto'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="screenshot-section">
+                        <div class="screenshot-preview show" id="screenshot-preview-${instance.name}" onclick="dashboard.takeScreenshot('${instance.name}')" style="cursor: pointer;">
+                            <div style="padding: 1rem; text-align: center; color: rgba(255,255,255,0.6); font-size: 0.8rem;">
+                                <i class="fas fa-image" style="margin-bottom: 0.5rem; font-size: 1.5rem; opacity: 0.5;"></i>
+                                <div>Klicken Sie hier für Screenshot</div>
+                            </div>
+                        </div>
+                        ${instance.running ? `
+                            <button class="screenshot-trigger" onclick="dashboard.takeScreenshot('${instance.name}')" id="screenshot-btn-${instance.name}">
+                                <i class="fas fa-camera"></i>
+                                Screenshot aktualisieren
+                            </button>
+                        ` : `
+                            <button class="screenshot-trigger" onclick="dashboard.showToast('Instanz muss laufen für neuen Screenshot', 'warning')" style="opacity: 0.5; cursor: not-allowed;">
+                                <i class="fas fa-camera"></i>
+                                Screenshot (nur bei laufender Instanz)
+                            </button>
+                        `}
+                    </div>
                 </div>
                 ` : `
-                <div class="instance-controls">
-                    <button class="control-button glass-button secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
-                        <i class="fas fa-clock"></i>
-                        Wird erstellt...
-                    </button>
+                <div class="instance-info">
+                    <div style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.7);">
+                        <div style="margin-bottom: 1rem;">
+                            <i class="fas fa-cogs fa-2x fa-spin" style="color: var(--primary-color);"></i>
+                        </div>
+                        <div style="font-size: 0.9rem;">Die Instanz wird erstellt...</div>
+                        <div style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.6;">
+                            Dies kann je nach Art 1-5 Minuten dauern
+                        </div>
+                    </div>
                 </div>
                 `}
             </div>
-        `;
+            
+            ${!isCreating ? `
+            <div class="instance-controls">
+                ${instance.running ? `
+                    <button class="control-button glass-button warning" onclick="dashboard.stopInstance('${instance.name}')">
+                        <i class="fas fa-stop"></i>
+                        Stoppen
+                    </button>
+                ` : `
+                    <button class="control-button glass-button success" onclick="dashboard.startInstance('${instance.name}')">
+                        <i class="fas fa-play"></i>
+                        Starten
+                    </button>
+                `}
+                <button class="control-button glass-button danger" onclick="dashboard.showDeleteModal('${instance.name}')">
+                    <i class="fas fa-trash"></i>
+                    Löschen
+                </button>
+                <button class="control-button glass-button" onclick="dashboard.createSnapshot('${instance.name}')">
+                    <i class="fas fa-save"></i> Snapshot anlegen
+                </button>
+                <button class="control-button glass-button" onclick="dashboard.recoverSnapshot('${instance.name}')" ${!instance.hasSnapshot ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                    <i class="fas fa-history"></i> Snapshot wiederherstellen
+                </button>
+                ${instance.hasSnapshot ? '<span style="color:#7fff7f;font-size:0.95em;padding-left:0.7em;"><i class="fas fa-check-circle"></i> Snapshot vorhanden</span>' : '<span style="color:#ffb37f;font-size:0.95em;padding-left:0.7em;"><i class="fas fa-exclamation-circle"></i> Kein Snapshot</span>'}
+            </div>
+            ` : `
+            <div class="instance-controls">
+                <button class="control-button glass-button secondary" disabled style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-clock"></i>
+                    Wird erstellt...
+                </button>
+            </div>
+            `}
+        </div>
+    `;
     }
 
     async startInstance(name) {
@@ -1174,6 +1181,38 @@ class RedaxoDashboard {
                 button.innerHTML = originalText;
                 button.disabled = false;
             }
+        }
+    }
+
+    async createSnapshot(instanceName) {
+        try {
+            this.showToast(`Snapshot für ${instanceName} wird erstellt...`, 'info');
+            const response = await fetch(`/api/instances/${instanceName}/snapshot`, { method: 'POST' });
+            const result = await response.json();
+            if (response.ok) {
+                this.showToast(result.message, 'success');
+                setTimeout(() => this.loadInstances(), 1000);
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            this.showToast(`Fehler beim Snapshot: ${error.message}`, 'error');
+        }
+    }
+
+    async recoverSnapshot(instanceName) {
+        try {
+            this.showToast(`Snapshot für ${instanceName} wird wiederhergestellt...`, 'warning');
+            const response = await fetch(`/api/instances/${instanceName}/snapshot-recover`, { method: 'POST' });
+            const result = await response.json();
+            if (response.ok) {
+                this.showToast(result.message, 'success');
+                setTimeout(() => this.loadInstances(), 2000);
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            this.showToast(`Fehler beim Wiederherstellen: ${error.message}`, 'error');
         }
     }
 }
