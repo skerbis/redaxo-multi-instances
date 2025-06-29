@@ -127,9 +127,10 @@ cd redaxo-multi-instances
 ./setup.sh
 ```
 
-### 2. Dashboard starten
+### 2. Dashboard starten & stoppen
 ```bash
-./dashboard-start
+./dashboard-start         # Startet das Dashboard
+./dashboard-start stop   # Beendet das Dashboard (Port 3000)
 ```
 **Dashboard öffnet sich automatisch:** http://localhost:3000
 
@@ -193,6 +194,7 @@ brew install mkcert git
 - **🔒 SSL/HTTPS** - Integriert via mkcert
 - **📁 Flexible Strukturen** - Modern Structure oder klassisches REDAXO
 - **💾 Backup-System** - Vollständige Datensicherung
+- **📸 Snapshot-Funktion** - Schnappschuss einer Instanz anlegen & wiederherstellen
 - **🏗️ Container-Isolation** - Jede Instanz komplett isoliert
 - **🔧 Repair-System** - Automatische Docker-Problemlösung
 - **📦 Import-System** - REDAXO-Dumps importieren
@@ -225,6 +227,7 @@ brew install mkcert git
 - 🔧 **Version wählen:** PHP 7.4-8.4, MariaDB 10.4-11.0
 - 🌐 **Webserver-Only:** Reine PHP/Apache/MariaDB-Instanzen
 - 🚀 **VS Code Button:** Öffnet Projekt direkt im Editor
+- 📸 **Snapshot:** Erstelle einen Schnappschuss deiner Instanz (inkl. Datenbank & Dateien) und stelle ihn bei Bedarf wieder her
 
 ### **Entwickler-Integration**
 - 💻 **VS Code Integration:** Projekte mit einem Klick im Editor öffnen
@@ -250,7 +253,7 @@ brew install mkcert git
 open http://localhost:3000
 
 # Dashboard stoppen
-# Ctrl+C im Terminal
+./dashboard-start stop
 ```
 
 **Dashboard-URL:** http://localhost:3000
@@ -283,11 +286,11 @@ cp /Downloads/client-projekt.zip dump/
 ### **📋 Dump-Format (wichtig!)**
 ```
 projekt-backup.zip
-├── app/                    # Komplette REDAXO-Installation
-│   ├── index.php          
-│   ├── redaxo/            # Backend-Ordner
-│   ├── assets/            # Frontend-Assets
-│   └── media/             # Medienpool
+# Komplette REDAXO-Installation
+├── index.php          
+├── redaxo/            # Backend-Ordner
+├── assets/            # Frontend-Assets
+└── media/             # Medienpool
 └── database.sql.zip       # ⚠️ MUSS als .sql.zip vorliegen!
 ```
 
@@ -369,6 +372,17 @@ instances/mein-webserver/
 ### **Instanz-Management**
 
 ```bash
+# Snapshot einer Instanz anlegen
+./redaxo snapshot <name>
+# Snapshot wiederherstellen
+./redaxo snapshot-recover <name>
+```
+
+```bash
+# Dashboard starten
+./dashboard-start
+# Dashboard stoppen
+./dashboard-start stop
 # REDAXO-Instanzen erstellen
 ./redaxo create <name>                    # Manuelles Setup
 ./redaxo create <name> --auto             # Automatisches Setup mit admin/admin123

@@ -928,6 +928,34 @@ class RedaxoDashboard {
         }
     }
 
+    async showReadmeModal() {
+        // README als Markdown laden
+        const response = await fetch('README.md');
+        const markdown = await response.text();
+        // Markdown zu HTML parsen (mit marked.js oder fallback)
+        let html;
+        if (window.marked) {
+            html = window.marked.parse(markdown);
+        } else {
+            html = `<pre style='white-space:pre-wrap'>${markdown.replace(/</g,'&lt;')}</pre>`;
+        }
+        // Modal erzeugen
+        const modal = document.createElement('div');
+        modal.className = 'modal-backdrop show';
+        modal.innerHTML = `
+            <div class="modal glass-card" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h2><i class="fas fa-book"></i> README</h2>
+                    <button class="close-button" title="Schließen" onclick="this.closest('.modal-backdrop').classList.remove('show'); setTimeout(() => this.closest('.modal-backdrop').remove(), 300);"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem; background: rgba(255,255,255,0.95);">
+                    ${html}
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
     showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
@@ -1229,3 +1257,105 @@ window.hideBackupModal = () => dashboard.hideBackupModal();
 document.addEventListener('DOMContentLoaded', () => {
     window.dashboard = new RedaxoDashboard();
 });
+// Canvas-Animation entfernt, Wellen werden nun per SVG/CSS in index.html/styles.css realisiert
+
+// Abstrakte, animierte Formen im Hintergrund (Canvas)
+(function() {
+    const canvas = document.getElementById('abstract-bg');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    canvas.width = w;
+    canvas.height = h;
+
+    // Farben für die Formen (dunkel, dezent, leicht transparent)
+    const palette = [
+        'rgba(36, 40, 56, 0.55)',
+        'rgba(60, 72, 100, 0.45)',
+        'rgba(79, 125, 243, 0.18)',
+        'rgba(30, 41, 59, 0.33)',
+        'rgba(71, 85, 105, 0.22)'
+    ];
+
+    // Erzeuge abstrakte Formen
+    function randomShape() {
+        const type = Math.random() < 0.5 ? 'circle' : (Math.random() < 0.5 ? 'polygon' : 'blob');
+        const x = Math.random() * w;
+        const y = Math.random() * h;
+        const r = 60 + Math.random() * 120;
+        const sides = 5 + Math.floor(Math.random() * 4);
+        const color = palette[Math.floor(Math.random() * palette.length)];
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 0.1 + Math.random() * 0.15;
+        const rotSpeed = (Math.random() - 0.5) * 0.003;
+        const scale = 0.7 + Math.random() * 0.6;
+        return { type, x, y, r, sides, color, angle, speed, rot: angle, rotSpeed, scale, scaleDir: Math.random() < 0.5 ? 1 : -1 };
+    }
+
+    let shapes = Array.from({length: 10}, randomShape);
+
+    function drawShape(s) {
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.rot);
+        ctx.scale(s.scale, s.scale);
+        ctx.beginPath();
+        if (s.type === 'circle') {
+            ctx.arc(0, 0, s.r, 0, Math.PI * 2);
+        } else if (s.type === 'polygon') {
+            for (let i = 0; i < s.sides; i++) {
+                const a = (i / s.sides) * Math.PI * 2;
+                const rad = s.r * (0.85 + 0.15 * Math.sin(a * s.sides + s.rot));
+                const px = Math.cos(a) * rad;
+                const py = Math.sin(a) * rad;
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+        } else if (s.type === 'blob') {
+            for (let i = 0; i < s.sides; i++) {
+                const a = (i / s.sides) * Math.PI * 2;
+                const rad = s.r * (0.7 + 0.3 * Math.sin(a * s.sides + s.rot + Math.sin(s.rot)));
+                const px = Math.cos(a) * rad;
+                const py = Math.sin(a) * rad;
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+        }
+        ctx.fillStyle = s.color;
+        ctx.shadowColor = s.color.replace('0.', '0.18');
+        ctx.shadowBlur = 32;
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, w, h);
+        for (const s of shapes) {
+            drawShape(s);
+            // Bewegung
+            s.x += Math.cos(s.angle) * s.speed;
+            s.y += Math.sin(s.angle) * s.speed;
+            s.rot += s.rotSpeed;
+            s.scale += 0.002 * s.scaleDir;
+            if (s.scale > 1.2 || s.scale < 0.7) s.scaleDir *= -1;
+            // Wrap-around
+            if (s.x < -200) s.x = w + 200;
+            if (s.x > w + 200) s.x = -200;
+            if (s.y < -200) s.y = h + 200;
+            if (s.y > h + 200) s.y = -200;
+        }
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', () => {
+        w = window.innerWidth;
+        h = window.innerHeight;
+        canvas.width = w;
+        canvas.height = h;
+    });
+
+    animate();
+})();

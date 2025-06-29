@@ -8,8 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
+    <canvas id="particles-bg"></canvas>
+    <canvas id="abstract-bg"></canvas>
     <div class="container">
         <!-- Header -->
         <header class="glass-card header">
@@ -19,10 +22,16 @@
                 </h1>
                 <p class="subtitle">Multi-Instance Manager</p>
             </div>
-            <button class="glass-button primary" onclick="dashboard.showCreateModal()">
-                <i class="fas fa-plus"></i>
-                Neue Instanz
-            </button>
+            <div class="header-actions glass-card">
+                <button class="glass-button primary" onclick="dashboard.showCreateModal()">
+                    <i class="fas fa-plus"></i>
+                    Neue Instanz
+                </button>
+                <button class="glass-button secondary" onclick="dashboard.showReadmeModal()">
+                    <i class="fas fa-book"></i>
+                    README
+                </button>
+            </div>
         </header>
 
         <!-- Instance Grid -->
@@ -38,7 +47,7 @@
             <div class="modal glass-card">
                 <div class="modal-header">
                     <h2><i class="fas fa-plus-circle"></i> Neue REDAXO-Instanz erstellen</h2>
-                    <button class="close-button" onclick="dashboard.hideCreateModal()"><i class="fas fa-times"></i></button>
+                    <button class="close-button" title="Schließen" onclick="dashboard.hideCreateModal()"><i class="fas fa-times"></i></button>
                 </div>
                 <form id="createInstanceForm" class="modal-body">
                     <div class="form-group">
@@ -148,6 +157,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Backup Modal (versteckt, für EventListener) -->
+        <div class="modal-backdrop" id="backupModal" style="display:none;"></div>
 
         <!-- Toast Notifications -->
         <div class="toast-container" id="toastContainer"></div>

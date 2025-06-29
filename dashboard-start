@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# REDAXO Dashboard Starter
-# Einfacher Weg, das Dashboard zu starten
+# REDAXO Dashboard Starter/Stopper
+# Startet oder stoppt das Dashboard
 
 # Farben
 GREEN='\033[0;32m'
@@ -12,6 +12,28 @@ NC='\033[0m'
 
 DASHBOARD_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)/dashboard"
 DASHBOARD_URL="http://localhost:3000"
+
+MODE="start"
+if [ "$1" = "stop" ]; then
+  MODE="stop"
+fi
+
+if [ "$MODE" = "stop" ]; then
+  echo -e "${BLUE}🛑 Stoppe Dashboard (Port 3000)...${NC}"
+  PIDS=$(lsof -ti:3000)
+  if [ -z "$PIDS" ]; then
+    echo -e "${YELLOW}⚠️  Kein Dashboard-Prozess auf Port 3000 gefunden.${NC}"
+    exit 0
+  fi
+  kill $PIDS
+  if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ Dashboard gestoppt.${NC}"
+    exit 0
+  else
+    echo -e "${RED}❌ Fehler beim Stoppen.${NC}"
+    exit 1
+  fi
+fi
 
 echo -e "${GREEN}🚀 REDAXO Multi-Instance Dashboard${NC}"
 echo -e "${BLUE}✨ Morphing Glass Design mit Font Awesome Icons${NC}"
@@ -38,7 +60,6 @@ cd "$DASHBOARD_DIR"
 if [ ! -d "node_modules" ]; then
     echo -e "${YELLOW}📦 Installiere Abhängigkeiten...${NC}"
     npm install
-    
     if [ $? -ne 0 ]; then
         echo -e "${RED}❌ Fehler beim Installieren der Abhängigkeiten${NC}"
         exit 1
