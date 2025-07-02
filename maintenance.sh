@@ -227,6 +227,44 @@ check_updates() {
     fi
 }
 
+# Manager-Updates prüfen
+check_manager_updates() {
+    print_section "Manager-Updates prüfen"
+    
+    cd "$(dirname "$0")"
+    
+    # Prüfe Git-Repository (falls vorhanden)
+    if [ -d ".git" ]; then
+        print_step "Git-Repository wird geprüft..."
+        
+        # Fetch latest changes
+        git fetch >/dev/null 2>&1 || true
+        
+        # Prüfe ob Updates verfügbar sind
+        local commits_behind=$(git rev-list HEAD..origin/main --count 2>/dev/null || echo "0")
+        
+        if [ "$commits_behind" -gt 0 ]; then
+            print_warning "$commits_behind neue Commits verfügbar"
+            echo -e "Aktualisieren mit: ${YELLOW}git pull${NC}"
+            echo -e "Oder verwenden Sie: ${YELLOW}./update-manager.sh${NC}"
+        else
+            print_success "Repository ist aktuell"
+        fi
+    else
+        print_info "Kein Git-Repository erkannt"
+        print_info "Manager-Updates verfügbar über: ${YELLOW}./update-manager.sh${NC}"
+    fi
+    
+    # Prüfe Update-Manager
+    if [ -f "./update-manager.sh" ]; then
+        print_success "Update-Manager verfügbar"
+        echo -e "Verwenden Sie: ${YELLOW}./update-manager.sh${NC} für System-Updates"
+    else
+        print_warning "Update-Manager nicht gefunden"
+        echo -e "Erstellen Sie ihn mit dem vollständigen Setup: ${YELLOW}./setup.sh${NC}"
+    fi
+}
+
 # Backup-Empfehlungen
 backup_recommendations() {
     print_section "Backup-Empfehlungen"
@@ -282,6 +320,7 @@ main() {
     log_cleanup
     instances_maintenance
     check_updates
+    check_manager_updates
     backup_recommendations
     show_summary
     

@@ -53,10 +53,11 @@ show_help() {
     echo "  ${YELLOW}ssl-setup${NC}         - SSL-Zertifikate einrichten"
     echo "  ${YELLOW}versions <name>${NC}   - PHP/MariaDB-Versionen einer Instanz anzeigen"
     echo "  ${YELLOW}update <name>${NC}     - PHP/MariaDB-Versionen einer Instanz aktualisieren"
-    echo "  ${YELLOW}shell <name>${NC}      - Shell in Instanz öffnen"
-    echo "  ${YELLOW}repair <name>${NC}     - Docker-Probleme einer Instanz reparieren"
-    echo "  ${YELLOW}cleanup${NC}           - Docker-System und verwaiste Dateien bereinigen"
-    echo "  ${YELLOW}help${NC}              - Diese Hilfe anzeigen"
+  echo "  ${YELLOW}shell <name>${NC}      - Shell in Instanz öffnen"
+  echo "  ${YELLOW}repair <name>${NC}     - Docker-Probleme einer Instanz reparieren"
+  echo "  ${YELLOW}cleanup${NC}           - Docker-System und verwaiste Dateien bereinigen"
+  echo "  ${YELLOW}system-update${NC}     - Manager-System aktualisieren (ohne Neuinstallation)"
+  echo "  ${YELLOW}help${NC}              - Diese Hilfe anzeigen"
     echo ""
     echo -e "${BLUE}Create-Optionen:${NC}"
     echo "  ${YELLOW}--type <type>${NC}               - Instanz-Typ: 'redaxo' oder 'webserver' (Standard: redaxo)"
@@ -1747,6 +1748,10 @@ case ${1:-help} in
         ;;
     repair)
         repair_instance "$2"
+        ;;
+    system-update)
+        echo -e "${BLUE}🔄 Starte Manager-System-Update...${NC}"
+        "$PROJECT_DIR/update-manager.sh"
         ;;
     help|--help|-h)
         show_help
