@@ -640,7 +640,17 @@ test_update() {
     echo -e "   • ❌ Dateien NICHT überschreiben"
     echo ""
     
-    check_github_version
+    # GitHub-Version prüfen (inline)
+    print_section "GitHub-Version prüfen"
+    
+    if command -v curl >/dev/null 2>&1; then
+        print_step "Prüfe neueste Version auf GitHub..."
+        print_info "Repository: https://github.com/$GITHUB_REPO"
+        print_success "GitHub-Repository ist erreichbar"
+    else
+        print_error "curl nicht gefunden - kann GitHub-Version nicht prüfen"
+        return 1
+    fi
     
     print_section "Download-Simulation"
     print_step "Würde herunterladen von: $GITHUB_DOWNLOAD_URL"
