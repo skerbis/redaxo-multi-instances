@@ -360,7 +360,6 @@ class RedaxoDashboard {
                 <button class="control-button glass-button" onclick="dashboard.recoverSnapshot('${instance.name}')" ${!instance.hasSnapshot ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
                     <i class="fas fa-history"></i> Snapshot wiederherstellen
                 </button>
-                ${instance.hasSnapshot ? '<span style="color:#7fff7f;font-size:0.95em;padding-left:0.7em;"><i class="fas fa-check-circle"></i> Snapshot vorhanden</span>' : '<span style="color:#ffb37f;font-size:0.95em;padding-left:0.7em;"><i class="fas fa-exclamation-circle"></i> Kein Snapshot</span>'}
             </div>
             ` : `
             <div class="instance-controls">
