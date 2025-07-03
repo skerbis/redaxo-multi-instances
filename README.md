@@ -149,7 +149,7 @@ cd redaxo-multi-instances
 
 ### 4. Ihre REDAXO-Instanz ist bereit! 🎉
 - **Frontend:** https://localhost:8440
-- **Backend:** https://localhost:8440/redaxo  
+- **Backend:** https://localhost:8440/redaxo (user: admin / Passwort: admin123)
 - **phpMyAdmin:** http://localhost:8180
 - **Mailpit:** http://localhost:8120
 
