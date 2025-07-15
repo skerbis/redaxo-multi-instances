@@ -1,4 +1,5 @@
-FROM php:8.4-fpm
+ARG PHP_VERSION=8.2
+FROM php:${PHP_VERSION}-fpm
 
 # System-Abhängigkeiten installieren
 RUN apt-get update && apt-get install -y \
@@ -15,9 +16,15 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql mysqli zip intl exif
 
-# XDebug für Profiling installieren
-RUN pecl install xdebug \
-    && docker-php-ext-enable xdebug
+# XDebug für Profiling installieren (versionsspezifisch)
+RUN php_version=$(php -v | head -n1 | cut -d' ' -f2 | cut -d'.' -f1,2); \
+    if [ "$php_version" = "7.4" ]; then \
+    pecl install xdebug-3.1.6; \
+    elif [ "$php_version" = "8.0" ]; then \
+    pecl install xdebug-3.3.2; \
+    else \
+    pecl install xdebug; \
+    fi && docker-php-ext-enable xdebug
 
 # Composer installieren
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

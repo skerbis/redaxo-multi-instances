@@ -61,7 +61,7 @@ show_help() {
     echo -e "${BLUE}Create-Optionen:${NC}"
     echo "  ${YELLOW}--type <type>${NC}               - Instanz-Typ: 'redaxo' oder 'webserver' (Standard: redaxo)"
     echo "  ${YELLOW}--auto${NC}                      - Automatische REDAXO-Installation (nur mit --type redaxo)"
-    echo "  ${YELLOW}--php-version <version>${NC}     - PHP-Version (Standard: 8.4)"
+    echo "  ${YELLOW}--php-version <version>${NC}     - PHP-Version (Standard: 8.2)"
     echo "  ${YELLOW}--mariadb-version <version>${NC} - MariaDB-Version (Standard: latest)"
     echo "  ${YELLOW}--http-port <port>${NC}          - HTTP-Port (automatisch)"
     echo "  ${YELLOW}--https-port <port>${NC}         - HTTPS-Port (automatisch)"
@@ -206,7 +206,7 @@ create_instance() {
     fi
     
     # Standard-Versionen
-    local php_version="8.4"
+    local php_version="8.2"
     local mariadb_version="latest"
     local custom_http_port=""
     local custom_https_port=""
@@ -890,7 +890,7 @@ MYSQL_USER=${name}_user
 MYSQL_PASSWORD=password123
 
 # Versions
-PHP_VERSION=8.4
+PHP_VERSION=8.2
 MARIADB_VERSION=latest
 EOF
 }
@@ -1341,7 +1341,7 @@ show_versions() {
     local mariadb_version=$(grep "image: mariadb:" "$compose_file" | sed 's/.*mariadb://' | head -1)
     
     if [ -z "$php_version" ]; then
-        php_version="8.4 (Standard)"
+        php_version="8.2 (Standard)"
     fi
     if [ -z "$mariadb_version" ]; then
         mariadb_version="latest"
@@ -1433,7 +1433,7 @@ update_instance_versions() {
     
     # Verwende aktuelle Versionen falls nicht angegeben
     if [ -z "$php_version" ]; then
-        php_version=$(grep "image: php:" docker-compose.yml | head -1 | sed 's/.*php://' | sed 's/-.*//' || echo "8.4")
+        php_version=$(grep "image: php:" docker-compose.yml | head -1 | sed 's/.*php://' | sed 's/-.*//' || echo "8.2")
     fi
     if [ -z "$mariadb_version" ]; then
         mariadb_version=$(grep "image: mariadb:" docker-compose.yml | sed 's/.*mariadb://' | head -1 || echo "latest")

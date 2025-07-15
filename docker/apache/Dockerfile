@@ -1,5 +1,5 @@
 # Für Apple Silicon (ARM64) und andere Architekturen optimiert
-ARG PHP_VERSION=8.4
+ARG PHP_VERSION=8.2
 FROM php:${PHP_VERSION}-apache
 
 # System-Abhängigkeiten installieren
@@ -28,9 +28,15 @@ RUN echo '<policy domain="resource" name="memory" value="256MiB"/>' > /etc/Image
     && echo '<policy domain="resource" name="width" value="8KP"/>' >> /etc/ImageMagick-6/policy.xml \
     && echo '<policy domain="resource" name="height" value="8KP"/>' >> /etc/ImageMagick-6/policy.xml
 
-# XDebug für Profiling installieren
-RUN pecl install xdebug \
-    && docker-php-ext-enable xdebug
+# XDebug für Profiling installieren (versionsspezifisch)
+RUN php_version=$(php -v | head -n1 | cut -d' ' -f2 | cut -d'.' -f1,2); \
+    if [ "$php_version" = "7.4" ]; then \
+    pecl install xdebug-3.1.6; \
+    elif [ "$php_version" = "8.0" ]; then \
+    pecl install xdebug-3.3.2; \
+    else \
+    pecl install xdebug; \
+    fi && docker-php-ext-enable xdebug
 
 # Composer installieren
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

@@ -141,7 +141,7 @@ create_docker_compose_with_versions() {
     local https_port=$3
     local phpmyadmin_port=$4
     local mailpit_port=$5
-    local php_version=${6:-"8.4"}
+    local php_version=${6:-"8.2"}
     local mariadb_version=${7:-"latest"}
     local document_root=$8
     
