@@ -35,6 +35,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mariadb_data:/var/lib/mysql
+      - ../../docker-templates/mariadb/my.cnf:/etc/mysql/my.cnf:ro
     networks:
       - redaxo-network
 
