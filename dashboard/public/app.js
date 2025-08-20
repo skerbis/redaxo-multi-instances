@@ -35,7 +35,7 @@ class RedaxoDashboard {
         this.socket.on('instancesUpdated', (instances) => {
             this.instances = instances;
             this.renderInstances();
-            
+
             // Prüfe ob erstellende Instanzen jetzt verfügbar sind
             this.creatingInstances.forEach(name => {
                 const instance = instances.find(i => i.name === name);
@@ -115,10 +115,10 @@ class RedaxoDashboard {
 
     renderInstances() {
         const grid = document.getElementById('instancesGrid');
-        
+
         // Erstelle Gesamt-Liste aus echten Instanzen + erstellenden Instanzen
         const allInstances = [...this.instances];
-        
+
         // Füge erstellende Instanzen hinzu (falls sie noch nicht in der echten Liste sind)
         this.creatingInstances.forEach(name => {
             if (!this.instances.find(i => i.name === name)) {
@@ -130,7 +130,7 @@ class RedaxoDashboard {
                 });
             }
         });
-        
+
         if (allInstances.length === 0) {
             grid.innerHTML = `
                 <div class="empty-state glass-card">
@@ -146,7 +146,7 @@ class RedaxoDashboard {
         }
 
         grid.innerHTML = allInstances.map(instance => this.renderInstanceCard(instance)).join('');
-        
+
         // Für alle echten Instanzen prüfen, ob Screenshots vorhanden sind und diese laden
         this.instances.forEach(instance => {
             this.loadExistingScreenshot(instance.name);
@@ -157,16 +157,16 @@ class RedaxoDashboard {
         try {
             const response = await fetch(`/api/instances/${instanceName}/screenshot`);
             const result = await response.json();
-            
+
             const preview = document.getElementById(`screenshot-preview-${instanceName}`);
             if (!preview) return;
-            
+
             if (result.exists) {
                 // Screenshot existiert, lade es
                 const instance = this.instances.find(i => i.name === instanceName);
-                const statusIcon = instance && !instance.running ? 
+                const statusIcon = instance && !instance.running ?
                     '<i class="fas fa-pause-circle" style="position: absolute; top: 4px; right: 4px; color: rgba(245, 158, 11, 0.8); font-size: 16px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"></i>' : '';
-                
+
                 preview.innerHTML = `
                     <div style="position: relative;">
                         <img src="${result.url}" alt="Screenshot von ${instanceName}" onclick="window.open('${result.url}', '_blank')" title="Klicken zum Vergrößern - Erstellt: ${new Date(result.timestamp).toLocaleString()}">
@@ -186,9 +186,9 @@ class RedaxoDashboard {
     renderInstanceCard(instance) {
         // Unterscheide zwischen echten Instanzen und erstellenden
         const isCreating = this.creatingInstances.has(instance.name);
-        
+
         let statusClass, statusText, statusIcon;
-        
+
         if (isCreating) {
             statusClass = 'creating';
             statusText = 'Wird erstellt...';
@@ -376,13 +376,13 @@ class RedaxoDashboard {
     async startInstance(name) {
         try {
             this.showToast(`Starte Instanz ${name}...`, 'success');
-            
+
             const response = await fetch(`/api/instances/${name}/start`, {
                 method: 'POST'
             });
-            
+
             const result = await response.json();
-            
+
             if (response.ok) {
                 this.showToast(result.message, 'success');
             } else {
@@ -397,13 +397,13 @@ class RedaxoDashboard {
     async stopInstance(name) {
         try {
             this.showToast(`Stoppe Instanz ${name}...`, 'warning');
-            
+
             const response = await fetch(`/api/instances/${name}/stop`, {
                 method: 'POST'
             });
-            
+
             const result = await response.json();
-            
+
             if (response.ok) {
                 this.showToast(result.message, 'success');
             } else {
@@ -418,7 +418,7 @@ class RedaxoDashboard {
     async createInstance() {
         const form = document.getElementById('createInstanceForm');
         const formData = new FormData(form);
-        
+
         const instanceData = {
             name: formData.get('name'),
             phpVersion: formData.get('phpVersion'),
@@ -436,19 +436,19 @@ class RedaxoDashboard {
                 return;
             }
 
-            const message = instanceData.importDump 
+            const message = instanceData.importDump
                 ? `Erstelle Instanz ${instanceData.name} mit Dump-Import...`
                 : instanceData.webserverOnly
                     ? `Erstelle Webserver-Instanz ${instanceData.name}...`
                     : `Erstelle REDAXO-Instanz ${instanceData.name}...`;
-                
+
             this.showToast(message, 'success');
             this.hideCreateModal();
-            
+
             // Instanz zu "erstellenden" Liste hinzufügen
             this.creatingInstances.add(instanceData.name);
             this.renderInstances(); // Sofort neu rendern um "wird erstellt" anzuzeigen
-            
+
             const response = await fetch('/api/instances', {
                 method: 'POST',
                 headers: {
@@ -456,16 +456,16 @@ class RedaxoDashboard {
                 },
                 body: JSON.stringify(instanceData)
             });
-            
+
             const result = await response.json();
-            
+
             if (response.ok) {
                 const successMessage = result.type === 'import'
                     ? `${result.message} (Import kann 3-5 Minuten dauern)`
                     : result.message;
                 this.showToast(successMessage, 'success');
                 form.reset();
-                
+
                 // Reset alle Optionen
                 document.getElementById('dumpSelection').classList.remove('show');
                 document.getElementById('autoInstall').disabled = false;
@@ -491,13 +491,13 @@ class RedaxoDashboard {
     async deleteInstance(name) {
         try {
             this.showToast(`Lösche Instanz ${name}...`, 'warning');
-            
+
             const response = await fetch(`/api/instances/${name}`, {
                 method: 'DELETE'
             });
-            
+
             const result = await response.json();
-            
+
             if (response.ok) {
                 this.showToast(result.message, 'success');
             } else {
@@ -516,11 +516,11 @@ class RedaxoDashboard {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
-                    instanceName: instanceName 
+                body: JSON.stringify({
+                    instanceName: instanceName
                 }),
             });
-            
+
             if (response.ok) {
                 const result = await response.json();
                 if (result.success) {
@@ -544,11 +544,11 @@ class RedaxoDashboard {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
-                    instanceName: instanceName 
+                body: JSON.stringify({
+                    instanceName: instanceName
                 }),
             });
-            
+
             if (response.ok) {
                 const result = await response.json();
                 if (result.success) {
@@ -573,11 +573,11 @@ class RedaxoDashboard {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
-                    instanceName: instanceName 
+                body: JSON.stringify({
+                    instanceName: instanceName
                 }),
             });
-            
+
             if (response.ok) {
                 const result = await response.json();
                 if (result.success) {
@@ -601,10 +601,10 @@ class RedaxoDashboard {
             console.log('Fetching database info...');
             const response = await fetch(`/api/instances/${instanceName}/database`);
             console.log('Response status:', response.status);
-            
+
             if (response.ok) {
                 const dbInfo = await response.json();
-                
+
                 // Modal für DB-Info erstellen
                 const modal = document.createElement('div');
                 modal.className = 'modal-backdrop';
@@ -626,12 +626,12 @@ class RedaxoDashboard {
                             </div>
                             <div class="db-info-glass-list" style="display:grid;gap:1.2rem;">
                                 ${[
-                                  {label: "<i class='fas fa-server'></i> Host", value: dbInfo.host},
-                                  {label: "<i class='fas fa-database'></i> Datenbank", value: dbInfo.database},
-                                  {label: "<i class='fas fa-user'></i> Benutzer", value: dbInfo.user},
-                                  {label: "<i class='fas fa-lock'></i> Passwort", value: dbInfo.password},
-                                  {label: "<i class='fas fa-user-shield'></i> Root-Passwort", value: dbInfo.rootPassword}
-                                ].map(item => `
+                        { label: "<i class='fas fa-server'></i> Host", value: dbInfo.host },
+                        { label: "<i class='fas fa-database'></i> Datenbank", value: dbInfo.database },
+                        { label: "<i class='fas fa-user'></i> Benutzer", value: dbInfo.user },
+                        { label: "<i class='fas fa-lock'></i> Passwort", value: dbInfo.password },
+                        { label: "<i class='fas fa-user-shield'></i> Root-Passwort", value: dbInfo.rootPassword }
+                    ].map(item => `
                                   <div class='glass-list-item' style="display:flex;align-items:center;gap:1rem;background:rgba(255,255,255,0.07);border-radius:10px;padding:1rem 1.2rem;box-shadow:0 2px 8px 0 rgba(79,125,243,0.07);border:1px solid rgba(255,255,255,0.13);">
                                     <span style="min-width:140px;font-weight:500;">${item.label}:</span>
                                     <span style="flex:1;font-family:monospace;font-size:1.08em;word-break:break-all;">${item.value}</span>
@@ -664,17 +664,17 @@ class RedaxoDashboard {
                         </div>
                     </div>
                 `;
-                
+
                 // Modal zum Body hinzufügen
                 console.log('Adding modal to body...');
                 document.body.appendChild(modal);
-                
+
                 // Show-Klasse hinzufügen für Animation
                 setTimeout(() => {
                     modal.classList.add('show');
                 }, 10);
                 console.log('Modal added successfully');
-                
+
                 // Click outside to close
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
@@ -682,7 +682,7 @@ class RedaxoDashboard {
                         setTimeout(() => modal.remove(), 300);
                     }
                 });
-                
+
             } else {
                 console.error('Response not ok:', response.status, response.statusText);
                 const errorData = await response.json();
@@ -729,30 +729,30 @@ class RedaxoDashboard {
     async takeScreenshot(instanceName) {
         const button = document.getElementById(`screenshot-btn-${instanceName}`);
         const preview = document.getElementById(`screenshot-preview-${instanceName}`);
-        
+
         if (!preview) return;
-        
+
         // Überprüfe ob die Instanz läuft
         const instance = this.instances.find(i => i.name === instanceName);
         if (!instance || !instance.running) {
             this.showToast('Instanz muss laufen um einen Screenshot zu erstellen', 'warning');
             return;
         }
-        
+
         // Button in Loading-Zustand versetzen (falls vorhanden)
         if (button) {
             button.classList.add('loading');
             button.innerHTML = '<i class="fas fa-spinner"></i> Erstelle Screenshot...';
         }
-        
+
         try {
             const response = await fetch(`/api/instances/${instanceName}/screenshot`, {
                 method: 'POST'
             });
-            
+
             if (response.ok) {
                 const result = await response.json();
-                
+
                 if (result.success && result.screenshot) {
                     // Screenshot als URL anzeigen (wird als Datei gespeichert)
                     preview.innerHTML = `
@@ -806,7 +806,7 @@ class RedaxoDashboard {
                 popover.classList.remove('open');
             }
         });
-        
+
         // Toggle aktuelles Popover
         const popover = document.getElementById(`popover-${instanceName}`);
         if (popover) {
@@ -817,14 +817,14 @@ class RedaxoDashboard {
     showCreateModal() {
         const modal = document.getElementById('createModal');
         modal.classList.add('show');
-        
+
         // Reset form und dump selection
         const form = document.getElementById('createInstanceForm');
         form.reset();
         document.getElementById('dumpSelection').classList.remove('show');
         document.getElementById('autoInstall').disabled = false;
         document.getElementById('autoInstall').checked = true;
-        
+
         // Lade verfügbare Dumps
         this.loadAvailableDumps();
     }
@@ -936,7 +936,7 @@ class RedaxoDashboard {
         if (window.marked) {
             html = window.marked.parse(markdown);
         } else {
-            html = `<pre style='white-space:pre-wrap'>${markdown.replace(/</g,'&lt;')}</pre>`;
+            html = `<pre style='white-space:pre-wrap'>${markdown.replace(/</g, '&lt;')}</pre>`;
         }
         // Modal erzeugen
         const modal = document.createElement('div');
@@ -959,32 +959,50 @@ class RedaxoDashboard {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.textContent = message;
-        
+
+        // Icon basierend auf Typ hinzufügen
+        const icons = {
+            success: 'fas fa-check-circle',
+            warning: 'fas fa-exclamation-triangle',
+            error: 'fas fa-times-circle',
+            info: 'fas fa-info-circle'
+        };
+
+        const icon = icons[type] || icons.success;
+        toast.innerHTML = `<i class="${icon}"></i> ${message}`;
+
         container.appendChild(toast);
-        
-        // Auto-remove after 5 seconds
+
+        // Auto-remove after 5 seconds mit Slide-Out-Animation
         setTimeout(() => {
             if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
+                toast.style.animation = 'toastSlideOut 0.3s ease-in forwards';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
             }
         }, 5000);
-        
-        // Remove on click
+
+        // Remove on click mit Animation
         toast.addEventListener('click', () => {
             if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
+                toast.style.animation = 'toastSlideOut 0.2s ease-in forwards';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 200);
             }
         });
-    }
-
-    // Dump-Auswahl Toggle
+    }    // Dump-Auswahl Toggle
     toggleDumpSelection() {
         const importDumpCheckbox = document.getElementById('importDump');
         const dumpSelection = document.getElementById('dumpSelection');
         const autoInstallCheckbox = document.getElementById('autoInstall');
         const webserverOnlyCheckbox = document.getElementById('webserverOnly');
-        
+
         if (importDumpCheckbox.checked) {
             dumpSelection.classList.add('show');
             autoInstallCheckbox.checked = false;
@@ -1007,7 +1025,7 @@ class RedaxoDashboard {
         const webserverOnlyCheckbox = document.getElementById('webserverOnly');
         const autoInstallCheckbox = document.getElementById('autoInstall');
         const importDumpCheckbox = document.getElementById('importDump');
-        
+
         if (webserverOnlyCheckbox.checked) {
             autoInstallCheckbox.checked = false;
             autoInstallCheckbox.disabled = true;
@@ -1027,10 +1045,10 @@ class RedaxoDashboard {
         try {
             const response = await fetch('/api/dumps');
             const dumps = await response.json();
-            
+
             const dumpSelect = document.getElementById('dumpFile');
             dumpSelect.innerHTML = '';
-            
+
             if (dumps.length === 0) {
                 dumpSelect.innerHTML = '<option value="">Keine Dumps gefunden</option>';
             } else {
@@ -1072,7 +1090,7 @@ class RedaxoDashboard {
 
             const typeLabel = type === 'php' ? 'PHP' : 'MariaDB';
             const availableVersions = versions[type];
-            
+
             // Modal für Version-Update erstellen
             const modal = document.createElement('div');
             modal.className = 'modal-backdrop';
@@ -1108,15 +1126,15 @@ class RedaxoDashboard {
                     </div>
                 </div>
             `;
-            
+
             // Modal zum Body hinzufügen
             document.body.appendChild(modal);
-            
+
             // Show-Klasse hinzufügen für Animation
             setTimeout(() => {
                 modal.classList.add('show');
             }, 10);
-            
+
             // Click outside to close
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
@@ -1124,7 +1142,7 @@ class RedaxoDashboard {
                     setTimeout(() => modal.remove(), 300);
                 }
             });
-            
+
         } catch (error) {
             console.error('Fehler beim Anzeigen des Version-Updates:', error);
             this.showToast(`Fehler: ${error.message}`, 'error');
@@ -1133,24 +1151,24 @@ class RedaxoDashboard {
 
     async updateVersion(instanceName, type, button) {
         let originalText = ''; // Definiere außerhalb des try-blocks
-        
+
         try {
             // Finde die ausgewählte Version
             const modal = button.closest('.modal');
             const selectedOption = modal.querySelector('.version-option.selected');
-            
+
             if (!selectedOption) {
                 this.showToast('Bitte wählen Sie eine Version aus', 'warning');
                 return;
             }
-            
+
             const newVersion = selectedOption.dataset.version;
-            
+
             // Button in Loading-Zustand
             originalText = button.innerHTML;
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Wird aktualisiert...';
             button.disabled = true;
-            
+
             // API-Call für Version-Update (mit längerem Timeout)
             const requestBody = {};
             if (type === 'php') {
@@ -1158,11 +1176,11 @@ class RedaxoDashboard {
             } else {
                 requestBody.mariadbVersion = newVersion;
             }
-            
+
             // AbortController für Timeout-Handling
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 360000); // 6 Minuten
-            
+
             const response = await fetch(`/api/instances/${instanceName}/update-versions`, {
                 method: 'POST',
                 headers: {
@@ -1171,38 +1189,38 @@ class RedaxoDashboard {
                 body: JSON.stringify(requestBody),
                 signal: controller.signal
             });
-            
+
             clearTimeout(timeoutId);
-            
+
             if (response.ok) {
                 const result = await response.json();
                 this.showToast(`${type === 'php' ? 'PHP' : 'MariaDB'}-Version erfolgreich auf ${newVersion} aktualisiert`, 'success');
-                
+
                 // Modal schließen
                 const modalBackdrop = button.closest('.modal-backdrop');
                 modalBackdrop.classList.remove('show');
                 setTimeout(() => modalBackdrop.remove(), 300);
-                
+
                 // Instanzen neu laden um aktuelle Versionen anzuzeigen
                 setTimeout(() => {
                     this.loadInstances();
                 }, 1000);
-                
+
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Version konnte nicht aktualisiert werden');
             }
-            
+
         } catch (error) {
             console.error('Fehler beim Aktualisieren der Version:', error);
-            
+
             let errorMessage = error.message;
             if (error.name === 'AbortError') {
                 errorMessage = 'Timeout: Version-Update dauert länger als erwartet. Bitte prüfen Sie den Status der Instanz.';
             }
-            
+
             this.showToast(`Fehler beim Aktualisieren: ${errorMessage}`, 'error');
-            
+
             // Button zurücksetzen
             if (button) {
                 button.innerHTML = originalText;
@@ -1256,105 +1274,13 @@ window.hideBackupModal = () => dashboard.hideBackupModal();
 document.addEventListener('DOMContentLoaded', () => {
     window.dashboard = new RedaxoDashboard();
 });
-// Canvas-Animation entfernt, Wellen werden nun per SVG/CSS in index.html/styles.css realisiert
 
-// Abstrakte, animierte Formen im Hintergrund (Canvas)
-(function() {
+// Statische Hintergrund-Effekte statt kontinuierlicher Animationen
+(function () {
+    // Einfache, statische Hintergrund-Geometrien ohne Animation
     const canvas = document.getElementById('abstract-bg');
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let w = window.innerWidth;
-    let h = window.innerHeight;
-    canvas.width = w;
-    canvas.height = h;
 
-    // Farben für die Formen (dunkel, dezent, leicht transparent)
-    const palette = [
-        'rgba(36, 40, 56, 0.55)',
-        'rgba(60, 72, 100, 0.45)',
-        'rgba(79, 125, 243, 0.18)',
-        'rgba(30, 41, 59, 0.33)',
-        'rgba(71, 85, 105, 0.22)'
-    ];
-
-    // Erzeuge abstrakte Formen
-    function randomShape() {
-        const type = Math.random() < 0.5 ? 'circle' : (Math.random() < 0.5 ? 'polygon' : 'blob');
-        const x = Math.random() * w;
-        const y = Math.random() * h;
-        const r = 60 + Math.random() * 120;
-        const sides = 5 + Math.floor(Math.random() * 4);
-        const color = palette[Math.floor(Math.random() * palette.length)];
-        const angle = Math.random() * Math.PI * 2;
-        const speed = 0.1 + Math.random() * 0.15;
-        const rotSpeed = (Math.random() - 0.5) * 0.003;
-        const scale = 0.7 + Math.random() * 0.6;
-        return { type, x, y, r, sides, color, angle, speed, rot: angle, rotSpeed, scale, scaleDir: Math.random() < 0.5 ? 1 : -1 };
-    }
-
-    let shapes = Array.from({length: 10}, randomShape);
-
-    function drawShape(s) {
-        ctx.save();
-        ctx.translate(s.x, s.y);
-        ctx.rotate(s.rot);
-        ctx.scale(s.scale, s.scale);
-        ctx.beginPath();
-        if (s.type === 'circle') {
-            ctx.arc(0, 0, s.r, 0, Math.PI * 2);
-        } else if (s.type === 'polygon') {
-            for (let i = 0; i < s.sides; i++) {
-                const a = (i / s.sides) * Math.PI * 2;
-                const rad = s.r * (0.85 + 0.15 * Math.sin(a * s.sides + s.rot));
-                const px = Math.cos(a) * rad;
-                const py = Math.sin(a) * rad;
-                if (i === 0) ctx.moveTo(px, py);
-                else ctx.lineTo(px, py);
-            }
-            ctx.closePath();
-        } else if (s.type === 'blob') {
-            for (let i = 0; i < s.sides; i++) {
-                const a = (i / s.sides) * Math.PI * 2;
-                const rad = s.r * (0.7 + 0.3 * Math.sin(a * s.sides + s.rot + Math.sin(s.rot)));
-                const px = Math.cos(a) * rad;
-                const py = Math.sin(a) * rad;
-                if (i === 0) ctx.moveTo(px, py);
-                else ctx.lineTo(px, py);
-            }
-            ctx.closePath();
-        }
-        ctx.fillStyle = s.color;
-        ctx.shadowColor = s.color.replace('0.', '0.18');
-        ctx.shadowBlur = 32;
-        ctx.fill();
-        ctx.restore();
-    }
-
-    function animate() {
-        ctx.clearRect(0, 0, w, h);
-        for (const s of shapes) {
-            drawShape(s);
-            // Bewegung
-            s.x += Math.cos(s.angle) * s.speed;
-            s.y += Math.sin(s.angle) * s.speed;
-            s.rot += s.rotSpeed;
-            s.scale += 0.002 * s.scaleDir;
-            if (s.scale > 1.2 || s.scale < 0.7) s.scaleDir *= -1;
-            // Wrap-around
-            if (s.x < -200) s.x = w + 200;
-            if (s.x > w + 200) s.x = -200;
-            if (s.y < -200) s.y = h + 200;
-            if (s.y > h + 200) s.y = -200;
-        }
-        requestAnimationFrame(animate);
-    }
-
-    window.addEventListener('resize', () => {
-        w = window.innerWidth;
-        h = window.innerHeight;
-        canvas.width = w;
-        canvas.height = h;
-    });
-
-    animate();
+    // Canvas ist bereits über CSS deaktiviert für bessere Performance
+    // Alternativ: Statische SVG-Patterns im HTML verwenden
 })();
