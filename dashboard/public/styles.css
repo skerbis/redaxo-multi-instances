@@ -17,7 +17,7 @@
     --glass-blur: 20px;
     --border-radius: 16px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    
+
     /* Dark gradient colors */
     --bg-color-1: #0f172a;
     --bg-color-2: #1e293b;
@@ -39,11 +39,6 @@ body {
     overflow-x: hidden;
     position: relative;
     z-index: 1;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
 }
 
 .container {
@@ -112,25 +107,26 @@ body {
 
 .logo {
     font-size: 2.5rem;
-    animation: pulse 2s ease-in-out infinite;
     color: var(--primary-color);
     filter: drop-shadow(0 0 10px rgba(79, 125, 243, 0.5));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo:hover {
+    transform: scale(1.15) rotate(5deg);
+    filter: drop-shadow(0 0 20px rgba(79, 125, 243, 0.8));
 }
 
 .redaxo-logo {
     height: 3.5rem;
     width: auto;
     filter: drop-shadow(0 0 10px rgba(79, 125, 243, 0.5));
-    transition: transform 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logo:hover .redaxo-logo {
-    transform: scale(1.1);
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+    transform: scale(1.1) rotate(-2deg);
+    filter: drop-shadow(0 0 25px rgba(79, 125, 243, 0.9));
 }
 
 .subtitle {
@@ -159,7 +155,7 @@ body {
 }
 
 .glass-button:hover {
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.02);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     background: var(--glass-bg-strong);
 }
@@ -172,6 +168,16 @@ body {
 
 .glass-button.primary:hover {
     box-shadow: 0 8px 25px rgba(79, 125, 243, 0.4);
+    transform: translateY(-3px) scale(1.05);
+}
+
+.glass-button:active {
+    transform: translateY(0) scale(0.95);
+    transition: all 0.1s ease;
+}
+
+.glass-button.primary:active {
+    transform: translateY(0) scale(0.95);
 }
 
 .glass-button.secondary {
@@ -194,6 +200,7 @@ body {
 
 .glass-button.danger:hover {
     box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    transform: translateY(-3px) scale(1.05);
 }
 
 /* Instance Grid */
@@ -215,9 +222,17 @@ body {
     min-height: 320px;
     border-radius: var(--border-radius);
     border: 2.5px solid transparent;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 1.5px 8px 0 rgba(79,125,243,0.07);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10), 0 1.5px 8px 0 rgba(79, 125, 243, 0.07);
     z-index: 1;
-    overflow: hidden; /* Abrundung für Glow-Rahmen */
+    overflow: hidden;
+    /* Abrundung für Glow-Rahmen */
+}
+
+.instance-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.20), 0 4px 16px 0 rgba(79, 125, 243, 0.15);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(79, 125, 243, 0.3);
 }
 
 .instance-card.running,
@@ -250,13 +265,11 @@ body {
 
 .instance-card.creating::after {
     background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    animation: top-line-pulse 1.6s infinite cubic-bezier(0.4,0,0.2,1);
+    position: relative;
 }
 
-@keyframes top-line-pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
+.instance-card.creating::after:hover {
+    opacity: 0.8;
 }
 
 /* Ursprüngliche border-image aus den Statusklassen entfernen */
@@ -305,8 +318,13 @@ body {
 .url-menu-trigger:hover {
     opacity: 1;
     background: var(--glass-bg-strong);
-    transform: scale(1.05);
+    transform: scale(1.1) rotate(5deg);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.url-menu-trigger:active {
+    transform: scale(0.95) rotate(0deg);
+    transition: all 0.1s ease;
 }
 
 .url-popover.open .url-menu-trigger {
@@ -349,7 +367,12 @@ body {
     height: 8px;
     border-radius: 50%;
     background: currentColor;
-    animation: pulse 2s ease-in-out infinite;
+    transition: all 0.3s ease;
+}
+
+.instance-status:hover .status-dot {
+    transform: scale(1.3);
+    box-shadow: 0 0 10px currentColor;
 }
 
 /* Controls */
@@ -466,6 +489,11 @@ body {
     background: var(--glass-bg-strong);
 }
 
+.control-button:active {
+    transform: translateY(0) scale(0.98);
+    transition: all 0.1s ease;
+}
+
 .control-button.success {
     background: linear-gradient(135deg, var(--success-color), #059669);
     border: 1px solid rgba(16, 185, 129, 0.4);
@@ -477,6 +505,7 @@ body {
 .control-button.success:hover {
     box-shadow: 0 6px 25px rgba(16, 185, 129, 0.4);
     background: linear-gradient(135deg, #10b981, #047857);
+    transform: translateY(-3px) scale(1.05);
 }
 
 .control-button.warning {
@@ -491,6 +520,7 @@ body {
 .control-button.warning:hover {
     box-shadow: 0 6px 25px rgba(245, 158, 11, 0.4);
     background: linear-gradient(135deg, #f59e0b, #b45309);
+    transform: translateY(-3px) scale(1.05);
 }
 
 .control-button.danger {
@@ -504,6 +534,7 @@ body {
 .control-button.danger:hover {
     box-shadow: 0 6px 25px rgba(239, 68, 68, 0.4);
     background: linear-gradient(135deg, #ef4444, #b91c1c);
+    transform: translateY(-3px) scale(1.05);
 }
 
 /* Loading State */
@@ -523,13 +554,27 @@ body {
     border: 3px solid rgba(255, 255, 255, 0.3);
     border-top: 3px solid var(--text-white);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
     margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.loading-spinner:hover {
+    transform: rotate(45deg) scale(1.1);
+}
+
+/* Nur für tatsächliche Loading-States */
+.loading-spinner.spinning {
+    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Modals */
@@ -539,7 +584,8 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(10, 18, 32, 0.92); /* deutlich dunkler, fast schwarz-blau */
+    background: rgba(10, 18, 32, 0.92);
+    /* deutlich dunkler, fast schwarz-blau */
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     display: none;
@@ -559,12 +605,15 @@ body {
     /* ...existing code... */
 }
 
-.modal-body, .modal-footer, .modal-header {
+.modal-body,
+.modal-footer,
+.modal-header {
     background: transparent !important;
     color: #fff !important;
 }
 
-.modal-body pre, .modal-body code {
+.modal-body pre,
+.modal-body code {
     background: #222e3a !important;
     color: #fff !important;
     border-radius: 8px;
@@ -572,7 +621,12 @@ body {
     overflow-x: auto;
 }
 
-.modal-body h1, .modal-body h2, .modal-body h3, .modal-body h4, .modal-body h5, .modal-body h6 {
+.modal-body h1,
+.modal-body h2,
+.modal-body h3,
+.modal-body h4,
+.modal-body h5,
+.modal-body h6 {
     color: #fff !important;
 }
 
@@ -689,11 +743,12 @@ body {
 .form-group select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 
+    box-shadow:
         inset 0 2px 10px rgba(0, 0, 0, 0.1),
         0 0 0 3px rgba(79, 125, 243, 0.2),
         0 4px 15px rgba(79, 125, 243, 0.1);
     background: var(--glass-bg-strong);
+    transform: translateY(-1px) scale(1.01);
 }
 
 /* Custom Select Styling */
@@ -766,7 +821,7 @@ body {
     border-color: var(--primary-color);
 }
 
-.checkbox-label input:checked ~ .checkmark {
+.checkbox-label input:checked~.checkmark {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     border-color: var(--primary-color);
 }
@@ -784,7 +839,7 @@ body {
     transform: rotate(45deg);
 }
 
-.checkbox-label input:checked ~ .checkmark:after {
+.checkbox-label input:checked~.checkmark:after {
     display: block;
 }
 
@@ -808,20 +863,52 @@ body {
     padding: 1rem 1.5rem;
     color: var(--text-white);
     min-width: 300px;
-    animation: toastSlide 0.3s ease-out;
     box-shadow: var(--glass-shadow);
     position: relative;
     overflow: hidden;
+    transform: translateX(100%);
+    opacity: 0;
+    animation: toastSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-@keyframes toastSlide {
-    from {
+.toast:hover {
+    transform: translateX(0) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.toast.success {
+    border-left: 4px solid var(--success-color);
+}
+
+.toast.warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+.toast.error {
+    border-left: 4px solid var(--danger-color);
+}
+
+@keyframes toastSlideIn {
+    0% {
         opacity: 0;
-        transform: translateX(100%);
+        transform: translateX(100%) scale(0.8);
     }
-    to {
+
+    100% {
         opacity: 1;
-        transform: translateX(0);
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes toastSlideOut {
+    0% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(100%) scale(0.8);
     }
 }
 
@@ -843,46 +930,46 @@ body {
     .container {
         padding: 1rem;
     }
-    
+
     .header {
         flex-direction: column;
         align-items: stretch;
         gap: 1rem;
     }
-    
+
     .instances-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .instance-controls {
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     .control-button {
         min-width: auto;
         width: 100%;
     }
-    
+
     .modal {
         max-width: 95vw;
         margin: 1rem;
     }
-    
+
     .modal-body {
         padding: 1.5rem;
     }
-    
+
     .form-row {
         grid-template-columns: 1fr;
         gap: 0;
     }
-    
+
     .modal-footer {
         flex-direction: column-reverse;
         gap: 0.75rem;
     }
-    
+
     .modal-footer button {
         width: 100%;
     }
@@ -966,13 +1053,23 @@ body {
 
 .screenshot-trigger:hover {
     background: var(--glass-bg-strong);
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(1.02);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.screenshot-trigger:active {
+    transform: translateY(0) scale(0.98);
+    transition: all 0.1s ease;
 }
 
 .screenshot-trigger.loading {
     cursor: not-allowed;
     opacity: 0.7;
+    animation: none;
+}
+
+.screenshot-trigger.loading:hover {
+    transform: none;
 }
 
 .screenshot-trigger.loading i {
@@ -1006,7 +1103,8 @@ body {
 }
 
 .screenshot-preview img:hover {
-    transform: scale(1.02);
+    transform: scale(1.05) rotate(1deg);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
 }
 
 /* Status indicators */
@@ -1037,6 +1135,7 @@ body {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1241,7 +1340,7 @@ body {
     margin-bottom: 0;
 }
 
-/* Dezente Partikel-Animation im Hintergrund */
+/* Statischer Hintergrund-Effekt statt kontinuierlicher Partikel */
 #particles-bg {
     position: fixed;
     top: 0;
@@ -1250,26 +1349,57 @@ body {
     height: 100vh;
     z-index: 0;
     pointer-events: none;
-    opacity: 0.45;
-    display: block !important;
+    opacity: 0.25;
+    display: none !important;
+    /* Deaktiviert für bessere Performance */
     mix-blend-mode: lighten;
 }
 
-body, .container {
+/* Dezenter statischer Hintergrund statt Animation */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(79, 125, 243, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(107, 125, 245, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+    z-index: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+body:hover::before {
+    opacity: 0.7;
+}
+
+body,
+.container {
     position: relative;
     z-index: 1;
 }
 
-/* Abstract Background Animation */
+/* Statischer Abstract Background statt Animation */
 #abstract-bg {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.45;
-  mix-blend-mode: lighten;
-  transition: opacity 0.3s;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.15;
+    display: none !important;
+    /* Deaktiviert für bessere Performance */
+    mix-blend-mode: lighten;
+    transition: opacity 0.3s;
+}
+
+/* Bessere Container-Hover-Effekte */
+.container:hover {
+    transform: perspective(1000px) rotateX(0.5deg);
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
