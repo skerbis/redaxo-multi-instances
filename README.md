@@ -2,8 +2,8 @@
 
 ![Screenshot](https://github.com/skerbis/redaxo-multi-instances/blob/assets/screen.png?raw=true)
 
-## 🚨Projekt archiviert: 
-hier geht es weiter: https://github.com/FriendsOfREDAXO/redaxo-multi-instances-vscode
+
+Alternative: https://github.com/FriendsOfREDAXO/redaxo-multi-instances-vscode
 
 
 **Das moderne Dashboard für REDAXO-Entwickler** - Erstellen und verwalten Sie beliebig viele REDAXO-Instanzen mit einem Klick!
